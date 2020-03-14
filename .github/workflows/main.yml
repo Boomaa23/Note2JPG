@@ -14,4 +14,4 @@ jobs:
           java-version: '11'
           architecture: x64
       - name: Build with Ant
-        run: ant -noinput -buildfile build.xml
+        run: ant -noinput -buildfile note2jpg.xml

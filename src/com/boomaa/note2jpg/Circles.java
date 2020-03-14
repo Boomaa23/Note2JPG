@@ -6,10 +6,10 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 
 public class Circles extends JPanel {
-    private final Point[] points;
+    private final Curve[] curves;
 
-    public Circles(Point[] points) {
-        this.points = points;
+    public Circles(Curve[] curves) {
+        this.curves = curves;
     }
 
     @Override
@@ -19,8 +19,13 @@ public class Circles extends JPanel {
 
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
             RenderingHints.VALUE_ANTIALIAS_ON);
-        for (Point point : points) {
-            g2.fillOval(point.getX(), point.getY(), 5, 5);
+
+        for (int i = 0;i < curves.length;i++) {
+            g2.setColor(curves[i].getColor());
+            Point[] points = curves[i].getPoints();
+            for (int j = 0;j < points.length;j++) {
+                g.fillOval(points[j].getX() * 2, points[j].getY() * 2, curves[i].getWidth() * 2, curves[i].getWidth() * 2);
+            }
         }
     }
 }

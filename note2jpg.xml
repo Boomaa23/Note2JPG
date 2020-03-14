@@ -54,6 +54,17 @@
     <exclude name="**/?*.aj"/>
   </patternset>
   
+  
+  <!-- Project Libraries -->
+  
+  <path id="library.com.googlecode.plist:dd-plist:1.23.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/googlecode/plist/dd-plist/1.23/dd-plist-1.23.jar"/>
+  </path>
+  
+  <path id="library.net.lingala.zip4j:zip4j:2.5.0.classpath">
+    <pathelement location="${path.variable.maven_repository}/net/lingala/zip4j/zip4j/2.5.0/zip4j-2.5.0.jar"/>
+  </path>
+  
   <!-- Modules -->
   
   
@@ -72,19 +83,28 @@
     <!-- Paths to be included in compilation bootclasspath -->
   </path>
   
-  <path id="note2jpg.module.production.classpath"/>
+  <path id="note2jpg.module.production.classpath">
+    <path refid="library.com.googlecode.plist:dd-plist:1.23.classpath"/>
+    <path refid="library.net.lingala.zip4j:zip4j:2.5.0.classpath"/>
+  </path>
   
   <path id="note2jpg.runtime.production.module.classpath">
     <pathelement location="${note2jpg.output.dir}"/>
+    <path refid="library.com.googlecode.plist:dd-plist:1.23.classpath"/>
+    <path refid="library.net.lingala.zip4j:zip4j:2.5.0.classpath"/>
   </path>
   
   <path id="note2jpg.module.classpath">
     <pathelement location="${note2jpg.output.dir}"/>
+    <path refid="library.com.googlecode.plist:dd-plist:1.23.classpath"/>
+    <path refid="library.net.lingala.zip4j:zip4j:2.5.0.classpath"/>
   </path>
   
   <path id="note2jpg.runtime.module.classpath">
     <pathelement location="${note2jpg.testoutput.dir}"/>
     <pathelement location="${note2jpg.output.dir}"/>
+    <path refid="library.com.googlecode.plist:dd-plist:1.23.classpath"/>
+    <path refid="library.net.lingala.zip4j:zip4j:2.5.0.classpath"/>
   </path>
   
   

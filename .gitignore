@@ -1,4 +1,5 @@
-template/
+t2/
 out/
 .idea/
 *.iml
+*.note
