@@ -19,7 +19,6 @@ public class Circles extends JPanel {
 
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
             RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor();
         for (Point point : points) {
             g2.fillOval(point.getX(), point.getY(), 5, 5);
         }
