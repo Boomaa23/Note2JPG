@@ -1,6 +1,7 @@
 package com.boomaa.note2jpg;
 
 import javax.swing.JPanel;
+import java.awt.BasicStroke;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -23,8 +24,12 @@ public class Circles extends JPanel {
         for (int i = 0;i < curves.length;i++) {
             g2.setColor(curves[i].getColor());
             Point[] points = curves[i].getPoints();
+            Point lastPoint = points[0];
             for (int j = 0;j < points.length;j++) {
-                g.fillOval(points[j].getX() * 2, points[j].getY() * 2, curves[i].getWidth() * 2, curves[i].getWidth() * 2);
+                g2.setStroke(new BasicStroke((float) curves[i].getWidth()));
+                g2.drawLine(lastPoint.getX(), lastPoint.getY(), points[j].getX(), points[j].getY());
+                g2.fillOval(points[j].getX(), points[j].getY(), (int) (curves[i].getWidth() / 2), (int) (curves[i].getWidth() / 2));
+                lastPoint = points[j];
             }
         }
     }

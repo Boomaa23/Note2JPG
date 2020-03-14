@@ -3,12 +3,15 @@ package com.boomaa.note2jpg;
 public class Point {
     private final int x;
     private final int y;
-    private final int num;
 
-    public Point(float x, float y, int num) {
+    public Point(float x, float y) {
         this.x = (int) x;
         this.y = (int) y;
-        this.num = num;
+    }
+
+    public Point(double x, double y) {
+        this.x = (int) x;
+        this.y = (int) y;
     }
 
     public int getX() {
@@ -24,7 +27,6 @@ public class Point {
         return "Point{" +
             "x=" + x +
             ", y=" + y +
-            ", num=" + num +
             '}';
     }
 }

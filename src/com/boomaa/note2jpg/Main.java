@@ -14,32 +14,31 @@ import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 public class Main {
     private static JFrame frame;
     private static String filename;
+    private static double scaleFactor = 2;
 
     public static void main(String[] args) throws IOException, PropertyListFormatException, ParseException, SAXException, ParserConfigurationException {
-        filename = "8 | 0 Linearizing Video Notes/";
-        unzipNote();
+        filename = "Test" + "/";
+        if (!new File(filename + filename + "Session.plist").exists()) {
+            unzipNote();
+        }
         NSDictionary parser = (NSDictionary) PropertyListParser.parse(new File(filename + filename + "Session.plist"));
         NSDictionary[] dict = isolateDictionary(((NSArray) (parser.getHashMap().get("$objects"))).getArray());
 
@@ -47,12 +46,14 @@ public class Main {
         float[] curvesnumpoints = getNumberB64String(NumberType.INTEGER, getKeyFromDict(dict, "curvesnumpoints"));
         float[] curveswidth = getNumberB64String(NumberType.FLOAT, getKeyFromDict(dict, "curveswidth"));
         float[] rawColors = makePositive(getNumberB64String(NumberType.INTEGER, getKeyFromDict(dict, "curvescolors")));
+        System.out.println(Arrays.toString(rawColors));
 
         Color[] colors = getColorsFromFloats(rawColors);
         Point[] points = getPoints(curvespoints);
         Curve[] curves = pointsToCurves(points, colors, curvesnumpoints, curveswidth);
+        Point bounds = getMaximumBounds(points);
 
-        setupFrame();
+        setupFrame(bounds);
         displayCurves(curves);
         saveToFile();
     }
@@ -64,7 +65,7 @@ public class Main {
             int len = (int) numPoints[i];
             Point[] temp = new Point[len];
             System.arraycopy(points, done, temp, 0, len);
-            curves[i] = new Curve(temp, colors[i], (int) widths[i]);
+            curves[i] = new Curve(temp, colors[i], widths[i] * scaleFactor);
             done += len;
         }
         return curves;
@@ -94,7 +95,7 @@ public class Main {
     private static Color[] getColorsFromFloats(float[] raw) {
         Color[] colors = new Color[raw.length];
         for (int i = 0;i < raw.length;i++) {
-            colors[i] = new Color((int) raw[i], false);
+            colors[i] = new Color(((int) raw[i]), false);
         }
         return colors;
     }
@@ -103,17 +104,18 @@ public class Main {
         Point[] points = new Point[coords.length / 2];
         int reps = 0;
         for (int i = 0;i < coords.length - 1;i += 2) {
-            points[i - reps] = new Point(coords[i], coords[i + 1], i - reps);
+            points[i - reps] = new Point(coords[i] * scaleFactor, coords[i + 1] * scaleFactor);
             reps++;
         }
         return points;
     }
 
-    private static void setupFrame() {
+    private static void setupFrame(Point bounds) {
         frame = new JFrame();
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 600);
+        frame.setPreferredSize(new Dimension(bounds.getX(), bounds.getY()));
+        frame.setSize(new Dimension(bounds.getX(), bounds.getY()));
     }
 
     private static void displayCurves(Curve[] curves) {
@@ -123,24 +125,11 @@ public class Main {
         frame.setVisible(true);
     }
 
-    private static String fileToString(String filePath) {
-        StringBuilder contentBuilder = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            String sCurrentLine;
-            while ((sCurrentLine = br.readLine()) != null) {
-                contentBuilder.append(sCurrentLine);
-            }
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        return contentBuilder.toString();
-    }
-
     private static void saveToFile() {
-        BufferedImage img = new BufferedImage(frame.getWidth(), frame.getHeight(), BufferedImage.TYPE_INT_RGB);
+        BufferedImage img = new BufferedImage((int) frame.getContentPane().getSize().getWidth(),
+            (int) frame.getContentPane().getSize().getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = img.createGraphics();
-        frame.printAll(g2d);
+        frame.getContentPane().print(g2d);
         g2d.dispose();
         try {
             ImageIO.write(img, "jpg", new File(filename.substring(0, filename.length() - 1) + ".jpg"));
@@ -186,5 +175,19 @@ public class Main {
         } catch (ZipException e) {
             e.printStackTrace();
         }
+    }
+
+    private static Point getMaximumBounds(Point[] points) {
+        int maxX = 0, maxY = 0;
+        for (Point point : points) {
+            if (point.getX() > maxX) {
+                maxX = point.getX();
+            }
+            if (point.getY() > maxY) {
+                maxY = point.getY();
+            }
+        }
+        System.out.println(maxX + " | " + maxY);
+        return new Point(maxX, maxY);
     }
 }

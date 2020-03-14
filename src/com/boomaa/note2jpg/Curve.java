@@ -5,9 +5,9 @@ import java.awt.Color;
 public class Curve {
     private final Point[] points;
     private final Color color;
-    private final int width;
+    private final double width;
 
-    public Curve(Point[] points, Color color, int width) {
+    public Curve(Point[] points, Color color, double width) {
         this.points = points;
         this.color = color;
         this.width = width;
@@ -21,7 +21,7 @@ public class Curve {
         return color;
     }
 
-    public int getWidth() {
+    public double getWidth() {
         return width;
     }
 
