@@ -11,15 +11,18 @@ import net.lingala.zip4j.exception.ZipException;
 import org.xml.sax.SAXException;
 
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
+import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -28,34 +31,63 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.MissingFormatArgumentException;
 
 public class Main {
     private static JFrame frame;
+    private static Circles circles;
     private static String filename;
-    private static double scaleFactor = 2;
+    private static Point bounds;
+    private static double scaleFactor = 8;
 
     public static void main(String[] args) throws IOException, PropertyListFormatException, ParseException, SAXException, ParserConfigurationException {
-        filename = "Test" + "/";
-        if (!new File(filename + filename + "Session.plist").exists()) {
-            unzipNote();
+        if (args.length > 0) {
+            filename = args[0] + "/";
+        } else {
+            throw new MissingFormatArgumentException("Note filename not passed or not found");
         }
+        unzipNote();
         NSDictionary parser = (NSDictionary) PropertyListParser.parse(new File(filename + filename + "Session.plist"));
         NSDictionary[] dict = isolateDictionary(((NSArray) (parser.getHashMap().get("$objects"))).getArray());
 
         float[] curvespoints = getNumberB64String(NumberType.FLOAT, getKeyFromDict(dict, "curvespoints"));
         float[] curvesnumpoints = getNumberB64String(NumberType.INTEGER, getKeyFromDict(dict, "curvesnumpoints"));
         float[] curveswidth = getNumberB64String(NumberType.FLOAT, getKeyFromDict(dict, "curveswidth"));
-        float[] rawColors = makePositive(getNumberB64String(NumberType.INTEGER, getKeyFromDict(dict, "curvescolors")));
-        System.out.println(Arrays.toString(rawColors));
+        float[] curvescolors = makePositive(getNumberB64String(NumberType.INTEGER, getKeyFromDict(dict, "curvescolors")));
 
-        Color[] colors = getColorsFromFloats(rawColors);
+        Color[] colors = getColorsFromFloats(curvescolors);
         Point[] points = getPoints(curvespoints);
         Curve[] curves = pointsToCurves(points, colors, curvesnumpoints, curveswidth);
-        Point bounds = getMaximumBounds(points);
+        bounds = getMaximumBounds(points);
 
-        setupFrame(bounds);
-        displayCurves(curves);
+        setupFrame();
+        setupCurves(curves);
+        if (args.length > 1 && args[1].equals("--display")) {
+            displayFrame();
+        }
         saveToFile();
+    }
+
+    private static void setupFrame() {
+        frame = new JFrame();
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setPreferredSize(new Dimension(bounds.getX(), bounds.getY()));
+        frame.setSize(new Dimension(bounds.getX(), bounds.getY()));
+    }
+
+    private static void setupCurves(Curve[] curves) {
+        circles = new Circles(curves);
+        circles.setSize(new Dimension(bounds.getX(), bounds.getY()));
+    }
+
+    private static void displayFrame() {
+        Image img = scaleImageScreen(getCirclesBuffImg());
+        JLabel imgTemp = new JLabel(new ImageIcon(img));
+        frame.getContentPane().add(imgTemp);
+        frame.repaint();
+        frame.revalidate();
+        frame.setVisible(true);
     }
 
     private static Curve[] pointsToCurves(Point[] points, Color[] colors, float[] numPoints, float[] widths) {
@@ -110,32 +142,17 @@ public class Main {
         return points;
     }
 
-    private static void setupFrame(Point bounds) {
-        frame = new JFrame();
-        frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setPreferredSize(new Dimension(bounds.getX(), bounds.getY()));
-        frame.setSize(new Dimension(bounds.getX(), bounds.getY()));
-    }
-
-    private static void displayCurves(Curve[] curves) {
-        frame.getContentPane().add(new Circles(curves));
-        frame.repaint();
-        frame.revalidate();
-        frame.setVisible(true);
-    }
-
-    private static void saveToFile() {
-        BufferedImage img = new BufferedImage((int) frame.getContentPane().getSize().getWidth(),
-            (int) frame.getContentPane().getSize().getHeight(), BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = img.createGraphics();
-        frame.getContentPane().print(g2d);
-        g2d.dispose();
-        try {
-            ImageIO.write(img, "jpg", new File(filename.substring(0, filename.length() - 1) + ".jpg"));
-        } catch (IOException e) {
-            e.printStackTrace();
+    private static Point getMaximumBounds(Point[] points) {
+        int maxX = 0, maxY = 0;
+        for (Point point : points) {
+            if (point.getX() > maxX) {
+                maxX = point.getX();
+            }
+            if (point.getY() > maxY) {
+                maxY = point.getY();
+            }
         }
+        return new Point(maxX, maxY + 50);
     }
 
     private static float[] makePositive(float[] input) {
@@ -147,7 +164,29 @@ public class Main {
         return input;
     }
 
-    private static NSDictionary[] isolateDictionary(NSObject[] objects) {
+    public static Image scaleImageScreen(Image image) {
+        double width = image.getWidth(null);
+        double height = image.getHeight(null);
+        Rectangle screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+
+        if (height >= screen.getHeight()) {
+            width /= (height / screen.getHeight());
+            height = screen.getHeight();
+        }
+
+        return image.getScaledInstance((int) (width), (int) (height) - 50, Image.SCALE_SMOOTH);
+    }
+
+    private static BufferedImage getCirclesBuffImg() {
+        BufferedImage img = new BufferedImage(bounds.getX(), bounds.getY(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = img.createGraphics();
+        circles.print(g2d);
+        g2d.setBackground(Color.WHITE);
+        g2d.dispose();
+        return img;
+    }
+
+    public static NSDictionary[] isolateDictionary(NSObject[] objects) {
         List<NSDictionary> dict = new ArrayList<>();
         for (NSObject obj : objects) {
             if (obj instanceof NSDictionary) {
@@ -158,7 +197,7 @@ public class Main {
         return dict.toArray(out);
     }
 
-    private static String getKeyFromDict(NSDictionary[] dict, String key) {
+    public static String getKeyFromDict(NSDictionary[] dict, String key) {
         for (int i = 0;i < dict.length;i++) {
             NSData obj = (NSData) dict[i].get(key);
             if (obj != null) {
@@ -168,6 +207,21 @@ public class Main {
         return "";
     }
 
+    private static void saveToFile() {
+        try {
+            BufferedImage circleImg = getCirclesBuffImg();
+            int ipadWidth = 1536;
+            Image rimg = circleImg.getScaledInstance(ipadWidth, ipadWidth * circleImg.getHeight() / circleImg.getWidth(), Image.SCALE_SMOOTH);
+            BufferedImage img = new BufferedImage(rimg.getWidth(null), rimg.getHeight(null), BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2d = img.createGraphics();
+            g2d.drawImage(rimg, 0, 0, null);
+            g2d.dispose();
+            ImageIO.write(img, "jpg", new File(filename.substring(0, filename.length() - 1) + ".jpg"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static void unzipNote() {
         try {
             ZipFile zipFile = new ZipFile(filename.substring(0, filename.length() - 1) + ".note");
@@ -175,19 +229,5 @@ public class Main {
         } catch (ZipException e) {
             e.printStackTrace();
         }
-    }
-
-    private static Point getMaximumBounds(Point[] points) {
-        int maxX = 0, maxY = 0;
-        for (Point point : points) {
-            if (point.getX() > maxX) {
-                maxX = point.getX();
-            }
-            if (point.getY() > maxY) {
-                maxY = point.getY();
-            }
-        }
-        System.out.println(maxX + " | " + maxY);
-        return new Point(maxX, maxY);
     }
 }
