@@ -77,11 +77,11 @@ public class Main {
             throw new MissingFormatArgumentException("Not enough parameters passed");
         }
         unzipNote();
-        NSDictionary sessionMain = (NSDictionary) PropertyListParser.parse(new File(filename + filename + "Session.plist"));
+        NSDictionary sessionMain = (NSDictionary) PropertyListParser.parse(new File(filename + "Session.plist"));
         NSDictionary[] sessionDict = DecodeUtil.isolateDictionary(((NSArray) (sessionMain.getHashMap().get("$objects"))).getArray());
         List<Image> pdfs = new ArrayList<>();
         if (!noPdf) {
-            NSDictionary pdfMain = (NSDictionary) PropertyListParser.parse(new File(filename + filename + "NBPDFIndex/NoteDocumentPDFMetadataIndex.plist"));
+            NSDictionary pdfMain = (NSDictionary) PropertyListParser.parse(new File(filename + "NBPDFIndex/NoteDocumentPDFMetadataIndex.plist"));
             String[] pdfLocs = ((NSDictionary) (pdfMain.getHashMap().get("pageNumbers"))).allKeys();
             for (String pdfLoc : pdfLocs) {
                 pdfs.addAll(ImageUtil.getPDFImages(pdfLoc));
@@ -96,7 +96,7 @@ public class Main {
         Color[] colors = DecodeUtil.getColorsFromFloats(curvescolors);
         Point[] points = DecodeUtil.getPoints(curvespoints);
         Curve[] curves = DecodeUtil.pointsToCurves(points, colors, curvesnumpoints, curveswidth);
-        scaledWidth = (int) (DecodeUtil.getNumberFromDict(sessionDict, "pageWidthInDocumentCoordsKey") * scaleFactor);
+        scaledWidth = DecodeUtil.getNumberFromDict(sessionDict, "pageWidthInDocumentCoordsKey") * scaleFactor;
         bounds = DecodeUtil.getBounds(points);
 
         setupFrame();
@@ -105,6 +105,7 @@ public class Main {
             displayFrame();
         }
         saveToFile(pdfs);
+        cleanupFiles(new File(filename));
     }
 
     public static void setupCurves(Curve[] curves) {
@@ -193,20 +194,30 @@ public class Main {
     public static void unzipNote() {
         try {
             ZipFile zipFile = new ZipFile(filename.substring(0, filename.length() - 1) + ".note");
-            zipFile.extractFile(filename + "Session.plist", filename);
+            zipFile.extractFile(filename + "Session.plist", ".");
             try {
-                zipFile.extractFile(filename + "NBPDFIndex/NoteDocumentPDFMetadataIndex.plist", filename);
+                zipFile.extractFile(filename + "NBPDFIndex/NoteDocumentPDFMetadataIndex.plist", ".");
             } catch (ZipException e) {
                 noPdf = true;
             }
             List<FileHeader> files = zipFile.getFileHeaders();
             for (FileHeader file : files) {
                 if (file.getFileName().contains("PDFs")) {
-                    zipFile.extractFile(file, filename);
+                    zipFile.extractFile(file, ".");
                 }
             }
         } catch (ZipException e) {
             e.printStackTrace();
         }
+    }
+
+    public static boolean cleanupFiles(File fn) {
+        File[] allContents = fn.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                cleanupFiles(file);
+            }
+        }
+        return fn.delete();
     }
 }

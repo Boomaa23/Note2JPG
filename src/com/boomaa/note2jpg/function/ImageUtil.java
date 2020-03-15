@@ -64,7 +64,7 @@ public class ImageUtil extends Main {
     public static List<Image> getPDFImages(String pdf) {
         try {
             PDFDocument document = new PDFDocument();
-            document.load(new File(filename + filename + "PDFs/" + pdf));
+            document.load(new File(filename + "PDFs/" + pdf));
 
             SimpleRenderer renderer = new SimpleRenderer();
             renderer.setResolution(pdfRes);
