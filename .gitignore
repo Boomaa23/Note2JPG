@@ -1,7 +1,9 @@
-t2/
 out/
 .idea/
 *.iml
 *.note
 *.jpg
 *.plist
+*.txt
+src/META-INF/MANIFEST.MF
+*.pdf

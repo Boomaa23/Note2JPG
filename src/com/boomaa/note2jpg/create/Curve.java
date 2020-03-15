@@ -1,4 +1,4 @@
-package com.boomaa.note2jpg;
+package com.boomaa.note2jpg.create;
 
 import java.awt.Color;
 
