@@ -12,7 +12,6 @@ public class Circles extends JPanel {
 
     public Circles(Curve[] curves) {
         this.curves = curves;
-        this.setForeground(Color.WHITE);
         this.setBackground(Color.WHITE);
     }
 

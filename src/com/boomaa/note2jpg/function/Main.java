@@ -11,7 +11,6 @@ import com.dd.plist.PropertyListParser;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
-import org.apache.commons.logging.Log;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -25,11 +24,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -42,6 +41,7 @@ public class Main {
     public static Circles circles;
     public static String filename;
     public static Point bounds;
+    public static BufferedImage circlesImg;
     public static int scaledWidth;
     public static int iPadWidth = 1536;
     public static int leftOffset = 14;
@@ -68,14 +68,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException, PropertyListFormatException, ParseException, SAXException, ParserConfigurationException {
         startTime = System.currentTimeMillis();
-        if (args.length >= 3) {
-            filename = args[0] + "/";
-            scaleFactor = Integer.parseInt(args[1]);
-            pdfRes = Integer.parseInt(args[2]) * 100;
-            System.out.println("Params: filename=\"" + args[0] + "\" scaleFactor=" + scaleFactor + " pdfScaleFactor=" + args[2]);
-        } else {
-            throw new MissingFormatArgumentException("Not enough parameters passed");
-        }
+        determineArgs(args);
         unzipNote();
         NSDictionary sessionMain = (NSDictionary) PropertyListParser.parse(new File(filename + "Session.plist"));
         NSDictionary[] sessionDict = DecodeUtil.isolateDictionary(((NSArray) (sessionMain.getHashMap().get("$objects"))).getArray());
@@ -84,16 +77,16 @@ public class Main {
             NSDictionary pdfMain = (NSDictionary) PropertyListParser.parse(new File(filename + "NBPDFIndex/NoteDocumentPDFMetadataIndex.plist"));
             String[] pdfLocs = ((NSDictionary) (pdfMain.getHashMap().get("pageNumbers"))).allKeys();
             for (String pdfLoc : pdfLocs) {
-                pdfs.addAll(ImageUtil.getPDFImages(pdfLoc));
+                pdfs.addAll(ImageUtil.getPdfImages(pdfLoc));
             }
         }
 
         float[] curvespoints = DecodeUtil.getNumberB64String(NumberType.FLOAT, DecodeUtil.getDataFromDict(sessionDict, "curvespoints"));
         float[] curvesnumpoints = DecodeUtil.getNumberB64String(NumberType.INTEGER, DecodeUtil.getDataFromDict(sessionDict, "curvesnumpoints"));
         float[] curveswidth = DecodeUtil.getNumberB64String(NumberType.FLOAT, DecodeUtil.getDataFromDict(sessionDict, "curveswidth"));
-        float[] curvescolors = makePositive(DecodeUtil.getNumberB64String(NumberType.INTEGER, DecodeUtil.getDataFromDict(sessionDict, "curvescolors")));
+        int[] curvescolors = DecodeUtil.parseB64Colors(DecodeUtil.getDataFromDict(sessionDict, "curvescolors"));
 
-        Color[] colors = DecodeUtil.getColorsFromFloats(curvescolors);
+        Color[] colors = DecodeUtil.getColorsFromInts(curvescolors);
         Point[] points = DecodeUtil.getPoints(curvespoints);
         Curve[] curves = DecodeUtil.pointsToCurves(points, colors, curvesnumpoints, curveswidth);
         scaledWidth = DecodeUtil.getNumberFromDict(sessionDict, "pageWidthInDocumentCoordsKey") * scaleFactor;
@@ -101,11 +94,31 @@ public class Main {
 
         setupFrame();
         setupCurves(curves);
+        ImageUtil.populateCirclesImg();
         if (args.length == 4 && args[3].equals("--display")) {
             displayFrame();
         }
-        saveToFile(pdfs);
+        saveToFile(ImageUtil.getPdfCanvas(pdfs));
         cleanupFiles(new File(filename));
+    }
+
+    public static void determineArgs(String[] args) {
+        if (args.length >= 1) {
+            filename = args[0] + "/";
+            if (args[1] != null) {
+                scaleFactor = Integer.parseInt(args[1]);
+            } else {
+                scaleFactor = 4;
+            }
+            if (args[2] != null) {
+                pdfRes = Integer.parseInt(args[2]) * 100;
+            } else {
+                pdfRes = 300;
+            }
+            System.out.println("Args: name=\"" + args[0] + "\" scale=" + scaleFactor + " pdfScale=" + args[2]);
+        } else {
+            throw new MissingFormatArgumentException("Not enough parameters passed");
+        }
     }
 
     public static void setupCurves(Curve[] curves) {
@@ -113,17 +126,17 @@ public class Main {
         circles.setSize(new Dimension(scaledWidth, bounds.getY()));
     }
     public static void setupFrame() {
-        frame = new JFrame();
-        frame.setBackground(Color.WHITE);
-        frame.setForeground(Color.WHITE);
+        frame = new JFrame("Note2JPG | " + filename.substring(0, filename.length() - 1));
+        frame.getContentPane().setBackground(Color.WHITE);
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setPreferredSize(new Dimension(scaledWidth, bounds.getY()));
-        frame.setSize(new Dimension(scaledWidth, bounds.getY()));
+        Rectangle screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        int width = (int) (screen.getWidth() / 3.0);
+        frame.setSize(new Dimension(width, (int) ((bounds.getY() / scaleFactor) * 1.3)));
     }
 
     public static void displayFrame() {
-        Image img = ImageUtil.scaleImageScreen(ImageUtil.getCirclesBuffImg());
+        Image img = ImageUtil.scaleImageFrame(circlesImg);
         JLabel imgTemp = new JLabel(new ImageIcon(img));
         frame.getContentPane().add(imgTemp);
         frame.repaint();
@@ -131,64 +144,32 @@ public class Main {
         frame.setVisible(true);
     }
 
-    public static float[] makePositive(float[] input) {
-        for (int i = 0;i < input.length;i++) {
-            if (input[i] < 0) {
-                input[i] *= -1;
-            }
-        }
-        return input;
+    public static BufferedImage scaleImage(BufferedImage canvas, int width, int height) {
+        Image scaled = canvas.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        BufferedImage bufferScaled = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2f = (Graphics2D) bufferScaled.getGraphics();
+        g2f.drawImage(scaled, 0, 0, null);
+        g2f.dispose();
+        return bufferScaled;
     }
 
-    public static void saveToFile(List<Image> pdfs) {
-        try {
-            int scaledHeight = (int) (scaledWidth * 11 / 8.5);
-            int overallHeight = noPdf ? circles.getHeight() : scaledHeight * pdfs.size();
-            BufferedImage canvas = new BufferedImage(scaledWidth, overallHeight, BufferedImage.TYPE_INT_RGB);
-            Graphics2D g2 = (Graphics2D) canvas.getGraphics();
-            int lastBottom = 0;
-            for (int i = 0;i < pdfs.size();i++) {
-                Image pdf = pdfs.get(i).getScaledInstance(canvas.getWidth(), scaledHeight, Image.SCALE_SMOOTH);
-                g2.drawImage(pdf, 0, lastBottom, null);
-                System.out.print("\r" + "PDF: " + (i + 1) + " / " + pdfs.size());
-                lastBottom += pdf.getHeight(null);
-            }
+    public static void saveToFile(BufferedImage canvas) {
+        Graphics2D g2 = (Graphics2D) canvas.getGraphics();
+        if (!noPdf) {
+            g2.drawImage(ImageUtil.makeColorTransparent(circlesImg, Color.WHITE), 0, 0, null);
             System.out.println();
-            BufferedImage draw = ImageUtil.getCirclesBuffImg();
-            if (!noPdf) {
-                g2.drawImage(ImageUtil.makeColorTransparent(draw, Color.WHITE), 0, 0, null);
-            } else {
-                g2.drawImage(draw, 0, 0, null);
-            }
-            g2.dispose();
+        } else {
+            g2.drawImage(circlesImg, 0, 0, null);
+        }
+        g2.dispose();
 
-            int heightFinal = (int) (((double) iPadWidth / canvas.getWidth()) * canvas.getHeight());
-            Image scaledFinal = canvas.getScaledInstance(iPadWidth, heightFinal, Image.SCALE_SMOOTH);
-            BufferedImage bufferScaledFinal = new BufferedImage(scaledFinal.getWidth(null), scaledFinal.getHeight(null), BufferedImage.TYPE_INT_RGB);
-            Graphics2D g2f = (Graphics2D) bufferScaledFinal.getGraphics();
-            g2f.drawImage(scaledFinal, 0, 0, null);
-            g2f.dispose();
-
-            ImageIO.write(bufferScaledFinal, "jpg", new File(filename.substring(0, filename.length() - 1) + ".jpg"));
-            System.out.println("Write completed in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+        int heightFinal = (int) (((double) iPadWidth / canvas.getWidth()) * canvas.getHeight());
+        try {
+            ImageIO.write(scaleImage(canvas, iPadWidth, heightFinal), "jpg", new File(filename.substring(0, filename.length() - 1) + ".jpg"));
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private static String fileToString(String filePath) {
-        StringBuilder contentBuilder = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-
-            String sCurrentLine;
-            while ((sCurrentLine = br.readLine()) != null) {
-                contentBuilder.append(sCurrentLine);
-            }
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        return contentBuilder.toString();
+        System.out.println("Completed in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
     }
 
     public static void unzipNote() {

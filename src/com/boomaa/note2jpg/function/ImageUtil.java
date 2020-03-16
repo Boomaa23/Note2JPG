@@ -22,26 +22,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ImageUtil extends Main {
-    public static Image scaleImageScreen(Image image) {
+    public static Image scaleImageFrame(Image image) {
         double width = image.getWidth(null);
         double height = image.getHeight(null);
-        Rectangle screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
 
-        if (height >= screen.getHeight()) {
-            width /= (height / screen.getHeight());
-            height = screen.getHeight();
+        if (width >= frame.getWidth()) {
+            height /= (width / frame.getWidth());
+            width = frame.getWidth();
         }
 
         return image.getScaledInstance((int) (width), (int) (height), Image.SCALE_SMOOTH);
     }
 
-    public static BufferedImage getCirclesBuffImg() {
+    public static void populateCirclesImg() {
         BufferedImage img = new BufferedImage(scaledWidth, bounds.getY(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = img.createGraphics();
         circles.print(g2d);
-        g2d.setBackground(Color.WHITE);
         g2d.dispose();
-        return img;
+        circlesImg = img;
     }
 
     public static Image makeColorTransparent(Image im, final Color color) {
@@ -61,7 +59,7 @@ public class ImageUtil extends Main {
         return Toolkit.getDefaultToolkit().createImage(ip);
     }
 
-    public static List<Image> getPDFImages(String pdf) {
+    public static List<Image> getPdfImages(String pdf) {
         try {
             PDFDocument document = new PDFDocument();
             document.load(new File(filename + "PDFs/" + pdf));
@@ -73,5 +71,20 @@ public class ImageUtil extends Main {
             e.printStackTrace();
             return new ArrayList<>();
         }
+    }
+
+    public static BufferedImage getPdfCanvas(List<Image> pdfs) {
+        int scaledHeight = (int) (scaledWidth * 11 / 8.5);
+        int overallHeight = noPdf ? circles.getHeight() : scaledHeight * pdfs.size();
+        BufferedImage canvas = new BufferedImage(scaledWidth, overallHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2 = (Graphics2D) canvas.getGraphics();
+        int lastBottom = 0;
+        for (int i = 0;i < pdfs.size();i++) {
+            Image pdf = pdfs.get(i).getScaledInstance(canvas.getWidth(), scaledHeight, Image.SCALE_SMOOTH);
+            g2.drawImage(pdf, 0, lastBottom, null);
+            System.out.print("\r" + "PDF: " + (i + 1) + " / " + pdfs.size());
+            lastBottom += pdf.getHeight(null);
+        }
+        return canvas;
     }
 }

@@ -9,6 +9,7 @@ import com.dd.plist.NSNumber;
 import com.dd.plist.NSObject;
 
 import java.awt.Color;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -50,10 +51,22 @@ public class DecodeUtil extends Main {
         return output;
     }
 
-    public static Color[] getColorsFromFloats(float[] raw) {
+    public static int[] parseB64Colors(String b64) {
+        byte[] decoded = Base64.getDecoder().decode(b64.getBytes());
+        String hexFull = String.format("%040x", new BigInteger(1, decoded));
+        int[] intColors = new int[(hexFull.length() / 8)];
+        int parsed = 0;
+        for (int i = 0;i < intColors.length;i++) {
+            intColors[i] = Integer.parseInt(hexFull.substring(parsed, parsed + 6), 16);
+            parsed += 8;
+        }
+        return intColors;
+    }
+
+    public static Color[] getColorsFromInts(int[] raw) {
         Color[] colors = new Color[raw.length];
         for (int i = 0;i < raw.length;i++) {
-            colors[i] = new Color(((int) raw[i]), false);
+            colors[i] = new Color(raw[i], false);
         }
         return colors;
     }
