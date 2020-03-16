@@ -7,9 +7,7 @@ import org.ghost4j.renderer.SimpleRenderer;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.GraphicsEnvironment;
 import java.awt.Image;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.image.FilteredImageSource;
@@ -34,12 +32,20 @@ public class ImageUtil extends Main {
         return image.getScaledInstance((int) (width), (int) (height), Image.SCALE_SMOOTH);
     }
 
-    public static void populateCirclesImg() {
-        BufferedImage img = new BufferedImage(scaledWidth, bounds.getY(), BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = img.createGraphics();
-        circles.print(g2d);
-        g2d.dispose();
-        circlesImg = img;
+    public static void populateUnscaledAll(BufferedImage pdfs) {
+        Graphics2D g2 = (Graphics2D) pdfs.getGraphics();
+        if (noPdf) {
+            circles.print(g2);
+        } else {
+            System.out.println();
+            BufferedImage img = new BufferedImage(scaledWidth, bounds.getY(), BufferedImage.TYPE_INT_RGB);
+            Graphics2D cg2 = img.createGraphics();
+            circles.print(cg2);
+            cg2.dispose();
+            g2.drawImage(ImageUtil.makeColorTransparent(img, Color.WHITE), 0, 0, null);
+        }
+        g2.dispose();
+        upscaledAll = pdfs;
     }
 
     public static Image makeColorTransparent(Image im, final Color color) {

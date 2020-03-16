@@ -41,7 +41,7 @@ public class Main {
     public static Circles circles;
     public static String filename;
     public static Point bounds;
-    public static BufferedImage circlesImg;
+    public static BufferedImage upscaledAll;
     public static int scaledWidth;
     public static int iPadWidth = 1536;
     public static int leftOffset = 14;
@@ -80,6 +80,7 @@ public class Main {
                 pdfs.addAll(ImageUtil.getPdfImages(pdfLoc));
             }
         }
+        cleanupFiles(new File(filename));
 
         float[] curvespoints = DecodeUtil.getNumberB64String(NumberType.FLOAT, DecodeUtil.getDataFromDict(sessionDict, "curvespoints"));
         float[] curvesnumpoints = DecodeUtil.getNumberB64String(NumberType.INTEGER, DecodeUtil.getDataFromDict(sessionDict, "curvesnumpoints"));
@@ -92,14 +93,13 @@ public class Main {
         scaledWidth = DecodeUtil.getNumberFromDict(sessionDict, "pageWidthInDocumentCoordsKey") * scaleFactor;
         bounds = DecodeUtil.getBounds(points);
 
-        setupFrame();
         setupCurves(curves);
-        ImageUtil.populateCirclesImg();
+        ImageUtil.populateUnscaledAll(ImageUtil.getPdfCanvas(pdfs));
         if (args.length == 4 && args[3].equals("--display")) {
+            setupFrame();
             displayFrame();
         }
-        saveToFile(ImageUtil.getPdfCanvas(pdfs));
-        cleanupFiles(new File(filename));
+        saveToFile();
     }
 
     public static void determineArgs(String[] args) {
@@ -115,7 +115,7 @@ public class Main {
             } else {
                 pdfRes = 300;
             }
-            System.out.println("Args: name=\"" + args[0] + "\" scale=" + scaleFactor + " pdfScale=" + args[2]);
+            System.out.println("Params: name=\"" + args[0] + "\" scale=" + scaleFactor + " pdfScale=" + args[2]);
         } else {
             throw new MissingFormatArgumentException("Not enough parameters passed");
         }
@@ -125,18 +125,19 @@ public class Main {
         circles = new Circles(curves);
         circles.setSize(new Dimension(scaledWidth, bounds.getY()));
     }
+
     public static void setupFrame() {
         frame = new JFrame("Note2JPG | " + filename.substring(0, filename.length() - 1));
         frame.getContentPane().setBackground(Color.WHITE);
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Rectangle screen = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
-        int width = (int) (screen.getWidth() / 3.0);
-        frame.setSize(new Dimension(width, (int) ((bounds.getY() / scaleFactor) * 1.3)));
+        int width = (int) (screen.getWidth() / 2.5);
+        frame.setSize(new Dimension(width, (int) ((bounds.getY() / scaleFactor) * 1.5)));
     }
 
     public static void displayFrame() {
-        Image img = ImageUtil.scaleImageFrame(circlesImg);
+        Image img = ImageUtil.scaleImageFrame(upscaledAll);
         JLabel imgTemp = new JLabel(new ImageIcon(img));
         frame.getContentPane().add(imgTemp);
         frame.repaint();
@@ -153,19 +154,10 @@ public class Main {
         return bufferScaled;
     }
 
-    public static void saveToFile(BufferedImage canvas) {
-        Graphics2D g2 = (Graphics2D) canvas.getGraphics();
-        if (!noPdf) {
-            g2.drawImage(ImageUtil.makeColorTransparent(circlesImg, Color.WHITE), 0, 0, null);
-            System.out.println();
-        } else {
-            g2.drawImage(circlesImg, 0, 0, null);
-        }
-        g2.dispose();
-
-        int heightFinal = (int) (((double) iPadWidth / canvas.getWidth()) * canvas.getHeight());
+    public static void saveToFile() {
+        int heightFinal = (int) (((double) iPadWidth / upscaledAll.getWidth()) * upscaledAll.getHeight());
         try {
-            ImageIO.write(scaleImage(canvas, iPadWidth, heightFinal), "jpg", new File(filename.substring(0, filename.length() - 1) + ".jpg"));
+            ImageIO.write(scaleImage(upscaledAll, iPadWidth, heightFinal), "jpg", new File(filename.substring(0, filename.length() - 1) + ".jpg"));
         } catch (IOException e) {
             e.printStackTrace();
         }
