@@ -35,7 +35,6 @@ public class Circles extends JPanel {
                 g2.setStroke(new BasicStroke((float) curves[i].getWidth()));
                 g2.drawLine(lastPoint.getX(), lastPoint.getY(), points[j].getX(), points[j].getY());
                 g2.fillOval(points[j].getX(), points[j].getY(), (int) (curves[i].getWidth() / 2), (int) (curves[i].getWidth() / 2));
-
                 lastPoint = points[j];
             }
 

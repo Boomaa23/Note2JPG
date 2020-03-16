@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-public class DecodeUtil extends Main {
+public class Decode extends NFields {
     public static Curve[] pointsToCurves(Point[] points, Color[] colors, float[] numPoints, float[] widths) {
         Curve[] curves = new Curve[numPoints.length];
         int done = 0;
@@ -30,7 +30,7 @@ public class DecodeUtil extends Main {
         return curves;
     }
 
-    public static float[] getNumberB64String(NumberType numberType, String b64) {
+    public static float[] parseB64Numbers(NumberType numberType, String b64) {
         byte[] bytes = Base64.getDecoder().decode(b64.getBytes());
         float[] output = new float[bytes.length / 4];
         for (int i = 0;i < bytes.length;i += 4) {

@@ -36,20 +36,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.MissingFormatArgumentException;
 
-public class Main {
-    public static JFrame frame;
-    public static Circles circles;
-    public static String filename;
-    public static Point bounds;
-    public static BufferedImage upscaledAll;
-    public static int scaledWidth;
-    public static int iPadWidth = 1536;
-    public static int leftOffset = 14;
-    public static int scaleFactor;
-    public static int pdfRes;
-    public static boolean noPdf = false;
-    public static long startTime;
-
+public class Main extends NFields {
     static {
         List<Logger> loggers = Collections.<Logger>list(LogManager.getCurrentLoggers());
         loggers.add(LogManager.getRootLogger());
@@ -71,7 +58,7 @@ public class Main {
         determineArgs(args);
         unzipNote();
         NSDictionary sessionMain = (NSDictionary) PropertyListParser.parse(new File(filename + "Session.plist"));
-        NSDictionary[] sessionDict = DecodeUtil.isolateDictionary(((NSArray) (sessionMain.getHashMap().get("$objects"))).getArray());
+        NSDictionary[] sessionDict = Decode.isolateDictionary(((NSArray) (sessionMain.getHashMap().get("$objects"))).getArray());
         List<Image> pdfs = new ArrayList<>();
         if (!noPdf) {
             NSDictionary pdfMain = (NSDictionary) PropertyListParser.parse(new File(filename + "NBPDFIndex/NoteDocumentPDFMetadataIndex.plist"));
@@ -82,19 +69,34 @@ public class Main {
         }
         cleanupFiles(new File(filename));
 
-        float[] curvespoints = DecodeUtil.getNumberB64String(NumberType.FLOAT, DecodeUtil.getDataFromDict(sessionDict, "curvespoints"));
-        float[] curvesnumpoints = DecodeUtil.getNumberB64String(NumberType.INTEGER, DecodeUtil.getDataFromDict(sessionDict, "curvesnumpoints"));
-        float[] curveswidth = DecodeUtil.getNumberB64String(NumberType.FLOAT, DecodeUtil.getDataFromDict(sessionDict, "curveswidth"));
-        int[] curvescolors = DecodeUtil.parseB64Colors(DecodeUtil.getDataFromDict(sessionDict, "curvescolors"));
+        float[] curvespoints = Decode.parseB64Numbers(NumberType.FLOAT, Decode.getDataFromDict(sessionDict, "curvespoints"));
+        float[] curvesnumpoints = Decode.parseB64Numbers(NumberType.INTEGER, Decode.getDataFromDict(sessionDict, "curvesnumpoints"));
+        float[] curveswidth = Decode.parseB64Numbers(NumberType.FLOAT, Decode.getDataFromDict(sessionDict, "curveswidth"));
+        int[] curvescolors = Decode.parseB64Colors(Decode.getDataFromDict(sessionDict, "curvescolors"));
 
-        Color[] colors = DecodeUtil.getColorsFromInts(curvescolors);
-        Point[] points = DecodeUtil.getPoints(curvespoints);
-        Curve[] curves = DecodeUtil.pointsToCurves(points, colors, curvesnumpoints, curveswidth);
-        scaledWidth = DecodeUtil.getNumberFromDict(sessionDict, "pageWidthInDocumentCoordsKey") * scaleFactor;
-        bounds = DecodeUtil.getBounds(points);
+        Color[] colors = Decode.getColorsFromInts(curvescolors);
 
-        setupCurves(curves);
-        ImageUtil.populateUnscaledAll(ImageUtil.getPdfCanvas(pdfs));
+        System.gc();
+        while (true) {
+            if (scaleFactor <= 0) {
+                throw new ArithmeticException("Cannot have a scale factor of zero");
+            }
+            try {
+                Point[] points = Decode.getPoints(curvespoints);
+                Curve[] curves = Decode.pointsToCurves(points, colors, curvesnumpoints, curveswidth);
+                scaledWidth = Decode.getNumberFromDict(sessionDict, "pageWidthInDocumentCoordsKey") * scaleFactor;
+                bounds = Decode.getBounds(points);
+                setupCurves(curves);
+                ImageUtil.populateUnscaledAll(ImageUtil.getPdfCanvas(pdfs));
+                break;
+            } catch (OutOfMemoryError e) {
+                circles = null;
+                scaleFactor -= 2;
+                System.gc();
+                System.err.println("Memory limit exceeded with scale " + (scaleFactor + 2));
+            }
+        }
+
         if (args.length == 4 && args[3].equals("--display")) {
             setupFrame();
             displayFrame();
@@ -161,7 +163,7 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("Completed in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
+        System.out.println("Completed in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds with scale=" + scaleFactor);
     }
 
     public static void unzipNote() {

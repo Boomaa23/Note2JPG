@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImageUtil extends Main {
+public class ImageUtil extends NFields {
     public static Image scaleImageFrame(Image image) {
         double width = image.getWidth(null);
         double height = image.getHeight(null);
@@ -65,7 +65,7 @@ public class ImageUtil extends Main {
         return Toolkit.getDefaultToolkit().createImage(ip);
     }
 
-    public static List<Image> getPdfImages(String pdf) {
+    public static List<Image> getPdfImages(String pdf) throws OutOfMemoryError {
         try {
             PDFDocument document = new PDFDocument();
             document.load(new File(filename + "PDFs/" + pdf));
@@ -79,7 +79,7 @@ public class ImageUtil extends Main {
         }
     }
 
-    public static BufferedImage getPdfCanvas(List<Image> pdfs) {
+    public static BufferedImage getPdfCanvas(List<Image> pdfs) throws OutOfMemoryError {
         int scaledHeight = (int) (scaledWidth * 11 / 8.5);
         int overallHeight = noPdf ? circles.getHeight() : scaledHeight * pdfs.size();
         BufferedImage canvas = new BufferedImage(scaledWidth, overallHeight, BufferedImage.TYPE_INT_RGB);
