@@ -5,5 +5,5 @@ out/
 *.jpg
 *.plist
 *.txt
-src/META-INF/MANIFEST.MF
 *.pdf
+target/
