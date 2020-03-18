@@ -32,13 +32,16 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.MissingFormatArgumentException;
+import java.util.Objects;
 
 public class Main extends NFields {
     static {
-        List<Logger> loggers = Collections.<Logger>list(LogManager.getCurrentLoggers());
+        @SuppressWarnings("unchecked") List<Logger> loggers =
+            Collections.<Logger>list(LogManager.getCurrentLoggers());
         loggers.add(LogManager.getRootLogger());
         for (Logger logger : loggers) {
             logger.setLevel(Level.OFF);
@@ -105,22 +108,71 @@ public class Main extends NFields {
     }
 
     public static void determineArgs(String[] args) {
-        if (args.length >= 1) {
+        if (args.length > 0) {
             filename = args[0] + "/";
-            if (args[1] != null) {
-                scaleFactor = Integer.parseInt(args[1]);
+            if (args.length >= 3) {
+                if (args[1] != null && args[2] != null) {
+                    scaleFactor = Integer.parseInt(args[1]);
+                    pdfRes = Integer.parseInt(args[2]) * 100;
+                } else {
+                    throw new MissingFormatArgumentException("Incomplete parameter set");
+                }
             } else {
-                scaleFactor = 4;
-            }
-            if (args[2] != null) {
-                pdfRes = Integer.parseInt(args[2]) * 100;
-            } else {
+                scaleFactor = 16;
                 pdfRes = 300;
             }
-            System.out.println("Params: name=\"" + args[0] + "\" scale=" + scaleFactor + " pdfScale=" + args[2]);
         } else {
-            throw new MissingFormatArgumentException("Not enough parameters passed");
+            scaleFactor = 16;
+            pdfRes = 300;
+            determineRandomFilename();
+            System.err.println("No .note file specified. Selecting randomly.");
         }
+        System.out.println("Params: name=\"" + filename.substring(0, filename.length() - 1) + "\" scale=" + scaleFactor + " pdfScale=" + (pdfRes / 100));
+    }
+
+    public static void determineRandomFilename() {
+        File dir = new File(".");
+        File[] shuffledDir = shuffleArr(Objects.requireNonNull(dir.listFiles()));
+        List<String> notes = new ArrayList<>();
+        List<String> jpgs = new ArrayList<>();
+
+        for (File file : shuffledDir) {
+            String fname = file.getName();
+            if (fname.contains(".note")) {
+                String noteName = fname.substring(0, fname.length() - 5);
+                if (notes.contains(noteName)) {
+                    filename = noteName + "/";
+                } else {
+                    notes.add(noteName);
+                }
+            }
+            if (fname.contains(".jpg")) {
+                jpgs.add(fname.substring(0, fname.length() - 4));
+            }
+        }
+
+        if (filename == null) {
+            for (String note : notes) {
+                if (!jpgs.contains(note)) {
+                    filename = note + "/";
+                }
+            }
+            if (filename == null) {
+                throw new NullPointerException("Filename cannot be determined as there are no free note files");
+            }
+        }
+    }
+
+    public static File[] shuffleArr(File[] base) {
+        File[] out = new File[base.length];
+        for (File file : base) {
+            int newIndex = -1;
+            while (newIndex < 0 || out[newIndex] != null) {
+                newIndex = (int) (Math.random() * out.length);
+            }
+            out[newIndex] = file;
+        }
+        return out;
     }
 
     public static void setupCurves(Curve[] curves) {
@@ -186,13 +238,13 @@ public class Main extends NFields {
         }
     }
 
-    public static boolean cleanupFiles(File fn) {
+    public static void cleanupFiles(File fn) {
         File[] allContents = fn.listFiles();
         if (allContents != null) {
             for (File file : allContents) {
                 cleanupFiles(file);
             }
         }
-        return fn.delete();
+        fn.delete();
     }
 }
