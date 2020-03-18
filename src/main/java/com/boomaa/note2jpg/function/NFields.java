@@ -5,6 +5,7 @@ import com.boomaa.note2jpg.create.Point;
 
 import javax.swing.JFrame;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 public class NFields {
     protected static JFrame frame;
@@ -12,6 +13,7 @@ public class NFields {
     protected static String filename;
     protected static Point bounds;
     protected static BufferedImage upscaledAll;
+    protected static List<String> argsList;
     protected static int scaledWidth;
     protected static int iPadWidth = 1536;
     protected static int leftOffset = 14;

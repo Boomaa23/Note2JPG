@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.MissingFormatArgumentException;
 import java.util.Objects;
 
 public class Main extends NFields {
@@ -58,7 +57,8 @@ public class Main extends NFields {
 
     public static void main(String[] args) throws IOException, PropertyListFormatException, ParseException, SAXException, ParserConfigurationException {
         startTime = System.currentTimeMillis();
-        determineArgs(args);
+        argsList = Arrays.asList(args);
+        Args.determineArgs();
         unzipNote();
         NSDictionary sessionMain = (NSDictionary) PropertyListParser.parse(new File(filename + "Session.plist"));
         NSDictionary[] sessionDict = Decode.isolateDictionary(((NSArray) (sessionMain.getHashMap().get("$objects"))).getArray());
@@ -70,7 +70,7 @@ public class Main extends NFields {
                 pdfs.addAll(ImageUtil.getPdfImages(pdfLoc));
             }
         }
-        cleanupFiles(new File(filename));
+//        cleanupFiles(new File(filename));
 
         float[] curvespoints = Decode.parseB64Numbers(NumberType.FLOAT, Decode.getDataFromDict(sessionDict, "curvespoints"));
         float[] curvesnumpoints = Decode.parseB64Numbers(NumberType.INTEGER, Decode.getDataFromDict(sessionDict, "curvesnumpoints"));
@@ -100,79 +100,13 @@ public class Main extends NFields {
             }
         }
 
-        if (args.length == 4 && args[3].equals("--display")) {
+        if (argsList.contains("--display")) {
             setupFrame();
             displayFrame();
         }
-        saveToFile();
-    }
-
-    public static void determineArgs(String[] args) {
-        if (args.length > 0) {
-            filename = args[0] + "/";
-            if (args.length >= 3) {
-                if (args[1] != null && args[2] != null) {
-                    scaleFactor = Integer.parseInt(args[1]);
-                    pdfRes = Integer.parseInt(args[2]) * 100;
-                } else {
-                    throw new MissingFormatArgumentException("Incomplete parameter set");
-                }
-            } else {
-                scaleFactor = 16;
-                pdfRes = 300;
-            }
-        } else {
-            scaleFactor = 16;
-            pdfRes = 300;
-            determineRandomFilename();
-            System.err.println("No .note file specified. Selecting randomly.");
+        if (!argsList.contains("--nofile")) {
+            saveToFile();
         }
-        System.out.println("Params: name=\"" + filename.substring(0, filename.length() - 1) + "\" scale=" + scaleFactor + " pdfScale=" + (pdfRes / 100));
-    }
-
-    public static void determineRandomFilename() {
-        File dir = new File(".");
-        File[] shuffledDir = shuffleArr(Objects.requireNonNull(dir.listFiles()));
-        List<String> notes = new ArrayList<>();
-        List<String> jpgs = new ArrayList<>();
-
-        for (File file : shuffledDir) {
-            String fname = file.getName();
-            if (fname.contains(".note")) {
-                String noteName = fname.substring(0, fname.length() - 5);
-                if (notes.contains(noteName)) {
-                    filename = noteName + "/";
-                } else {
-                    notes.add(noteName);
-                }
-            }
-            if (fname.contains(".jpg")) {
-                jpgs.add(fname.substring(0, fname.length() - 4));
-            }
-        }
-
-        if (filename == null) {
-            for (String note : notes) {
-                if (!jpgs.contains(note)) {
-                    filename = note + "/";
-                }
-            }
-            if (filename == null) {
-                throw new NullPointerException("Filename cannot be determined as there are no free note files");
-            }
-        }
-    }
-
-    public static File[] shuffleArr(File[] base) {
-        File[] out = new File[base.length];
-        for (File file : base) {
-            int newIndex = -1;
-            while (newIndex < 0 || out[newIndex] != null) {
-                newIndex = (int) (Math.random() * out.length);
-            }
-            out[newIndex] = file;
-        }
-        return out;
     }
 
     public static void setupCurves(Curve[] curves) {
