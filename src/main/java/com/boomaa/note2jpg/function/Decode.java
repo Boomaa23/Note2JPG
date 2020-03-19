@@ -13,8 +13,10 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class Decode extends NFields {
     public static Curve[] pointsToCurves(Point[] points, Color[] colors, float[] numPoints, float[] widths) {
@@ -89,6 +91,21 @@ public class Decode extends NFields {
             }
         }
         return new Point(scaledWidth, maxY);
+    }
+
+    public static List<String> getTextBoxes(NSDictionary[] sessionDict) {
+        List<String> textBoxes = new ArrayList<>();
+        Pattern filter = Pattern.compile("^[a-zA-Z0-9_]{8}-[a-zA-Z0-9_]{4}-[a-zA-Z0-9_]{4}-[a-zA-Z0-9_]{4}-[a-zA-Z0-9_]{12}$");
+        for (int i = 0;i < sessionDict.length;i++) {
+            String st = Arrays.toString(sessionDict[i].allKeys());
+            if (st.contains("NS.bytes")) {
+                String text = new String(Base64.getDecoder().decode(((NSData) (sessionDict[i].get("NS.bytes"))).getBase64EncodedData().getBytes())).trim();
+                if (!filter.matcher(text).matches() && !textBoxes.contains(text) && !text.trim().equals("")) {
+                    textBoxes.add(text);
+                }
+            }
+        }
+        return textBoxes;
     }
 
     public static NSDictionary[] isolateDictionary(NSObject[] objects) {

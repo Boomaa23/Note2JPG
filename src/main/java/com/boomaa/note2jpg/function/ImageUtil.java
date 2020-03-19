@@ -6,6 +6,7 @@ import org.ghost4j.renderer.RendererException;
 import org.ghost4j.renderer.SimpleRenderer;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -24,12 +25,25 @@ public class ImageUtil extends NFields {
         double width = image.getWidth(null);
         double height = image.getHeight(null);
 
-        if (width >= frame.getWidth()) {
+        if (width < frame.getWidth()) {
+            height /= (width / frame.getWidth());
+            width = frame.getWidth();
+        }
+        if (width > frame.getWidth()) {
             height /= (width / frame.getWidth());
             width = frame.getWidth();
         }
 
         return image.getScaledInstance((int) (width), (int) (height), Image.SCALE_SMOOTH);
+    }
+
+    public static BufferedImage scaleImage(BufferedImage canvas, int width, int height) {
+        Image scaled = canvas.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        BufferedImage bufferScaled = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2f = (Graphics2D) bufferScaled.getGraphics();
+        g2f.drawImage(scaled, 0, 0, null);
+        g2f.dispose();
+        return bufferScaled;
     }
 
     public static void populateUnscaledAll(BufferedImage pdfs) {
@@ -38,7 +52,7 @@ public class ImageUtil extends NFields {
             circles.print(g2);
         } else {
             System.out.println();
-            BufferedImage img = new BufferedImage(scaledWidth, bounds.getY(), BufferedImage.TYPE_INT_RGB);
+            BufferedImage img = new BufferedImage(scaledWidth, (int) (scaledWidth * pages * 11 / 8.5), BufferedImage.TYPE_INT_RGB);
             Graphics2D cg2 = img.createGraphics();
             circles.print(cg2);
             cg2.dispose();
@@ -46,6 +60,23 @@ public class ImageUtil extends NFields {
         }
         g2.dispose();
         upscaledAll = pdfs;
+    }
+
+    public static void populateTextBoxes(List<String> textBoxes) {
+        BufferedImage img = new BufferedImage(scaledWidth, (int) (scaledWidth * pages * 11 / 8.5), BufferedImage.TYPE_INT_RGB);
+        Graphics2D cg2 = img.createGraphics();
+        cg2.setBackground(Color.WHITE);
+        cg2.setColor(Color.WHITE);
+        cg2.fillRect(0, 0, img.getWidth(), img.getHeight());
+        cg2.setColor(Color.BLACK);
+        for (int i = 0;i < textBoxes.size();i++) {
+            cg2.setFont(new Font("Arial", Font.PLAIN, 16 * scaleFactor));
+            //TODO add text wraparound at end of page OR implement a bounds system for text boxes instead of one point
+            cg2.drawString(textBoxes.get(i), textBoxPoints.get(i).getX(), textBoxPoints.get(i).getY());
+        }
+        cg2.dispose();
+        Graphics2D g2 = (Graphics2D) upscaledAll.getGraphics();
+        g2.drawImage(makeColorTransparent(img, Color.WHITE), 0, 0, null);
     }
 
     public static Image makeColorTransparent(Image im, final Color color) {
@@ -80,13 +111,13 @@ public class ImageUtil extends NFields {
     }
 
     public static BufferedImage getPdfCanvas(List<Image> pdfs) throws OutOfMemoryError {
-        int scaledHeight = (int) (scaledWidth * 11 / 8.5);
-        int overallHeight = noPdf ? circles.getHeight() : scaledHeight * pdfs.size();
-        BufferedImage canvas = new BufferedImage(scaledWidth, overallHeight, BufferedImage.TYPE_INT_RGB);
+//        int perPageHeight = (int) (scaledWidth * 11 / 8.5);
+//        scaledHeight = noPdf ? circles.getHeight() : perPageHeight * pdfs.size();
+        BufferedImage canvas = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2 = (Graphics2D) canvas.getGraphics();
         int lastBottom = 0;
         for (int i = 0;i < pdfs.size();i++) {
-            Image pdf = pdfs.get(i).getScaledInstance(canvas.getWidth(), scaledHeight, Image.SCALE_SMOOTH);
+            Image pdf = pdfs.get(i).getScaledInstance(canvas.getWidth(), canvas.getHeight() / pages, Image.SCALE_SMOOTH);
             g2.drawImage(pdf, 0, lastBottom, null);
             System.out.print("\r" + "PDF: " + (i + 1) + " / " + pdfs.size());
             lastBottom += pdf.getHeight(null);

@@ -37,9 +37,12 @@ public class Circles extends JPanel {
                 g2.fillOval(points[j].getX(), points[j].getY(), (int) (curves[i].getWidth() / 2), (int) (curves[i].getWidth() / 2));
                 lastPoint = points[j];
             }
-
         }
-        System.out.println();
+        if (curves.length == 0) {
+            System.out.println("Curve: N/A");
+        } else {
+            System.out.println();
+        }
         g2.dispose();
     }
 }
