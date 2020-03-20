@@ -39,7 +39,7 @@ public class Circles extends JPanel {
             }
         }
         if (curves.length == 0) {
-            System.out.println("Curve: N/A");
+            System.out.println("Curve: None");
         } else {
             System.out.println();
         }

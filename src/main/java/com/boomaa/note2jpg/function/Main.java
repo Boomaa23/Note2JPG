@@ -1,6 +1,7 @@
 package com.boomaa.note2jpg.function;
 
 import com.boomaa.note2jpg.create.Circles;
+import com.boomaa.note2jpg.create.Corner;
 import com.boomaa.note2jpg.create.Curve;
 import com.boomaa.note2jpg.create.NumberType;
 import com.boomaa.note2jpg.create.Point;
@@ -64,7 +65,7 @@ public class Main extends NFields {
         argsList = Arrays.asList(args);
         Args.determineArgs();
         unzipNote();
-        NSDictionary sessionMain = (NSDictionary) PropertyListParser.parse(new File(filename + "Session.plist"));
+        NSDictionary sessionMain = (NSDictionary) PropertyListParser.parse(new File(filename + "/Session.plist"));
         NSDictionary[] sessionDict = Decode.isolateDictionary(((NSArray) (sessionMain.getHashMap().get("$objects"))).getArray());
         List<Image> pdfs = new ArrayList<>();
 
@@ -85,7 +86,7 @@ public class Main extends NFields {
                 Curve[] curves = Decode.pointsToCurves(points, colors, curvesnumpoints, curveswidth);
                 scaledWidth = Decode.getNumberFromDict(sessionDict, "pageWidthInDocumentCoordsKey") * scaleFactor;
                 if (!noPdf) {
-                    NSDictionary pdfMain = (NSDictionary) PropertyListParser.parse(new File(filename + "NBPDFIndex/NoteDocumentPDFMetadataIndex.plist"));
+                    NSDictionary pdfMain = (NSDictionary) PropertyListParser.parse(new File(filename + "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist"));
                     String[] pdfLocs = ((NSDictionary) (pdfMain.getHashMap().get("pageNumbers"))).allKeys();
                     for (String pdfLoc : pdfLocs) {
                         pdfs.addAll(ImageUtil.getPdfImages(pdfLoc));
@@ -99,13 +100,14 @@ public class Main extends NFields {
                 setupCurves(curves);
                 ImageUtil.populateUnscaledAll(ImageUtil.getPdfCanvas(pdfs));
                 if (!argsList.contains("--notextboxes")) {
-                    textBoxes = Decode.getTextBoxes(sessionDict);
-                    if (textBoxes.size() > 0) {
+                    textBoxContents = Decode.getTextBoxes(sessionDict);
+                    if (textBoxContents.size() > 0) {
                         setupFrame();
                         displayFrame();
-                        System.out.print("\rPositioning: " + textBoxes.get(0) + " (1 / " + textBoxes.size() + ")");
                         frame.getContentPane().addMouseListener(new PointTrigger());
-                        while (tbClicked < textBoxes.size()) {
+                        System.out.print("\rPositioning: " + textBoxContents.get(0) + " (1 / " + textBoxContents.size() + ") on " + PointTrigger.selectState);
+                        while (textBoxBounds.size() != textBoxContents.size()
+                            || textBoxBounds.get(textBoxBounds.size() - 1).getCorner(Corner.BOTTOM_RIGHT) == null) {
                             try {
                                 Thread.sleep(100);
                             } catch (InterruptedException e) {
@@ -113,7 +115,7 @@ public class Main extends NFields {
                             }
                         }
                         frame.setVisible(false);
-                        ImageUtil.populateTextBoxes(textBoxes);
+                        ImageUtil.populateTextBoxes(textBoxContents);
                     }
                 }
                 break;
@@ -135,7 +137,7 @@ public class Main extends NFields {
         if (!argsList.contains("--nofile")) {
             saveToFile();
         }
-        cleanupFiles(new File(filename));
+        cleanupFiles(new File(filename + "/"));
     }
 
     public static void setupCurves(Curve[] curves) {
@@ -144,7 +146,7 @@ public class Main extends NFields {
     }
 
     public static void setupFrame() {
-        frame = new JFrame("Note2JPG | " + filename.substring(0, filename.length() - 1));
+        frame = new JFrame("Note2JPG | " + filename);
         frame.getContentPane().setBackground(Color.WHITE);
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -163,6 +165,7 @@ public class Main extends NFields {
         scrPane.getVerticalScrollBar().setUnitIncrement(20);
         scrPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scrPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        frame.setResizable(false);
         frame.add(scrPane);
         frame.setContentPane(scrPane);
         frame.repaint();
@@ -173,7 +176,7 @@ public class Main extends NFields {
     public static void saveToFile() {
         int heightFinal = (int) (((double) iPadWidth / upscaledAll.getWidth()) * upscaledAll.getHeight());
         try {
-            ImageIO.write(ImageUtil.scaleImage(upscaledAll, iPadWidth, heightFinal), "jpg", new File(filename.substring(0, filename.length() - 1) + ".jpg"));
+            ImageIO.write(ImageUtil.scaleImage(upscaledAll, iPadWidth, heightFinal), "jpg", new File(filename + ".jpg"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -182,10 +185,10 @@ public class Main extends NFields {
 
     public static void unzipNote() {
         try {
-            ZipFile zipFile = new ZipFile(filename.substring(0, filename.length() - 1) + ".note");
-            zipFile.extractFile(filename + "Session.plist", ".");
+            ZipFile zipFile = new ZipFile(filename + ".note");
+            zipFile.extractFile(filename + "/Session.plist", ".");
             try {
-                zipFile.extractFile(filename + "NBPDFIndex/NoteDocumentPDFMetadataIndex.plist", ".");
+                zipFile.extractFile(filename + "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist", ".");
             } catch (ZipException e) {
                 noPdf = true;
             }
@@ -196,7 +199,13 @@ public class Main extends NFields {
                 }
             }
         } catch (ZipException e) {
-            e.printStackTrace();
+            if (filename.length() > 0) {
+                System.err.println("\rNo .note found for \"" + filename + "\". Attempting to find closest relative file.");
+                filename = filename.substring(0, filename.length() - 1);
+                unzipNote();
+            } else {
+                throw new NullPointerException("No .note file found for specified filename.");
+            }
         }
     }
 

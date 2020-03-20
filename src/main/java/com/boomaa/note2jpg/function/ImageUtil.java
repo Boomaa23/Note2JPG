@@ -1,5 +1,6 @@
 package com.boomaa.note2jpg.function;
 
+import com.boomaa.note2jpg.create.Corner;
 import org.ghost4j.document.DocumentException;
 import org.ghost4j.document.PDFDocument;
 import org.ghost4j.renderer.RendererException;
@@ -73,16 +74,16 @@ public class ImageUtil extends NFields {
         cg2.setColor(Color.BLACK);
         for (int i = 0;i < textBoxes.size();i++) {
             cg2.setFont(new Font("Arial", Font.PLAIN, 12 * scaleFactor));
-            int x = textBoxPoints.get(i).getX();
+            int x = textBoxBounds.get(i).getCorner(Corner.UPPER_LEFT).getX();
             int lastOverflow = 0;
             for (int j = 0;j < textBoxes.get(i).length();j++) {
                 int currChar = Math.min(255, textBoxes.get(i).charAt(j));
-                if (((j - lastOverflow + 10) * cg2.getFontMetrics().getWidths()[currChar]) - x > img.getWidth() && textBoxes.get(i).charAt(j) == ' ') {
+                if (((j - lastOverflow + 5) * cg2.getFontMetrics().getWidths()[currChar]) > textBoxBounds.get(i).getCorner(Corner.BOTTOM_RIGHT).getX()) {
                     textBoxes.set(i, textBoxes.get(i).substring(0, j) + "\n" + textBoxes.get(i).substring(j));
                     lastOverflow = j - 2;
                 }
             }
-            int y = textBoxPoints.get(i).getY() - cg2.getFontMetrics().getHeight();
+            int y = textBoxBounds.get(i).getCorner(Corner.UPPER_LEFT).getY() - cg2.getFontMetrics().getHeight();
             for (String line : textBoxes.get(i).split("\n")) {
                 cg2.drawString(line, x, y += cg2.getFontMetrics().getHeight());
             }
@@ -112,7 +113,7 @@ public class ImageUtil extends NFields {
     public static List<Image> getPdfImages(String pdf) throws OutOfMemoryError {
         try {
             PDFDocument document = new PDFDocument();
-            document.load(new File(filename + "PDFs/" + pdf));
+            document.load(new File(filename + "/PDFs/" + pdf));
 
             SimpleRenderer renderer = new SimpleRenderer();
             renderer.setResolution(pdfRes);
@@ -125,13 +126,17 @@ public class ImageUtil extends NFields {
 
     public static BufferedImage getPdfCanvas(List<Image> pdfs) throws OutOfMemoryError, NegativeArraySizeException {
         BufferedImage canvas = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2 = (Graphics2D) canvas.getGraphics();
-        int lastBottom = 0;
-        for (int i = 0;i < pdfs.size();i++) {
-            Image pdf = pdfs.get(i).getScaledInstance(canvas.getWidth(), canvas.getHeight() / pages, Image.SCALE_SMOOTH);
-            g2.drawImage(pdf, 0, lastBottom, null);
-            System.out.print("\r" + "PDF: " + (i + 1) + " / " + pdfs.size());
-            lastBottom += pdf.getHeight(null);
+        if (!noPdf) {
+            Graphics2D g2 = (Graphics2D) canvas.getGraphics();
+            int lastBottom = 0;
+            for (int i = 0; i < pdfs.size(); i++) {
+                Image pdf = pdfs.get(i).getScaledInstance(canvas.getWidth(), canvas.getHeight() / pages, Image.SCALE_SMOOTH);
+                g2.drawImage(pdf, 0, lastBottom, null);
+                System.out.print("\r" + "PDF: " + (i + 1) + " / " + pdfs.size());
+                lastBottom += pdf.getHeight(null);
+            }
+        } else {
+            System.out.println("PDF: None");
         }
         return canvas;
     }

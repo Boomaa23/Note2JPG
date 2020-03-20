@@ -20,16 +20,19 @@ public class Args extends NFields {
             scaleFactor = 16;
         }
         if (filename == null) {
-            determineRandomFilename();
             System.err.println("No .note file specified - Selecting randomly");
+            determineRandomFilename();
         }
-        filename += "/";
-        System.out.println("Params: name=\"" + filename.substring(0, filename.length() - 1) + "\" scale=" + scaleFactor + " pdfScale=" + (pdfRes / 100));
+        System.out.println("Params: name=\"" + filename + "\" scale=" + scaleFactor + " pdfScale=" + (pdfRes / 100));
     }
 
     public static String parseFlag(String flag) {
         if (argsList.contains(flag)) {
-            return argsList.get(argsList.indexOf(flag) + 1);
+            try {
+                return argsList.get(argsList.indexOf(flag) + 1);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                throw new NullPointerException("\"" + flag + "\" flag passed without value.");
+            }
         }
         return null;
     }
