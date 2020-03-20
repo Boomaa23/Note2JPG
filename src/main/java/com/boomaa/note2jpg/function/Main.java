@@ -117,7 +117,7 @@ public class Main extends NFields {
                     }
                 }
                 break;
-            } catch (OutOfMemoryError e) {
+            } catch (OutOfMemoryError | NegativeArraySizeException e) {
                 circles = null;
                 pdfs = new ArrayList<>();
                 scaleFactor -= 2;
@@ -155,6 +155,7 @@ public class Main extends NFields {
 
     public static void displayFrame() {
         Image img = ImageUtil.scaleImageFrame(upscaledAll);
+        displayedWidth = img.getWidth(null);
         JLabel imgTemp = new JLabel(new ImageIcon(img));
         JPanel container = new JPanel();
         container.add(imgTemp);

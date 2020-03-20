@@ -1,8 +1,10 @@
 package com.boomaa.note2jpg.function;
 
 import static com.boomaa.note2jpg.function.NFields.displayedHeight;
+import static com.boomaa.note2jpg.function.NFields.displayedWidth;
 import static com.boomaa.note2jpg.function.NFields.frame;
 import static com.boomaa.note2jpg.function.NFields.originalHeight;
+import static com.boomaa.note2jpg.function.NFields.scaleFactor;
 import static com.boomaa.note2jpg.function.NFields.scaledWidth;
 import static com.boomaa.note2jpg.function.NFields.tbClicked;
 import static com.boomaa.note2jpg.function.NFields.textBoxPoints;
@@ -17,7 +19,9 @@ import java.awt.event.MouseEvent;
 public class PointTrigger extends MouseAdapter {
     @Override
     public void mouseClicked(MouseEvent e) {
-        int x = scaledWidth * e.getX() / frame.getContentPane().getWidth();
+        double frameWidth = frame.getContentPane().getBounds().getWidth();
+        double x = e.getX() * (scaledWidth / frameWidth);
+        x -= (frameWidth - displayedWidth) / 2;
         double y = (((JScrollPane) frame.getContentPane()).getVerticalScrollBar().getModel().getValue() + e.getY()) * (originalHeight / displayedHeight);
         Point p = new Point(x, y);
         textBoxPoints.add(p);

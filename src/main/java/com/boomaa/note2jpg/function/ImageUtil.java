@@ -72,9 +72,20 @@ public class ImageUtil extends NFields {
         cg2.fillRect(0, 0, img.getWidth(), img.getHeight());
         cg2.setColor(Color.BLACK);
         for (int i = 0;i < textBoxes.size();i++) {
-            cg2.setFont(new Font("Arial", Font.PLAIN, 14 * scaleFactor));
-            //TODO add text wraparound at end of page OR implement a bounds system for text boxes instead of one point
-            cg2.drawString(textBoxes.get(i), textBoxPoints.get(i).getX(), textBoxPoints.get(i).getY());
+            cg2.setFont(new Font("Arial", Font.PLAIN, 12 * scaleFactor));
+            int x = textBoxPoints.get(i).getX();
+            int lastOverflow = 0;
+            for (int j = 0;j < textBoxes.get(i).length();j++) {
+                int currChar = Math.min(255, textBoxes.get(i).charAt(j));
+                if (((j - lastOverflow + 10) * cg2.getFontMetrics().getWidths()[currChar]) - x > img.getWidth() && textBoxes.get(i).charAt(j) == ' ') {
+                    textBoxes.set(i, textBoxes.get(i).substring(0, j) + "\n" + textBoxes.get(i).substring(j));
+                    lastOverflow = j - 2;
+                }
+            }
+            int y = textBoxPoints.get(i).getY() - cg2.getFontMetrics().getHeight();
+            for (String line : textBoxes.get(i).split("\n")) {
+                cg2.drawString(line, x, y += cg2.getFontMetrics().getHeight());
+            }
         }
         cg2.dispose();
         Graphics2D g2 = (Graphics2D) upscaledAll.getGraphics();
@@ -112,9 +123,7 @@ public class ImageUtil extends NFields {
         }
     }
 
-    public static BufferedImage getPdfCanvas(List<Image> pdfs) throws OutOfMemoryError {
-//        int perPageHeight = (int) (scaledWidth * 11 / 8.5);
-//        scaledHeight = noPdf ? circles.getHeight() : perPageHeight * pdfs.size();
+    public static BufferedImage getPdfCanvas(List<Image> pdfs) throws OutOfMemoryError, NegativeArraySizeException {
         BufferedImage canvas = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2 = (Graphics2D) canvas.getGraphics();
         int lastBottom = 0;
