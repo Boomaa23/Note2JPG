@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Scanner;
 
 public class Args extends NFields {
     public static void determineArgs() {
@@ -12,16 +13,21 @@ public class Args extends NFields {
         pdfRes = parseIntFlagValue(parseFlag("-p"));
 
         if (pdfRes == -1) {
-            pdfRes = 300;
+            pdfRes = 200;
         } else {
             pdfRes *= 100;
         }
         if (scaleFactor == -1) {
-            scaleFactor = 16;
+            scaleFactor = 8;
         }
         if (filename == null) {
-            System.err.println("No .note file specified - Selecting randomly");
-            determineRandomFilename();
+            if (argsList.contains("--randomfile")) {
+                System.err.println("No .note file specified - Selecting randomly");
+                determineRandomFilename();
+            } else {
+                System.err.println("No .note file specified - Please select");
+                userSelectFilename();
+            }
         }
         System.out.println("Params: name=\"" + filename + "\" scale=" + scaleFactor + " pdfScale=" + (pdfRes / 100));
     }
@@ -31,7 +37,7 @@ public class Args extends NFields {
             try {
                 return argsList.get(argsList.indexOf(flag) + 1);
             } catch (ArrayIndexOutOfBoundsException e) {
-                throw new NullPointerException("\"" + flag + "\" flag passed without value.");
+                throw new NullPointerException("\"" + flag + "\" flag passed without value");
             }
         }
         return null;
@@ -43,6 +49,42 @@ public class Args extends NFields {
         } catch (NumberFormatException e) {
             return -1;
         }
+    }
+
+    public static void userSelectFilename() {
+        File[] dir = Objects.requireNonNull(new File(".").listFiles());
+        List<String> notes = new ArrayList<>();
+
+        int valid = 1;
+        for (File file : dir) {
+            String fname = file.getName();
+            if (fname.contains(".note")) {
+                System.out.println(valid + ") " + fname);
+                valid++;
+                notes.add(fname.substring(0, fname.length() - 5));
+            }
+        }
+        Scanner sc = new Scanner(System.in);
+        System.out.print(">> ");
+        int selected = 0;
+        while (true) {
+            if (sc.hasNext() && (selected = Integer.parseInt(sc.next())) != 0 && selected <= notes.size()) {
+                break;
+            }
+            if (selected > notes.size()) {
+                System.err.println("Note not found for supplied index. Please try again");
+                System.out.println();
+                System.out.print(">> ");
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
+        sc.close();
+        filename = notes.get(selected - 1);
+        System.out.println();
     }
 
     public static void determineRandomFilename() {

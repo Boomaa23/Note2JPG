@@ -78,7 +78,7 @@ public class ImageUtil extends NFields {
             int lastOverflow = 0;
             for (int j = 0;j < textBoxes.get(i).length();j++) {
                 int currChar = Math.min(255, textBoxes.get(i).charAt(j));
-                if (((j - lastOverflow + 5) * cg2.getFontMetrics().getWidths()[currChar]) > textBoxBounds.get(i).getCorner(Corner.BOTTOM_RIGHT).getX()) {
+                if (((j - lastOverflow + 2) * cg2.getFontMetrics().getWidths()[currChar]) > textBoxBounds.get(i).getCorner(Corner.BOTTOM_RIGHT).getX()) {
                     textBoxes.set(i, textBoxes.get(i).substring(0, j) + "\n" + textBoxes.get(i).substring(j));
                     lastOverflow = j - 2;
                 }
