@@ -24,6 +24,7 @@ public class ImageUtil extends NFields {
     public static Image scaleImageFrame(Image image) {
         double width = image.getWidth(null);
         double height = image.getHeight(null);
+        originalHeight = height;
 
         if (width < frame.getWidth()) {
             height /= (width / frame.getWidth());
@@ -33,6 +34,7 @@ public class ImageUtil extends NFields {
             height /= (width / frame.getWidth());
             width = frame.getWidth();
         }
+        displayedHeight = height;
 
         return image.getScaledInstance((int) (width), (int) (height), Image.SCALE_SMOOTH);
     }
@@ -63,14 +65,14 @@ public class ImageUtil extends NFields {
     }
 
     public static void populateTextBoxes(List<String> textBoxes) {
-        BufferedImage img = new BufferedImage(scaledWidth, (int) (scaledWidth * pages * 11 / 8.5), BufferedImage.TYPE_INT_RGB);
+        BufferedImage img = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_RGB);
         Graphics2D cg2 = img.createGraphics();
         cg2.setBackground(Color.WHITE);
         cg2.setColor(Color.WHITE);
         cg2.fillRect(0, 0, img.getWidth(), img.getHeight());
         cg2.setColor(Color.BLACK);
         for (int i = 0;i < textBoxes.size();i++) {
-            cg2.setFont(new Font("Arial", Font.PLAIN, 16 * scaleFactor));
+            cg2.setFont(new Font("Arial", Font.PLAIN, 14 * scaleFactor));
             //TODO add text wraparound at end of page OR implement a bounds system for text boxes instead of one point
             cg2.drawString(textBoxes.get(i), textBoxPoints.get(i).getX(), textBoxPoints.get(i).getY());
         }

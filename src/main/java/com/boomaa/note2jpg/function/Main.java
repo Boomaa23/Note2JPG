@@ -51,12 +51,12 @@ public class Main extends NFields {
             "  /  |/ / __ \\/ __/ _ \\__/ /__  / / /_/ / / __  \n" +
             " / /|  / /_/ / /_/  __/ __// /_/ / ____/ /_/ /  \n" +
             "/_/ |_/\\____/\\__/\\___/____/\\____/_/    \\____/   \n" +
-            "Note2JPG: A .note to .jpg converter" + "\n" +
-            "Developed by Nikhil for AP Physics" + "\n" +
-            "github.com/Boomaa23/Note2JPG" + "\n" +
-            "Copyright 2020. All Rights Reserved." + "\n" +
-            "---------------------------------------" + "\n" +
-            "NOTE: Note2JPG cannot parse shapes or positions of text boxes" + "\n");
+            "Note2JPG: A .note to .jpg converter\n" +
+            "Developed by Nikhil for AP Physics\n" +
+            "github.com/Boomaa23/Note2JPG\n" +
+            "Copyright 2020. All Rights Reserved.\n" +
+            "---------------------------------------\n" +
+            "NOTE: Note2JPG cannot parse shapes or positions of text boxes\n");
     }
 
     public static void main(String[] args) throws IOException, PropertyListFormatException, ParseException, SAXException, ParserConfigurationException {
@@ -114,7 +114,6 @@ public class Main extends NFields {
                         }
                         frame.setVisible(false);
                         ImageUtil.populateTextBoxes(textBoxes);
-                        System.out.println(textBoxPoints);
                     }
                 }
                 break;

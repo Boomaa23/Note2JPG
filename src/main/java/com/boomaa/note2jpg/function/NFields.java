@@ -23,6 +23,8 @@ public class NFields {
     protected static int scaledWidth;
     protected static int scaledHeight;
     protected static int scaleFactor;
+    protected static double originalHeight;
+    protected static double displayedHeight;
     protected static int pdfRes;
     protected static int pages;
     protected static boolean noPdf = false;

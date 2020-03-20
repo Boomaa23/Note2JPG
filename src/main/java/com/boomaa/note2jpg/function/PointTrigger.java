@@ -1,10 +1,8 @@
 package com.boomaa.note2jpg.function;
 
-import static com.boomaa.note2jpg.function.NFields.circles;
+import static com.boomaa.note2jpg.function.NFields.displayedHeight;
 import static com.boomaa.note2jpg.function.NFields.frame;
-import static com.boomaa.note2jpg.function.NFields.pages;
-import static com.boomaa.note2jpg.function.NFields.scaleFactor;
-import static com.boomaa.note2jpg.function.NFields.scaledHeight;
+import static com.boomaa.note2jpg.function.NFields.originalHeight;
 import static com.boomaa.note2jpg.function.NFields.scaledWidth;
 import static com.boomaa.note2jpg.function.NFields.tbClicked;
 import static com.boomaa.note2jpg.function.NFields.textBoxPoints;
@@ -20,12 +18,7 @@ public class PointTrigger extends MouseAdapter {
     @Override
     public void mouseClicked(MouseEvent e) {
         int x = scaledWidth * e.getX() / frame.getContentPane().getWidth();
-        //TODO fix y-scaling of text boxes
-        double actualPages = frame.getContentPane().getComponent(0).getHeight() / ((double) scaledHeight / pages);
-        double y = e.getY() / ((double) scaledHeight / pages);
-//        int y = (int) (e.getY() * (frame.getBounds().getHeight() / (scaledHeight / scaleFactor)));
-        y += ((JScrollPane) frame.getContentPane()).getVerticalScrollBar().getValue();
-        y *= scaledHeight / actualPages;
+        double y = (((JScrollPane) frame.getContentPane()).getVerticalScrollBar().getModel().getValue() + e.getY()) * (originalHeight / displayedHeight);
         Point p = new Point(x, y);
         textBoxPoints.add(p);
         tbClicked++;
