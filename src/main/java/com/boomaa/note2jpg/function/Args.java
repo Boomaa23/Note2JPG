@@ -1,5 +1,7 @@
 package com.boomaa.note2jpg.function;
 
+import com.boomaa.note2jpg.integration.NEOExecutor;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +10,7 @@ import java.util.Scanner;
 
 public class Args extends NFields {
     public static void determineArgs() {
+//        NEOExecutor.parseArgs();
         filename = parseFlag("-f");
         scaleFactor = parseIntFlagValue(parseFlag("-s"));
         pdfRes = parseIntFlagValue(parseFlag("-p"));
