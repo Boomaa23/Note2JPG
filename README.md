@@ -21,12 +21,15 @@ github.com/Boomaa23/Note2JPG | Copyright © 2020. All Rights Reserved
 ## Usage
 `java -jar Note2JPG.jar`
 
-| Flag \<Value>        | Action |
-|----------------------|--------|
-| -f \<filename>       | Specify name of .note file
-| -s \<scaleFactor>    | Multiplier to superscale the whole image by
-| -p \<pdfScaleFactor> | Multiplier to superscale the PDFs by
-| --display            | Show the image after processing
-| --nofile             | Do not write the image to file
-| --randomfile         | Select a file randomly if not specified
-| --notextboxes        | Do not request positions for text boxes
+| Flag \<Value>         | Action |
+|-----------------------|--------|
+| -f \<filename>        | Specify name of .note file
+| -s \<scaleFactor>     | Multiplier to superscale the whole image by
+| -p \<pdfScaleFactor>  | Multiplier to superscale the PDFs by
+| --neo \<userId> \<pw> | Use NEO integration for unsubmitted assignments
+| --classid \<classid>  | Specify a class ID for NEO integration
+| --all                 | Convert all available notes
+| --display             | Show the image after processing
+| --nofile              | Do not write the image to file
+| --randomfile          | Select a file randomly if not specified
+| --notextboxes         | Do not request positions for text boxes

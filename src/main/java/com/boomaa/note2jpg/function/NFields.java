@@ -12,7 +12,7 @@ import java.util.List;
 public class NFields {
     protected static JFrame frame;
     protected static Circles circles;
-    protected static String filename;
+    protected static List<String> filenames = new ArrayList<>();
     protected static Point bounds;
     protected static BufferedImage upscaledAll;
     protected static List<String> argsList;

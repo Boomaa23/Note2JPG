@@ -110,7 +110,7 @@ public class ImageUtil extends NFields {
         return Toolkit.getDefaultToolkit().createImage(ip);
     }
 
-    public static List<Image> getPdfImages(String pdf) throws OutOfMemoryError {
+    public static List<Image> getPdfImages(String filename, String pdf) throws OutOfMemoryError {
         try {
             PDFDocument document = new PDFDocument();
             document.load(new File(filename + "/PDFs/" + pdf));

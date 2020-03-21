@@ -10,8 +10,11 @@ import java.util.Scanner;
 
 public class Args extends NFields {
     public static void determineArgs() {
-//        NEOExecutor.parseArgs();
-        filename = parseFlag("-f");
+        filenames = NEOExecutor.parseArgs();
+        String filename = parseFlag("-f");
+        if (filename != null) {
+            filenames.add(filename);
+        }
         scaleFactor = parseIntFlagValue(parseFlag("-s"));
         pdfRes = parseIntFlagValue(parseFlag("-p"));
 
@@ -23,16 +26,14 @@ public class Args extends NFields {
         if (scaleFactor == -1) {
             scaleFactor = 8;
         }
-        if (filename == null) {
+        if (filenames.isEmpty()) {
             if (argsList.contains("--randomfile")) {
                 System.err.println("No .note file specified - Selecting randomly");
                 determineRandomFilename();
             } else {
-                System.err.println("No .note file specified - Please select");
                 userSelectFilename();
             }
         }
-        System.out.println("Params: name=\"" + filename + "\" scale=" + scaleFactor + " pdfScale=" + (pdfRes / 100));
     }
 
     public static String parseFlag(String flag) {
@@ -57,16 +58,37 @@ public class Args extends NFields {
     public static void userSelectFilename() {
         File[] dir = Objects.requireNonNull(new File(".").listFiles());
         List<String> notes = new ArrayList<>();
+        boolean containsAll = argsList.contains("--all");
+
+        if (!containsAll) {
+            System.err.println("No .note file specified - Please select");
+        }
 
         int valid = 1;
         for (File file : dir) {
             String fname = file.getName();
             if (fname.contains(".note")) {
-                System.out.println(valid + ") " + fname);
+                String fNameNoExt = fname.substring(0, fname.length() - 5);
+                if (!containsAll) {
+                    System.out.println(valid + ") " + fNameNoExt);
+                }
                 valid++;
-                notes.add(fname.substring(0, fname.length() - 5));
+                notes.add(fNameNoExt);
             }
         }
+
+        if (containsAll) {
+            if (argsList.contains("-f")) {
+                throw new IllegalArgumentException("Cannot specify a filename with -all");
+            }
+            if (argsList.contains("--neo")) {
+                throw new IllegalArgumentException("Cannot use NEO integration with --all");
+            }
+            System.out.println("Converting all available .note files");
+            filenames.addAll(notes);
+            return;
+        }
+
         Scanner sc = new Scanner(System.in);
         System.out.print(">> ");
         int selected = 0;
@@ -86,7 +108,7 @@ public class Args extends NFields {
             }
         }
         sc.close();
-        filename = notes.get(selected - 1);
+        filenames.add(notes.get(selected - 1));
         System.out.println();
     }
 
@@ -95,6 +117,11 @@ public class Args extends NFields {
         File[] shuffledDir = shuffleArr(Objects.requireNonNull(dir.listFiles()));
         List<String> notes = new ArrayList<>();
         List<String> jpgs = new ArrayList<>();
+        String filename = null;
+
+        if (argsList.contains("--all")) {
+            throw new IllegalArgumentException("Cannot select randomly with --all");
+        }
 
         for (File file : shuffledDir) {
             String fname = file.getName();
@@ -121,6 +148,7 @@ public class Args extends NFields {
                 throw new NullPointerException("Filename cannot be determined as there are no free note files");
             }
         }
+        filenames.add(filename);
     }
 
     public static File[] shuffleArr(File[] base) {

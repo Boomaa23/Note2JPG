@@ -61,83 +61,87 @@ public class Main extends NFields {
     }
 
     public static void main(String[] args) throws IOException, PropertyListFormatException, ParseException, SAXException, ParserConfigurationException {
-        startTime = System.currentTimeMillis();
         argsList = Arrays.asList(args);
         Args.determineArgs();
-        unzipNote();
-        NSDictionary sessionMain = (NSDictionary) PropertyListParser.parse(new File(filename + "/Session.plist"));
-        NSDictionary[] sessionDict = Decode.isolateDictionary(((NSArray) (sessionMain.getHashMap().get("$objects"))).getArray());
-        List<Image> pdfs = new ArrayList<>();
+        for (String filename : filenames) {
+            startTime = System.currentTimeMillis();
+            filename = unzipNote(filename);
+            System.out.println("Params: name=\"" + filename + "\" scale=" + scaleFactor + " pdfScale=" + (pdfRes / 100));
+            NSDictionary sessionMain = (NSDictionary) PropertyListParser.parse(new File(filename + "/Session.plist"));
+            NSDictionary[] sessionDict = Decode.isolateDictionary(((NSArray) (sessionMain.getHashMap().get("$objects"))).getArray());
+            List<Image> pdfs = new ArrayList<>();
 
-        float[] curvespoints = Decode.parseB64Numbers(NumberType.FLOAT, Decode.getDataFromDict(sessionDict, "curvespoints"));
-        float[] curvesnumpoints = Decode.parseB64Numbers(NumberType.INTEGER, Decode.getDataFromDict(sessionDict, "curvesnumpoints"));
-        float[] curveswidth = Decode.parseB64Numbers(NumberType.FLOAT, Decode.getDataFromDict(sessionDict, "curveswidth"));
-        int[] curvescolors = Decode.parseB64Colors(Decode.getDataFromDict(sessionDict, "curvescolors"));
+            float[] curvespoints = Decode.parseB64Numbers(NumberType.FLOAT, Decode.getDataFromDict(sessionDict, "curvespoints"));
+            float[] curvesnumpoints = Decode.parseB64Numbers(NumberType.INTEGER, Decode.getDataFromDict(sessionDict, "curvesnumpoints"));
+            float[] curveswidth = Decode.parseB64Numbers(NumberType.FLOAT, Decode.getDataFromDict(sessionDict, "curveswidth"));
+            int[] curvescolors = Decode.parseB64Colors(Decode.getDataFromDict(sessionDict, "curvescolors"));
 
-        Color[] colors = Decode.getColorsFromInts(curvescolors);
+            Color[] colors = Decode.getColorsFromInts(curvescolors);
 
-        System.gc();
-        while (true) {
-            if (scaleFactor <= 0) {
-                throw new ArithmeticException("Cannot have a scale factor of zero");
-            }
-            try {
-                Point[] points = Decode.getPoints(curvespoints);
-                Curve[] curves = Decode.pointsToCurves(points, colors, curvesnumpoints, curveswidth);
-                scaledWidth = Decode.getNumberFromDict(sessionDict, "pageWidthInDocumentCoordsKey") * scaleFactor;
-                if (!noPdf) {
-                    NSDictionary pdfMain = (NSDictionary) PropertyListParser.parse(new File(filename + "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist"));
-                    String[] pdfLocs = ((NSDictionary) (pdfMain.getHashMap().get("pageNumbers"))).allKeys();
-                    for (String pdfLoc : pdfLocs) {
-                        pdfs.addAll(ImageUtil.getPdfImages(pdfLoc));
-                    }
-                    pages = pdfs.size();
-                } else {
-                    pages = 1;
+            System.gc();
+            while (true) {
+                if (scaleFactor <= 0) {
+                    throw new ArithmeticException("Cannot have a scale factor of zero");
                 }
-                scaledHeight = (int) (scaledWidth * pages * 11 / 8.5);
-                bounds = Decode.getBounds(points);
-                setupCurves(curves);
-                ImageUtil.populateUnscaledAll(ImageUtil.getPdfCanvas(pdfs));
-                if (!argsList.contains("--notextboxes")) {
-                    textBoxContents = Decode.getTextBoxes(sessionDict);
-                    if (textBoxContents.size() > 0) {
-                        setupFrame();
-                        displayFrame();
-                        frame.getContentPane().addMouseListener(new PointTrigger());
-                        System.out.print("\rPositioning: " + textBoxContents.get(0) + " (1 / " + textBoxContents.size() + ") on " + PointTrigger.selectState);
-                        while (textBoxBounds.size() != textBoxContents.size()
-                            || textBoxBounds.get(textBoxBounds.size() - 1).getCorner(Corner.BOTTOM_RIGHT) == null) {
-                            try {
-                                Thread.sleep(100);
-                            } catch (InterruptedException e) {
-                                break;
-                            }
+                try {
+                    Point[] points = Decode.getPoints(curvespoints);
+                    Curve[] curves = Decode.pointsToCurves(points, colors, curvesnumpoints, curveswidth);
+                    scaledWidth = Decode.getNumberFromDict(sessionDict, "pageWidthInDocumentCoordsKey") * scaleFactor;
+                    if (!noPdf) {
+                        NSDictionary pdfMain = (NSDictionary) PropertyListParser.parse(new File(filename + "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist"));
+                        String[] pdfLocs = ((NSDictionary) (pdfMain.getHashMap().get("pageNumbers"))).allKeys();
+                        for (String pdfLoc : pdfLocs) {
+                            pdfs.addAll(ImageUtil.getPdfImages(filename, pdfLoc));
                         }
-                        frame.setVisible(false);
-                        ImageUtil.populateTextBoxes(textBoxContents);
+                        pages = pdfs.size();
+                    } else {
+                        pages = 1;
                     }
+                    scaledHeight = (int) (scaledWidth * pages * 11 / 8.5);
+                    bounds = Decode.getBounds(points);
+                    setupCurves(curves);
+                    ImageUtil.populateUnscaledAll(ImageUtil.getPdfCanvas(pdfs));
+                    if (!argsList.contains("--notextboxes")) {
+                        textBoxContents = Decode.getTextBoxes(sessionDict);
+                        if (textBoxContents.size() > 0) {
+                            setupFrame(filename);
+                            displayFrame();
+                            frame.getContentPane().addMouseListener(new PointTrigger());
+                            System.out.print("\rPositioning: " + textBoxContents.get(0) + " (1 / " + textBoxContents.size() + ") on " + PointTrigger.selectState);
+                            while (textBoxBounds.size() != textBoxContents.size()
+                                || textBoxBounds.get(textBoxBounds.size() - 1).getCorner(Corner.BOTTOM_RIGHT) == null) {
+                                try {
+                                    Thread.sleep(100);
+                                } catch (InterruptedException e) {
+                                    break;
+                                }
+                            }
+                            frame.setVisible(false);
+                            ImageUtil.populateTextBoxes(textBoxContents);
+                        }
+                    }
+                    break;
+                } catch (OutOfMemoryError | NegativeArraySizeException e) {
+                    circles = null;
+                    pdfs = new ArrayList<>();
+                    scaleFactor -= 2;
+                    System.gc();
+                    System.err.println("Memory limit exceeded with scale " + (scaleFactor + 2));
                 }
-                break;
-            } catch (OutOfMemoryError | NegativeArraySizeException e) {
-                circles = null;
-                pdfs = new ArrayList<>();
-                scaleFactor -= 2;
-                System.gc();
-                System.err.println("Memory limit exceeded with scale " + (scaleFactor + 2));
             }
-        }
 
-        if (argsList.contains("--display")) {
-            setupFrame();
-            displayFrame();
-        } else if (frame != null) {
-            frame.dispose();
+            if (argsList.contains("--display")) {
+                setupFrame(filename);
+                displayFrame();
+            } else if (frame != null) {
+                frame.dispose();
+            }
+            if (!argsList.contains("--nofile")) {
+                saveToFile(filename);
+            }
+            cleanupFiles(new File(filename + "/"));
+            System.out.println();
         }
-        if (!argsList.contains("--nofile")) {
-            saveToFile();
-        }
-        cleanupFiles(new File(filename + "/"));
     }
 
     public static void setupCurves(Curve[] curves) {
@@ -145,7 +149,7 @@ public class Main extends NFields {
         circles.setSize(new Dimension(scaledWidth, scaledHeight));
     }
 
-    public static void setupFrame() {
+    public static void setupFrame(String filename) {
         frame = new JFrame("Note2JPG | " + filename);
         frame.getContentPane().setBackground(Color.WHITE);
         frame.setLocationRelativeTo(null);
@@ -173,7 +177,7 @@ public class Main extends NFields {
         frame.setVisible(true);
     }
 
-    public static void saveToFile() {
+    public static void saveToFile(String filename) {
         int heightFinal = (int) (((double) iPadWidth / upscaledAll.getWidth()) * upscaledAll.getHeight());
         try {
             ImageIO.write(ImageUtil.scaleImage(upscaledAll, iPadWidth, heightFinal), "jpg", new File(filename + ".jpg"));
@@ -183,12 +187,13 @@ public class Main extends NFields {
         System.out.println("Completed in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds with scale=" + scaleFactor);
     }
 
-    public static void unzipNote() {
+    public static String unzipNote(String filename) {
         try {
             ZipFile zipFile = new ZipFile(filename + ".note");
             zipFile.extractFile(filename + "/Session.plist", ".");
             try {
                 zipFile.extractFile(filename + "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist", ".");
+                noPdf = false;
             } catch (ZipException e) {
                 noPdf = true;
             }
@@ -199,14 +204,10 @@ public class Main extends NFields {
                 }
             }
         } catch (ZipException e) {
-            if (filename.length() > 0) {
-                System.err.println("\rNo .note found for \"" + filename + "\". Attempting to find closest relative file.");
-                filename = filename.substring(0, filename.length() - 1);
-                unzipNote();
-            } else {
-                throw new NullPointerException("No .note file found for specified filename.");
-            }
+            e.printStackTrace();
+            System.exit(1);
         }
+        return filename;
     }
 
     public static void cleanupFiles(File fn) {

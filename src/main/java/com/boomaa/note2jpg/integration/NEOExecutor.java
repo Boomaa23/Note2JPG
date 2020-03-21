@@ -1,7 +1,6 @@
 package com.boomaa.note2jpg.integration;
 
 import com.boomaa.note2jpg.function.NFields;
-import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -13,12 +12,12 @@ import java.util.List;
 
 public class NEOExecutor extends NFields {
     private List<String> unfinishedAssignments;
-    private final char[] classId;
+    private final String classId;
     private final char[] username;
     private final char[] password;
 
     public NEOExecutor(String classId, char[] username, char[] password) {
-        this.classId = classId.toCharArray();
+        this.classId = classId;
         this.username = username;
         this.password = password;
     }
@@ -49,9 +48,8 @@ public class NEOExecutor extends NFields {
 
     private Document getWebContent() {
         try {
-            Connection.Response resp = Jsoup.connect(getLoginUrl()).ignoreContentType(true).execute();
-            String auth = resp.cookie("secure_lmssessionkey2");
-            return Jsoup.connect("https://neo.sbunified.org/student_assignments/list/1543270")
+            String auth = Jsoup.connect(getLoginUrl()).ignoreContentType(true).execute().cookie("secure_lmssessionkey2");
+            return Jsoup.connect("https://neo.sbunified.org/student_assignments/list/" + classId)
                 .cookie("secure_lmssessionkey2", auth).get();
         } catch (IOException e) {
             e.printStackTrace();
@@ -60,18 +58,27 @@ public class NEOExecutor extends NFields {
     }
 
     private Elements parseAssignments(Document assignmentsDocument) {
-        System.out.println(assignmentsDocument.text());
         Elements table = assignmentsDocument.body().getElementById("wrapper").getElementById("contentWrap").getElementById("mainContent")
             .getElementById("centreColumn").getElementsByClass("assignmentsTable");
-        return table.get(0).getElementsByTag("tbody").get(0).getElementsByTag("tr");
+        return table.first().getElementsByTag("tbody").first().getElementsByTag("tr");
     }
 
     private List<String> getUnfinished(Elements table) {
         List<String> ufAssign = new ArrayList<>();
         for (Element e : table) {
-            String assignment = e.getElementsByClass("assignment").get(0).getElementsByTag("a").get(0).text();
-            boolean isSubmitted = e.getAllElements().get(4).getElementsByAttributeValue("title", "Yes").isEmpty();
-            if (isSubmitted) {
+            boolean isSubmitted = true;
+            boolean isAssignment = false;
+            String assignment = null;
+            try {
+                assignment = e.getElementsByClass("assignment").get(0)
+                    .getElementsByTag("a").first().text();
+                Element innerATag = e.getAllElements().get(4);
+                isSubmitted = innerATag.getElementsByAttributeValue("title", "Yes").isEmpty();
+                isAssignment = !innerATag.getElementsByAttributeValueStarting("title", "Online/essay").isEmpty();
+            } catch (IndexOutOfBoundsException ignored) {
+            }
+            if (assignment != null && isSubmitted && isAssignment) {
+                System.out.println(assignment);
                 ufAssign.add(assignment);
             }
         }
@@ -80,11 +87,18 @@ public class NEOExecutor extends NFields {
 
     public static List<String> parseArgs() {
         if (argsList.contains("--neo")) {
+            if (argsList.contains("-f") || argsList.contains("--all")) {
+                throw new IllegalArgumentException("Cannot use other selectors with NEO integration");
+            }
             int ioNeo = argsList.indexOf("--neo");
             char[] username = argsList.get(ioNeo + 1).toCharArray();
             char[] password = argsList.get(ioNeo + 2).toCharArray();
+            if (argsList.contains("--classid")) {
+                return new NEOExecutor(argsList.get(argsList.indexOf("--classid") + 1), username, password)
+                    .execute().getAssignments();
+            }
             return new NEOExecutor(username, password).execute().getAssignments();
         }
-        return null;
+        return filenames;
     }
 }
