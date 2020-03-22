@@ -1,5 +1,7 @@
 package com.boomaa.note2jpg.function;
 
+import com.boomaa.note2jpg.create.FilenameSource;
+import com.boomaa.note2jpg.integration.GoogleUtils;
 import com.boomaa.note2jpg.integration.NEOExecutor;
 
 import java.io.File;
@@ -10,14 +12,33 @@ import java.util.Scanner;
 
 public class Args extends NFields {
     public static void determineArgs() {
-        filenames = NEOExecutor.parseArgs();
-        String filename = parseFlag("-f");
-        if (filename != null) {
-            filenames.add(filename);
+        determineFilenameSource();
+        fnSource.getStream().println(fnSource.getMessage());
+        switch (fnSource) {
+            case ALL:
+                filenames.addAll(getAllLocalNotes());
+                break;
+            case NEO:
+                neoExecutor = NEOExecutor.parseArgs().pull();
+                filenames = neoExecutor.getAssignments().getNames();
+                break;
+            case PARAMETER:
+                String filename = parseFlag("-f");
+                if (filename != null) {
+                    filenames.add(filename);
+                }
+                break;
+            case RANDOM:
+                determineRandomFilename();
+                break;
+            case USER_SELECT:
+            default:
+                userSelectFilename();
+                break;
         }
+
         scaleFactor = parseIntFlagValue(parseFlag("-s"));
         pdfRes = parseIntFlagValue(parseFlag("-p"));
-
         if (pdfRes == -1) {
             pdfRes = 200;
         } else {
@@ -26,14 +47,25 @@ public class Args extends NFields {
         if (scaleFactor == -1) {
             scaleFactor = 8;
         }
-        if (filenames.isEmpty()) {
-            if (argsList.contains("--randomfile")) {
-                System.err.println("No .note file specified - Selecting randomly");
-                determineRandomFilename();
-            } else {
-                userSelectFilename();
+
+        if (argsList.contains("--usedrive")) {
+            GoogleUtils.retrieveNoteList();
+        }
+    }
+
+    public static void determineFilenameSource() {
+        int found = 0;
+        FilenameSource foundFns = FilenameSource.USER_SELECT;
+        for (FilenameSource fns : FilenameSource.values()) {
+            if (argsList.contains(fns.getDeterminant())) {
+                foundFns = fns;
+                found++;
+            }
+            if (found > 1) {
+                throw new IllegalArgumentException("Cannot use multiple filename selectors");
             }
         }
+        fnSource = foundFns;
     }
 
     public static String parseFlag(String flag) {
@@ -55,40 +87,27 @@ public class Args extends NFields {
         }
     }
 
-    public static void userSelectFilename() {
+    public static List<String> getAllLocalNotes() {
         File[] dir = Objects.requireNonNull(new File(".").listFiles());
         List<String> notes = new ArrayList<>();
-        boolean containsAll = argsList.contains("--all");
-
-        if (!containsAll) {
-            System.err.println("No .note file specified - Please select");
-        }
 
         int valid = 1;
         for (File file : dir) {
             String fname = file.getName();
             if (fname.contains(".note")) {
                 String fNameNoExt = fname.substring(0, fname.length() - 5);
-                if (!containsAll) {
+                if (fnSource != FilenameSource.ALL) {
                     System.out.println(valid + ") " + fNameNoExt);
                 }
                 valid++;
                 notes.add(fNameNoExt);
             }
         }
+        return notes;
+    }
 
-        if (containsAll) {
-            if (argsList.contains("-f")) {
-                throw new IllegalArgumentException("Cannot specify a filename with -all");
-            }
-            if (argsList.contains("--neo")) {
-                throw new IllegalArgumentException("Cannot use NEO integration with --all");
-            }
-            System.out.println("Converting all available .note files");
-            filenames.addAll(notes);
-            return;
-        }
-
+    public static void userSelectFilename() {
+        List<String> notes = getAllLocalNotes();
         Scanner sc = new Scanner(System.in);
         System.out.print(">> ");
         int selected = 0;
@@ -118,10 +137,6 @@ public class Args extends NFields {
         List<String> notes = new ArrayList<>();
         List<String> jpgs = new ArrayList<>();
         String filename = null;
-
-        if (argsList.contains("--all")) {
-            throw new IllegalArgumentException("Cannot select randomly with --all");
-        }
 
         for (File file : shuffledDir) {
             String fname = file.getName();

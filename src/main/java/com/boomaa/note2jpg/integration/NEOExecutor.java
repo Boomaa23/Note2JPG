@@ -1,25 +1,18 @@
 package com.boomaa.note2jpg.integration;
 
 import com.boomaa.note2jpg.function.NFields;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
 public class NEOExecutor extends NFields {
-    private List<String> unfinishedAssignments;
-    private final String classId;
-    private final char[] username;
-    private final char[] password;
+    private Assignments ufAssignments;
+    private NEOSession session;
 
     public NEOExecutor(String classId, char[] username, char[] password) {
-        this.classId = classId;
-        this.username = username;
-        this.password = password;
+        session = new NEOSession(classId).login(username, password);
     }
 
     public NEOExecutor(char[] username, char[] password) {
@@ -27,34 +20,27 @@ public class NEOExecutor extends NFields {
         this("1543270", username, password);
     }
 
-    public final NEOExecutor execute() {
-        unfinishedAssignments = getUnfinished(parseAssignments(getWebContent()));
+    public final NEOExecutor push(String assignName, String imageUrl) {
+        //TODO test this with an open assignment
+        Element img = new Element("img");
+        img.attr("src", imageUrl);
+        img.attr("width", String.valueOf(NFields.iPadWidth));
+        img.attr("height", String.valueOf(NFields.heightFinal));
+        session.post(Collections.singletonMap("answer", img.outerHtml()), "/student_freeform_assignment/create/" + ufAssignments.get(assignName));
         return this;
     }
 
-    public final List<String> getAssignments() {
-        return unfinishedAssignments;
+    public final NEOExecutor pull() {
+        ufAssignments = getUnfinished(parseAssignments(retrieveAssignDoc()));
+        return this;
     }
 
-    private String getLoginUrl() {
-        StringBuilder sb = new StringBuilder("https://neo.sbunified.org/log_in/submit_from_portal?from=%2Fstudent_assignments%2Flist%2F");
-        sb.append(classId);
-        sb.append("&userid=");
-        sb.append(username);
-        sb.append("&password=");
-        sb.append(password);
-        return sb.toString();
+    public final Assignments getAssignments() {
+        return ufAssignments;
     }
 
-    private Document getWebContent() {
-        try {
-            String auth = Jsoup.connect(getLoginUrl()).ignoreContentType(true).execute().cookie("secure_lmssessionkey2");
-            return Jsoup.connect("https://neo.sbunified.org/student_assignments/list/" + classId)
-                .cookie("secure_lmssessionkey2", auth).get();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+    private Document retrieveAssignDoc() {
+        return session.get("/student_assignments/list/" + session.getClassId());
     }
 
     private Elements parseAssignments(Document assignmentsDocument) {
@@ -63,42 +49,38 @@ public class NEOExecutor extends NFields {
         return table.first().getElementsByTag("tbody").first().getElementsByTag("tr");
     }
 
-    private List<String> getUnfinished(Elements table) {
-        List<String> ufAssign = new ArrayList<>();
+    private Assignments getUnfinished(Elements table) {
+        Assignments ufAssignTemp = new Assignments();
         for (Element e : table) {
             boolean isSubmitted = true;
             boolean isAssignment = false;
             String assignment = null;
+            String assignmentId = null;
             try {
-                assignment = e.getElementsByClass("assignment").get(0)
-                    .getElementsByTag("a").first().text();
+                Element assignName = e.getElementsByClass("assignment").get(0)
+                    .getElementsByTag("a").first();
+                assignment = assignName.text();
+                assignmentId = assignName.attr("href");
+                assignmentId = assignmentId.substring(assignmentId.lastIndexOf('/'));
                 Element innerATag = e.getAllElements().get(4);
                 isSubmitted = innerATag.getElementsByAttributeValue("title", "Yes").isEmpty();
                 isAssignment = !innerATag.getElementsByAttributeValueStarting("title", "Online/essay").isEmpty();
             } catch (IndexOutOfBoundsException ignored) {
             }
-            if (assignment != null && isSubmitted && isAssignment) {
-                System.out.println(assignment);
-                ufAssign.add(assignment);
+            if (assignment != null && !isSubmitted && isAssignment) {
+                ufAssignTemp.put(assignment, assignmentId);
             }
         }
-        return ufAssign;
+        return ufAssignTemp;
     }
 
-    public static List<String> parseArgs() {
-        if (argsList.contains("--neo")) {
-            if (argsList.contains("-f") || argsList.contains("--all")) {
-                throw new IllegalArgumentException("Cannot use other selectors with NEO integration");
-            }
-            int ioNeo = argsList.indexOf("--neo");
-            char[] username = argsList.get(ioNeo + 1).toCharArray();
-            char[] password = argsList.get(ioNeo + 2).toCharArray();
-            if (argsList.contains("--classid")) {
-                return new NEOExecutor(argsList.get(argsList.indexOf("--classid") + 1), username, password)
-                    .execute().getAssignments();
-            }
-            return new NEOExecutor(username, password).execute().getAssignments();
+    public static NEOExecutor parseArgs() {
+        int ioNeo = argsList.indexOf("--neo");
+        char[] username = argsList.get(ioNeo + 1).toCharArray();
+        char[] password = argsList.get(ioNeo + 2).toCharArray();
+        if (argsList.contains("--classid")) {
+            return new NEOExecutor(argsList.get(argsList.indexOf("--classid") + 1), username, password);
         }
-        return filenames;
+        return new NEOExecutor(username, password);
     }
 }

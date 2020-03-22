@@ -3,8 +3,10 @@ package com.boomaa.note2jpg.function;
 import com.boomaa.note2jpg.create.Circles;
 import com.boomaa.note2jpg.create.Corner;
 import com.boomaa.note2jpg.create.Curve;
+import com.boomaa.note2jpg.create.FilenameSource;
 import com.boomaa.note2jpg.create.NumberType;
 import com.boomaa.note2jpg.create.Point;
+import com.boomaa.note2jpg.integration.GoogleUtils;
 import com.dd.plist.NSArray;
 import com.dd.plist.NSDictionary;
 import com.dd.plist.PropertyListFormatException;
@@ -37,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class Main extends NFields {
     static {
@@ -63,9 +66,25 @@ public class Main extends NFields {
     public static void main(String[] args) throws IOException, PropertyListFormatException, ParseException, SAXException, ParserConfigurationException {
         argsList = Arrays.asList(args);
         Args.determineArgs();
+        if (filenames.isEmpty()) {
+            System.err.println("No .note files selected to convert");
+        }
         for (String filename : filenames) {
             startTime = System.currentTimeMillis();
-            filename = unzipNote(filename);
+            try {
+                filename = unzipNote(filename);
+            } catch (ZipException e) {
+                if (fnSource == FilenameSource.NEO) {
+                    System.err.println("Could not find local .note file for NEO assignment \"" + filename + "\"");
+                }
+                if (argsList.contains("--usedrive") && GoogleUtils.isFilenameMatch(filename)) {
+                    GoogleUtils.downloadNote(filename);
+                    filename = unzipNote(filename);
+                } else {
+                    continue;
+                }
+            }
+
             System.out.println("Params: name=\"" + filename + "\" scale=" + scaleFactor + " pdfScale=" + (pdfRes / 100));
             NSDictionary sessionMain = (NSDictionary) PropertyListParser.parse(new File(filename + "/Session.plist"));
             NSDictionary[] sessionDict = Decode.isolateDictionary(((NSArray) (sessionMain.getHashMap().get("$objects"))).getArray());
@@ -75,7 +94,6 @@ public class Main extends NFields {
             float[] curvesnumpoints = Decode.parseB64Numbers(NumberType.INTEGER, Decode.getDataFromDict(sessionDict, "curvesnumpoints"));
             float[] curveswidth = Decode.parseB64Numbers(NumberType.FLOAT, Decode.getDataFromDict(sessionDict, "curveswidth"));
             int[] curvescolors = Decode.parseB64Colors(Decode.getDataFromDict(sessionDict, "curvescolors"));
-
             Color[] colors = Decode.getColorsFromInts(curvescolors);
 
             System.gc();
@@ -139,8 +157,13 @@ public class Main extends NFields {
             if (!argsList.contains("--nofile")) {
                 saveToFile(filename);
             }
+            if (fnSource == FilenameSource.NEO) {
+                neoExecutor.push(filename, GoogleUtils.uploadImage(filename));
+            }
             cleanupFiles(new File(filename + "/"));
-            System.out.println();
+            if (!filename.equals(filenames.get(filenames.size() - 1))) {
+                System.out.println();
+            }
         }
     }
 
@@ -178,7 +201,7 @@ public class Main extends NFields {
     }
 
     public static void saveToFile(String filename) {
-        int heightFinal = (int) (((double) iPadWidth / upscaledAll.getWidth()) * upscaledAll.getHeight());
+        heightFinal = (int) (((double) iPadWidth / upscaledAll.getWidth()) * upscaledAll.getHeight());
         try {
             ImageIO.write(ImageUtil.scaleImage(upscaledAll, iPadWidth, heightFinal), "jpg", new File(filename + ".jpg"));
         } catch (IOException e) {
@@ -187,16 +210,16 @@ public class Main extends NFields {
         System.out.println("Completed in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds with scale=" + scaleFactor);
     }
 
-    public static String unzipNote(String filename) {
+    public static String unzipNote(String filename) throws ZipException {
+        ZipFile zipFile = new ZipFile(filename + ".note");
+        zipFile.extractFile(filename + "/Session.plist", ".");
         try {
-            ZipFile zipFile = new ZipFile(filename + ".note");
-            zipFile.extractFile(filename + "/Session.plist", ".");
-            try {
-                zipFile.extractFile(filename + "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist", ".");
-                noPdf = false;
-            } catch (ZipException e) {
-                noPdf = true;
-            }
+            zipFile.extractFile(filename + "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist", ".");
+            noPdf = false;
+        } catch (ZipException e) {
+            noPdf = true;
+        }
+        try {
             List<FileHeader> files = zipFile.getFileHeaders();
             for (FileHeader file : files) {
                 if (file.getFileName().contains("PDFs")) {

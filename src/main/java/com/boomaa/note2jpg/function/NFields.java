@@ -2,7 +2,9 @@ package com.boomaa.note2jpg.function;
 
 import com.boomaa.note2jpg.create.Box;
 import com.boomaa.note2jpg.create.Circles;
+import com.boomaa.note2jpg.create.FilenameSource;
 import com.boomaa.note2jpg.create.Point;
+import com.boomaa.note2jpg.integration.NEOExecutor;
 
 import javax.swing.JFrame;
 import java.awt.image.BufferedImage;
@@ -18,8 +20,11 @@ public class NFields {
     protected static List<String> argsList;
     protected static List<Box> textBoxBounds = new ArrayList<>();
     protected static List<String> textBoxContents = new ArrayList<>();
+    protected static NEOExecutor neoExecutor;
+    protected static FilenameSource fnSource;
     protected static int iPadWidth = 1536;
     protected static int leftOffset = 14;
+    protected static int heightFinal;
     protected static int scaledWidth;
     protected static int scaledHeight;
     protected static int scaleFactor;
