@@ -157,8 +157,8 @@ public class Main extends NFields {
             if (!argsList.contains("--nofile")) {
                 saveToFile(filename);
             }
-            if (fnSource == FilenameSource.NEO) {
-                neoExecutor.push(filename, GoogleUtils.uploadImage(filename));
+            if (fnSource == FilenameSource.NEO && argsList.contains("--usedrive")) {
+                neoExecutor.push(filename, GoogleUtils.getEmbedUrl(GoogleUtils.uploadImage(filename).getId()));
             }
             cleanupFiles(new File(filename + "/"));
             if (!filename.equals(filenames.get(filenames.size() - 1))) {

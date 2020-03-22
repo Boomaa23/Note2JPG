@@ -51,6 +51,7 @@ public class Args extends NFields {
         if (argsList.contains("--usedrive")) {
             GoogleUtils.retrieveNoteList();
         }
+        System.exit(0);
     }
 
     public static void determineFilenameSource() {
