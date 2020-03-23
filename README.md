@@ -36,7 +36,8 @@ github.com/Boomaa23/Note2JPG | Copyright © 2020. All Rights Reserved
 | NEOClassID                    | --classid \<classid>  | NEO      | String  | Specify a class ID for NEO integration
 | UseGoogleDrive                | --usedrive            | Google   | boolean | Use Google Drive as a .note source
 | GoogleSvcAcctID               |  --gacctid \<acctid>  | Google   | String  | The Google service account ID to use
-*NOTE: JSON only works for Integration source keys at the moment.
+
+**NOTE: JSON only works for Integration source keys at the moment.**
 
 ## Integration
 ### Google
