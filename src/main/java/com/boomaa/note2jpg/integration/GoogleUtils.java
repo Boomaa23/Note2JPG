@@ -1,5 +1,6 @@
 package com.boomaa.note2jpg.integration;
 
+import com.boomaa.note2jpg.config.Parameter;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -40,7 +41,7 @@ public class GoogleUtils {
         return new GoogleCredential.Builder()
             .setTransport(GoogleNetHttpTransport.newTrustedTransport())
             .setJsonFactory(new GsonFactory())
-            .setServiceAccountId(JSONHelper.getGoogleSvcAcctID())
+            .setServiceAccountId(Parameter.GoogleSvcAcctID.getPriority())
             //TODO sort out this scopes issues
             .setServiceAccountScopes(Collections.singletonList(DriveScopes.DRIVE))
             .setServiceAccountPrivateKeyFromP12File(new java.io.File("GoogleSvcAcctPrivateKey.p12"))

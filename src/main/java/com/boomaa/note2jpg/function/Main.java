@@ -1,5 +1,8 @@
 package com.boomaa.note2jpg.function;
 
+import com.boomaa.note2jpg.config.Args;
+import com.boomaa.note2jpg.config.ConfigVars;
+import com.boomaa.note2jpg.config.Parameter;
 import com.boomaa.note2jpg.create.Circles;
 import com.boomaa.note2jpg.create.Corner;
 import com.boomaa.note2jpg.create.Curve;
@@ -64,7 +67,8 @@ public class Main extends NFields {
 
     public static void main(String[] args) throws IOException, PropertyListFormatException, ParseException, SAXException, ParserConfigurationException {
         argsList = Arrays.asList(args);
-        Args.determineArgs();
+        Args.parse();
+        Args.logic();
         if (filenames.isEmpty()) {
             System.err.println("No .note files selected to convert");
         }
@@ -73,10 +77,10 @@ public class Main extends NFields {
             try {
                 filename = unzipNote(filename);
             } catch (ZipException e) {
-                if (fnSource == FilenameSource.NEO) {
+                if (ConfigVars.FILENAME_SOURCE == FilenameSource.NEO) {
                     System.err.println("Could not find local .note file for NEO assignment \"" + filename + "\"");
                 }
-                if (argsList.contains("--usedrive") && GoogleUtils.isFilenameMatch(filename)) {
+                if (Parameter.UseGoogleDrive.inEither() && GoogleUtils.isFilenameMatch(filename)) {
                     GoogleUtils.downloadNote(filename);
                     filename = unzipNote(filename);
                 } else {
@@ -85,7 +89,7 @@ public class Main extends NFields {
                 }
             }
 
-            System.out.println("Args: name=\"" + filename + "\" scale=" + scaleFactor + " pdfScale=" + (pdfRes / 100));
+            System.out.println("Args: name=\"" + filename + "\" scale=" + Parameter.ImageScaleFactor.getPriority() + " pdfScale=" + Parameter.PDFScaleFactor.getPriorityInt());
             NSDictionary sessionMain = (NSDictionary) PropertyListParser.parse(new File(filename + "/Session.plist"));
             NSDictionary[] sessionDict = Decode.isolateDictionary(((NSArray) (sessionMain.getHashMap().get("$objects"))).getArray());
             List<Image> pdfs = new ArrayList<>();
@@ -98,13 +102,13 @@ public class Main extends NFields {
 
             System.gc();
             while (true) {
-                if (scaleFactor <= 0) {
+                if (Parameter.ImageScaleFactor.getPriorityInt() <= 0) {
                     throw new ArithmeticException("Cannot have a scale factor of zero");
                 }
                 try {
                     Point[] points = Decode.getPoints(curvespoints);
                     Curve[] curves = Decode.pointsToCurves(points, colors, curvesnumpoints, curveswidth);
-                    scaledWidth = Decode.getNumberFromDict(sessionDict, "pageWidthInDocumentCoordsKey") * scaleFactor;
+                    scaledWidth = Decode.getNumberFromDict(sessionDict, "pageWidthInDocumentCoordsKey") * Parameter.ImageScaleFactor.getPriorityInt();
                     if (!noPdf) {
                         NSDictionary pdfMain = (NSDictionary) PropertyListParser.parse(new File(filename + "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist"));
                         String[] pdfLocs = ((NSDictionary) (pdfMain.getHashMap().get("pageNumbers"))).allKeys();
@@ -119,7 +123,7 @@ public class Main extends NFields {
                     bounds = Decode.getBounds(points);
                     setupCurves(curves);
                     ImageUtil.populateUnscaledAll(ImageUtil.getPdfCanvas(pdfs));
-                    if (!argsList.contains("--notextboxes")) {
+                    if (!Parameter.NoTextBoxes.inEither()) {
                         textBoxContents = Decode.getTextBoxes(sessionDict);
                         if (textBoxContents.size() > 0) {
                             setupFrame(filename);
@@ -142,22 +146,22 @@ public class Main extends NFields {
                 } catch (OutOfMemoryError | NegativeArraySizeException e) {
                     circles = null;
                     pdfs = new ArrayList<>();
-                    scaleFactor -= 2;
+                    Parameter.ImageScaleFactor.setLinkedField(Parameter.ImageScaleFactor.getPriorityInt() - 2);
                     System.gc();
-                    System.err.println("Memory limit exceeded with scale " + (scaleFactor + 2));
+                    System.err.println("Memory limit exceeded with scale " + (Parameter.ImageScaleFactor.getPriorityInt() + 2));
                 }
             }
 
-            if (argsList.contains("--display")) {
+            if (Parameter.DisplayConverted.inEither()) {
                 setupFrame(filename);
                 displayFrame();
             } else if (frame != null) {
                 frame.dispose();
             }
-            if (!argsList.contains("--nofile")) {
+            if (!Parameter.NoFileOutput.inEither()) {
                 saveToFile(filename);
             }
-            if (fnSource == FilenameSource.NEO && argsList.contains("--usedrive")) {
+            if (ConfigVars.FILENAME_SOURCE == FilenameSource.NEO && Parameter.UseGoogleDrive.inEither()) {
                 //TODO test this with actual assignment
 //                neoExecutor.push(filename, GoogleUtils.getEmbedUrl(GoogleUtils.uploadImage(filename).getId()));
             }
@@ -208,7 +212,7 @@ public class Main extends NFields {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("Completed in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds with scale=" + scaleFactor);
+        System.out.println("Completed in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds with scale=" + Parameter.ImageScaleFactor.getPriorityInt());
     }
 
     public static String unzipNote(String filename) throws ZipException {

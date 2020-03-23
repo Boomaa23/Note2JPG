@@ -1,5 +1,6 @@
 package com.boomaa.note2jpg.integration;
 
+import com.boomaa.note2jpg.config.Parameter;
 import com.boomaa.note2jpg.function.NFields;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -13,10 +14,6 @@ public class NEOExecutor extends NFields {
 
     public NEOExecutor(String classId, char[] username, char[] password) {
         session = new NEOSession(classId).login(username, password);
-    }
-
-    public NEOExecutor(char[] username, char[] password) {
-        this(JSONHelper.getNEOClassID(), username, password);
     }
 
     public final NEOExecutor push(String assignName, String imageUrl) {
@@ -74,12 +71,10 @@ public class NEOExecutor extends NFields {
     }
 
     public static NEOExecutor parseArgs() {
-        int ioNeo = NFields.argsList.indexOf("--neo");
-        char[] username = NFields.argsList.get(ioNeo + 1).toCharArray();
-        char[] password = NFields.argsList.get(ioNeo + 2).toCharArray();
-        if (NFields.argsList.contains("--classid")) {
-            return new NEOExecutor(NFields.argsList.get(NFields.argsList.indexOf("--classid") + 1), username, password);
+        NEOExecutorBuilder executorBuilder = new NEOExecutorBuilder(Parameter.NEOUsername.getPriority(), Parameter.NEOPassword.getPriority());
+        if (Parameter.NEOClassID.inEither()) {
+            executorBuilder.setClassID(Parameter.NEOClassID.getPriority());
         }
-        return new NEOExecutor(username, password);
+        return executorBuilder.build();
     }
 }

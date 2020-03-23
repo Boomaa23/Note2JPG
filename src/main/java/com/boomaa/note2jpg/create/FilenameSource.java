@@ -1,5 +1,7 @@
 package com.boomaa.note2jpg.create;
 
+import com.boomaa.note2jpg.config.Parameter;
+
 public enum FilenameSource {
     PARAMETER("Filename passed as parameter", "-f"),
     ALL("Converting all available .note files", "--all"),
@@ -25,5 +27,14 @@ public enum FilenameSource {
 
     public String getMessage() {
         return message;
+    }
+
+    public static FilenameSource matches(Parameter p) {
+        for (FilenameSource fs : FilenameSource.values()) {
+            if (fs.getDeterminant().equals(p.getFlag())) {
+                return fs;
+            }
+        }
+        return null;
     }
 }

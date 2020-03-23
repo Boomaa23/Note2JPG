@@ -1,5 +1,6 @@
 package com.boomaa.note2jpg.function;
 
+import com.boomaa.note2jpg.config.Parameter;
 import com.boomaa.note2jpg.create.Corner;
 import org.ghost4j.document.DocumentException;
 import org.ghost4j.document.PDFDocument;
@@ -73,7 +74,7 @@ public class ImageUtil extends NFields {
         cg2.fillRect(0, 0, img.getWidth(), img.getHeight());
         cg2.setColor(Color.BLACK);
         for (int i = 0;i < textBoxes.size();i++) {
-            cg2.setFont(new Font("Arial", Font.PLAIN, 12 * scaleFactor));
+            cg2.setFont(new Font("Arial", Font.PLAIN, 12 * Parameter.ImageScaleFactor.getPriorityInt()));
             int x = textBoxBounds.get(i).getCorner(Corner.UPPER_LEFT).getX();
             int lastOverflow = 0;
             for (int j = 0;j < textBoxes.get(i).length();j++) {
@@ -116,7 +117,7 @@ public class ImageUtil extends NFields {
             document.load(new File(filename + "/PDFs/" + pdf));
 
             SimpleRenderer renderer = new SimpleRenderer();
-            renderer.setResolution(pdfRes);
+            renderer.setResolution(Parameter.PDFScaleFactor.getPriorityInt() * 100);
             return renderer.render(document);
         } catch (IOException | RendererException | DocumentException e) {
             e.printStackTrace();

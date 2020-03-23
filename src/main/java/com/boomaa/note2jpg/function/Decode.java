@@ -1,5 +1,6 @@
 package com.boomaa.note2jpg.function;
 
+import com.boomaa.note2jpg.config.Parameter;
 import com.boomaa.note2jpg.create.Curve;
 import com.boomaa.note2jpg.create.NumberType;
 import com.boomaa.note2jpg.create.Point;
@@ -26,7 +27,7 @@ public class Decode extends NFields {
             int len = (int) numPoints[i];
             Point[] temp = new Point[len];
             System.arraycopy(points, done, temp, 0, len);
-            curves[i] = new Curve(temp, colors[i], widths[i] * scaleFactor);
+            curves[i] = new Curve(temp, colors[i], widths[i] * Parameter.ImageScaleFactor.getPriorityInt());
             done += len;
         }
         return curves;
@@ -77,7 +78,7 @@ public class Decode extends NFields {
         Point[] points = new Point[coords.length / 2];
         int reps = 0;
         for (int i = 0;i < coords.length - 1;i += 2) {
-            points[i - reps] = new Point((coords[i] + leftOffset) * scaleFactor, coords[i + 1] * scaleFactor);
+            points[i - reps] = new Point((coords[i] + leftOffset) * Parameter.ImageScaleFactor.getPriorityInt(), coords[i + 1] * Parameter.ImageScaleFactor.getPriorityInt());
             reps++;
         }
         return points;
