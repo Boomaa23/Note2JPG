@@ -22,19 +22,29 @@ github.com/Boomaa23/Note2JPG | Copyright © 2020. All Rights Reserved
 ## Usage
 `java -jar Note2JPG.jar`
 
-| Flag \<Value>         | Action |
-|-----------------------|--------|
-| -f \<filename>        | Specify name of .note file
-| -s \<scaleFactor>     | Multiplier to superscale the whole image by [1-32]
-| -p \<pdfScaleFactor>  | Multiplier to superscale the PDFs by [1-5]
-| --neo \<userId> \<pw> | Use NEO integration for unsubmitted assignments
-| --classid \<classid>  | Specify a class ID for NEO integration
-| --usedrive            | Use Google Drive as a .note source
-| --all                 | Convert all available notes
-| --display             | Show the image after processing
-| --nofile              | Do not write the image to file
-| --randomfile          | Select a file randomly if not specified
-| --notextboxes         | Do not request positions for text boxes
+| JSON Key | Flag \<Value> | Source | JSON Value | Action
+|-------------------------------|-----------------------|----------|---------|------------------------------------|
+| Filename                      |  -f \<filename>       | Note2JPG | String  | Specify name of .note file
+| ScaleFactor                   | -s \<scaleFactor>     | Note2JPG | int     | Multiplier to superscale the whole image by
+| PDFScaleFactor                | -p \<pdfScaleFactor>  | Note2JPG | int     | Multiplier to superscale the PDFs by
+| ConvertAll                    | --all                 | Note2JPG | boolean | Convert all available notes
+| DisplayConverted              | --display             | Note2JPG | boolean | Show the image after processing
+| NoFileOutput                  | --nofile              | Note2JPG | boolean | Do not write the image to file
+| RandomFile                    | --randomfile          | Note2JPG | boolean | Select a file randomly if not specified
+| NoTextBoxes                   | --notextboxes         | Note2JPG | boolean | Do not request positions for text boxes
+| NEOUsername <br> NEOPassword  | --neo \<userId> \<pw> | NEO      | String  | Use NEO integration for unsubmitted assignments
+| NEOClassID                    | --classid \<classid>  | NEO      | String  | Specify a class ID for NEO integration
+| UseGoogleDrive                | --usedrive            | Google   | boolean | Use Google Drive as a .note source
+| GoogleSvcAcctID               |  --gacctid \<acctid>  | Google   | String  | The Google service account ID to use
+*NOTE: JSON only works for Integration source keys at the moment.
 
-## Google Integration
-You will need to provide your own `.p12` credentials file for Google Drive and account ID. Rename the private key to `GoogleSvcAcctPrivateKey.p12` and put the Service Account ID in a file called `GoogleSvcAcctID.conf`. Both should be in the root directory of the jar or project.
+## Integration
+### Google
+You will need to provide your own `.p12` private key and service account ID for Google integration. The private key should be renamed to `GoogleSvcAcctPrivateKey.p12`. The account ID can either be provided through `--gacctid` or through the config JSON.
+
+### NEO
+NEO integration requires that you set a NEO username and password each time through `--neo` or through the NEO keys in the config JSON. The default class ID can be overridden by `--classid` or through the config JSON.
+
+### Config JSON
+If you want to store configs for the integrations without passing them through each time, create a JSON called `config.json` in your root directory. Use keys as listed in the table above. If you would like a template generated, pass `--genconfig`. The application will stop after generating the config file.
+

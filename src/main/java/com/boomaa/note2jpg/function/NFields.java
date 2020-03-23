@@ -12,16 +12,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NFields {
+    protected static FilenameSource fnSource;
+    protected static NEOExecutor neoExecutor;
+    protected static List<String> argsList;
+    protected static List<String> filenames = new ArrayList<>();
     protected static JFrame frame;
     protected static Circles circles;
-    protected static List<String> filenames = new ArrayList<>();
     protected static Point bounds;
     protected static BufferedImage upscaledAll;
-    protected static List<String> argsList;
     protected static List<Box> textBoxBounds = new ArrayList<>();
     protected static List<String> textBoxContents = new ArrayList<>();
-    protected static NEOExecutor neoExecutor;
-    protected static FilenameSource fnSource;
     protected static int iPadWidth = 1536;
     protected static int leftOffset = 14;
     protected static int heightFinal;

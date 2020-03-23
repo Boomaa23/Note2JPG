@@ -1,16 +1,5 @@
 package com.boomaa.note2jpg.integration;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.security.GeneralSecurityException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.boomaa.note2jpg.function.FileUtil;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -20,12 +9,19 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
-import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.Permission;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.security.GeneralSecurityException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class GoogleUtils {
     private static final String APPLICATION_NAME = "Note2JPG";
-    private static final String ACCOUNT_ID = FileUtil.fileToString("GoogleSvcAcctID.conf");
     private static Drive DRIVE_SERVICE;
     private static Map<String, File> NOTE_LIST;
 
@@ -44,7 +40,7 @@ public class GoogleUtils {
         return new GoogleCredential.Builder()
             .setTransport(GoogleNetHttpTransport.newTrustedTransport())
             .setJsonFactory(new GsonFactory())
-            .setServiceAccountId(ACCOUNT_ID)
+            .setServiceAccountId(JSONHelper.getGoogleSvcAcctID())
             //TODO sort out this scopes issues
             .setServiceAccountScopes(Collections.singletonList(DriveScopes.DRIVE))
             .setServiceAccountPrivateKeyFromP12File(new java.io.File("GoogleSvcAcctPrivateKey.p12"))
@@ -64,8 +60,8 @@ public class GoogleUtils {
                 .setFields("files")
                 .setOrderBy("modifiedTime desc")
                 .execute().getFiles();
-            for (File temp : notes) {
-                NOTE_LIST.put(temp.getName(), temp);
+            for (File note : notes) {
+                NOTE_LIST.put(note.getName(), note);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -73,12 +69,13 @@ public class GoogleUtils {
     }
 
     public static boolean isFilenameMatch(String filename) {
-        return NOTE_LIST.isEmpty() || NOTE_LIST.containsKey(filename);
+        return NOTE_LIST.containsKey(filename + ".note");
     }
 
     public static void downloadNote(String filename) {
         try {
-            java.io.File outputFile = new java.io.File(filename + ".note");
+            filename += ".note";
+            java.io.File outputFile = new java.io.File(filename);
             if (!outputFile.exists()) {
                 outputFile.createNewFile();
             }

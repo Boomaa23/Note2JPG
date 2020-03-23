@@ -2,6 +2,7 @@ package com.boomaa.note2jpg.function;
 
 import com.boomaa.note2jpg.create.FilenameSource;
 import com.boomaa.note2jpg.integration.GoogleUtils;
+import com.boomaa.note2jpg.integration.JSONHelper;
 import com.boomaa.note2jpg.integration.NEOExecutor;
 
 import java.io.File;
@@ -12,8 +13,15 @@ import java.util.Scanner;
 
 public class Args extends NFields {
     public static void determineArgs() {
-        determineFilenameSource();
-        fnSource.getStream().println(fnSource.getMessage());
+        if (argsList.contains("--genconfig")) {
+            System.out.println("Note2JPG will now print a blank integrations JSON template to config.json");
+            System.out.println("The application will not continue to run after this has completed");
+            JSONHelper.generateTemplate();
+            System.exit(0);
+        }
+
+        parseFilenameSource();
+        System.out.println(fnSource.getMessage());
         switch (fnSource) {
             case ALL:
                 filenames.addAll(getAllLocalNotes());
@@ -33,17 +41,18 @@ public class Args extends NFields {
                 break;
             case USER_SELECT:
             default:
-                userSelectFilename();
+                filenameSelector(getAllLocalNotes());
                 break;
         }
 
-        scaleFactor = parseIntFlagValue(parseFlag("-s"));
         pdfRes = parseIntFlagValue(parseFlag("-p"));
         if (pdfRes == -1) {
             pdfRes = 200;
         } else {
             pdfRes *= 100;
         }
+
+        scaleFactor = parseIntFlagValue(parseFlag("-s"));
         if (scaleFactor == -1) {
             scaleFactor = 8;
         }
@@ -51,10 +60,9 @@ public class Args extends NFields {
         if (argsList.contains("--usedrive")) {
             GoogleUtils.retrieveNoteList();
         }
-        System.exit(0);
     }
 
-    public static void determineFilenameSource() {
+    public static FilenameSource parseFilenameSource() {
         int found = 0;
         FilenameSource foundFns = FilenameSource.USER_SELECT;
         for (FilenameSource fns : FilenameSource.values()) {
@@ -67,6 +75,7 @@ public class Args extends NFields {
             }
         }
         fnSource = foundFns;
+        return fnSource;
     }
 
     public static String parseFlag(String flag) {
@@ -107,8 +116,7 @@ public class Args extends NFields {
         return notes;
     }
 
-    public static void userSelectFilename() {
-        List<String> notes = getAllLocalNotes();
+    public static void filenameSelector(List<String> notes) {
         Scanner sc = new Scanner(System.in);
         System.out.print(">> ");
         int selected = 0;

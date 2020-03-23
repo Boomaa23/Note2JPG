@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 public class Main extends NFields {
     static {
@@ -81,11 +80,12 @@ public class Main extends NFields {
                     GoogleUtils.downloadNote(filename);
                     filename = unzipNote(filename);
                 } else {
+                    System.err.println("Note file matching \"" + filename + "\" could not be found");
                     continue;
                 }
             }
 
-            System.out.println("Params: name=\"" + filename + "\" scale=" + scaleFactor + " pdfScale=" + (pdfRes / 100));
+            System.out.println("Args: name=\"" + filename + "\" scale=" + scaleFactor + " pdfScale=" + (pdfRes / 100));
             NSDictionary sessionMain = (NSDictionary) PropertyListParser.parse(new File(filename + "/Session.plist"));
             NSDictionary[] sessionDict = Decode.isolateDictionary(((NSArray) (sessionMain.getHashMap().get("$objects"))).getArray());
             List<Image> pdfs = new ArrayList<>();
@@ -158,7 +158,8 @@ public class Main extends NFields {
                 saveToFile(filename);
             }
             if (fnSource == FilenameSource.NEO && argsList.contains("--usedrive")) {
-                neoExecutor.push(filename, GoogleUtils.getEmbedUrl(GoogleUtils.uploadImage(filename).getId()));
+                //TODO test this with actual assignment
+//                neoExecutor.push(filename, GoogleUtils.getEmbedUrl(GoogleUtils.uploadImage(filename).getId()));
             }
             cleanupFiles(new File(filename + "/"));
             if (!filename.equals(filenames.get(filenames.size() - 1))) {

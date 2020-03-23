@@ -16,8 +16,7 @@ public class NEOExecutor extends NFields {
     }
 
     public NEOExecutor(char[] username, char[] password) {
-        // Assume AP Physics 1 Period 1
-        this("1543270", username, password);
+        this(JSONHelper.getNEOClassID(), username, password);
     }
 
     public final NEOExecutor push(String assignName, String imageUrl) {
@@ -75,11 +74,11 @@ public class NEOExecutor extends NFields {
     }
 
     public static NEOExecutor parseArgs() {
-        int ioNeo = argsList.indexOf("--neo");
-        char[] username = argsList.get(ioNeo + 1).toCharArray();
-        char[] password = argsList.get(ioNeo + 2).toCharArray();
-        if (argsList.contains("--classid")) {
-            return new NEOExecutor(argsList.get(argsList.indexOf("--classid") + 1), username, password);
+        int ioNeo = NFields.argsList.indexOf("--neo");
+        char[] username = NFields.argsList.get(ioNeo + 1).toCharArray();
+        char[] password = NFields.argsList.get(ioNeo + 2).toCharArray();
+        if (NFields.argsList.contains("--classid")) {
+            return new NEOExecutor(NFields.argsList.get(NFields.argsList.indexOf("--classid") + 1), username, password);
         }
         return new NEOExecutor(username, password);
     }
