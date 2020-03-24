@@ -80,7 +80,7 @@ public class Args extends NFields {
         }
 
         Parameter.PDFScaleFactor.setLinkedField(Integer.parseInt(Parameter.PDFScaleFactor.getValue()));
-        Parameter.ImageScaleFactor.setLinkedField(Integer.parseInt(Parameter.PDFScaleFactor.getValue()));
+        Parameter.ImageScaleFactor.setLinkedField(Integer.parseInt(Parameter.ImageScaleFactor.getValue()));
 
         if (Parameter.UseGoogleDrive.inEither()) {
             GoogleUtils.retrieveNoteList();

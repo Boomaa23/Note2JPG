@@ -13,12 +13,6 @@ public class MavenDependency {
         this.version = version;
     }
 
-    public MavenDependency(Node groupId, Node artifactId, Node version) {
-        this.groupId = nodeToString(groupId);
-        this.artifactId = nodeToString(artifactId);
-        this.version = nodeToString(version);
-    }
-
     private String nodeToString(Node input) {
         return input.getTextContent().replaceAll("[\\t\\n]", "");
     }

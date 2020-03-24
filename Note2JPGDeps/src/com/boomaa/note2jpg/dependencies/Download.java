@@ -52,6 +52,7 @@ public class Download {
                 lastIndex = i;
             }
         }
+        depsPrelimList.remove(0);
 
         for (String dep : depsPrelimList) {
             String[] parts = dep.split(":");
@@ -59,8 +60,10 @@ public class Download {
         }
 
         for (MavenDependency dependency : dependencyList) {
-            System.out.println("Downloading " + dependency);
-            downloadDependency(dependency);
+            if (!new File(LIBRARY_FOLDER + getMavenJarName(dependency)).exists()) {
+                System.out.println("Downloading " + dependency);
+                downloadDependency(dependency);
+            }
         }
     }
 

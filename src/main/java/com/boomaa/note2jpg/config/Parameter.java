@@ -27,6 +27,7 @@ public enum Parameter {
     private String linkedField;
     private boolean inJson;
     private Boolean inArgs = null;
+    private boolean setOverride = false;
 
     Parameter(String flag, Type type, String linkedField) {
         this.flag = flag;
@@ -80,16 +81,19 @@ public enum Parameter {
         if (type == Type.BOOLEAN) {
             return Boolean.toString(inEither());
         }
+
         if (this.equals(NEOUsername)) {
             return argsValue();
         } else if (this.equals(NEOPassword)) {
             return argsValue(2)[1];
         }
 
-        if (inArgs()) {
-            return argsValue();
-        } else if (inJson()) {
-            return JSONHelper.getJsonValue(name());
+        if (!setOverride) {
+            if (inArgs()) {
+                return argsValue();
+            } else if (inJson()) {
+                return JSONHelper.getJsonValue(name());
+            }
         }
 
         try {
@@ -113,14 +117,15 @@ public enum Parameter {
 
     public Field getLinkedField(Class<?> targetClass) {
         try {
-            return Class.forName(targetClass.getName()).getDeclaredField(linkedField);
-        } catch (NoSuchFieldException | ClassNotFoundException e) {
+            return targetClass.getDeclaredField(this.linkedField);
+        } catch (NoSuchFieldException e) {
             e.printStackTrace();
         }
         return null;
     }
 
     public <T> void setLinkedField(T value) {
+        setOverride = true;
         try {
             getLinkedField().set(null, value);
         } catch (IllegalAccessException e) {
@@ -142,12 +147,12 @@ public enum Parameter {
 
     public static class ConfigVars {
         public static FilenameSource FILENAME_SOURCE = FilenameSource.USER_SELECT;
-        private static int IMAGE_SCALE_FACTOR = 8;
-        private static int PDF_SCALE_FACTOR = 2;
-        private static String GOOGLE_SVC_ACCT_ID = "102602978922283269345";
-        private static String NEO_CLASS_ID = "1543270";
-        private static String NEO_USR = "";
-        private static String NEO_PW = "";
+        public static int IMAGE_SCALE_FACTOR = 8;
+        public static int PDF_SCALE_FACTOR = 2;
+        public static String GOOGLE_SVC_ACCT_ID = "102602978922283269345";
+        public static String NEO_CLASS_ID = "1543270";
+        public static String NEO_USR = "";
+        public static String NEO_PW = "";
     }
 }
 
