@@ -1,51 +1,45 @@
 package com.boomaa.note2jpg.integration;
 
-import com.boomaa.note2jpg.config.Parameter;
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.FileContent;
-import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.Permission;
+import com.google.auth.http.HttpCredentialsAdapter;
+import com.google.auth.oauth2.GoogleCredentials;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class GoogleUtils {
     private static final String APPLICATION_NAME = "Note2JPG";
-    private static Drive DRIVE_SERVICE;
-    private static Map<String, File> NOTE_LIST;
+    private static final String PRIVATE_KEY_NAME = "GoogleSvcAcctPrivateKey.json";
+    private static Drive driveService;
+    private static Map<String, File> noteList;
 
     static {
         try {
-            DRIVE_SERVICE = GoogleUtils.getDriveService();
-            NOTE_LIST = new HashMap<>();
+            driveService = GoogleUtils.getDriveService();
+            noteList = new HashMap<>();
         } catch (GeneralSecurityException | IOException e) {
             e.printStackTrace();
         }
     }
 
-    @SuppressWarnings("deprecation")
-    private static Credential authorize() throws IOException, GeneralSecurityException {
-        //TODO use Google Auth Library (ServiceAccountCredentials) for authentication instead of Google API
-        return new GoogleCredential.Builder()
-            .setTransport(GoogleNetHttpTransport.newTrustedTransport())
-            .setJsonFactory(new GsonFactory())
-            .setServiceAccountId(Parameter.GoogleSvcAcctID.getValue())
-            //TODO sort out this scopes issues
-            .setServiceAccountScopes(Collections.singletonList(DriveScopes.DRIVE))
-            .setServiceAccountPrivateKeyFromP12File(new java.io.File("GoogleSvcAcctPrivateKey.p12"))
-            .build();
+    private static HttpRequestInitializer authorize() throws IOException {
+        return new HttpCredentialsAdapter(
+            GoogleCredentials.fromStream(
+                new FileInputStream(PRIVATE_KEY_NAME))
+                .createScoped(DriveScopes.DRIVE));
     }
 
     private static Drive getDriveService() throws IOException, GeneralSecurityException {
@@ -55,14 +49,13 @@ public class GoogleUtils {
 
     public static void retrieveNoteList() {
         try {
-            //TODO figure out how to include shared files
-            List<File> notes = DRIVE_SERVICE.files().list()
+            List<File> notes = driveService.files().list()
                 .setQ("mimeType = 'application/x-zip'")
                 .setFields("files")
                 .setOrderBy("modifiedTime desc")
                 .execute().getFiles();
             for (File note : notes) {
-                NOTE_LIST.put(note.getName(), note);
+                noteList.put(note.getName(), note);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -70,7 +63,11 @@ public class GoogleUtils {
     }
 
     public static boolean isFilenameMatch(String filename) {
-        return NOTE_LIST.containsKey(filename + ".note");
+        return noteList.containsKey(filename + ".note");
+    }
+
+    public static String getEmbedUrl(String fileId) {
+        return "https://drive.google.com/open?id=" + fileId;
     }
 
     public static void downloadNote(String filename) {
@@ -81,7 +78,7 @@ public class GoogleUtils {
                 outputFile.createNewFile();
             }
             OutputStream outputStream = new FileOutputStream(outputFile);
-            DRIVE_SERVICE.files().get(NOTE_LIST.get(filename).getId())
+            driveService.files().get(noteList.get(filename).getId())
                 .executeMediaAndDownloadTo(outputStream);
             outputStream.flush();
             outputStream.close();
@@ -98,7 +95,7 @@ public class GoogleUtils {
             fileMetadata.setMimeType("image/jpeg");
 
             FileContent mediaContent = new FileContent("image/jpeg", new java.io.File(filename + ".jpg"));
-            File f = DRIVE_SERVICE.files().create(fileMetadata, mediaContent).execute();
+            File f = driveService.files().create(fileMetadata, mediaContent).execute();
             insertPermissions(f.getId());
             return f;
         } catch (IOException e) {
@@ -107,19 +104,15 @@ public class GoogleUtils {
         return null;
     }
 
-    public static Permission insertPermissions(String fileId) {
+    private static Permission insertPermissions(String fileId) {
         try {
             Permission newPermission = new Permission();
             newPermission.setType("anyone");
             newPermission.setRole("reader");
-            return DRIVE_SERVICE.permissions().create(fileId, newPermission).execute();
+            return driveService.permissions().create(fileId, newPermission).execute();
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public static String getEmbedUrl(String fileId) {
-        return "https://drive.google.com/open?id=" + fileId;
     }
 }

@@ -161,7 +161,7 @@ public class Main extends NFields {
                 saveToFile(filename);
             }
             if (Parameter.ConfigVars.FILENAME_SOURCE == FilenameSource.NEO && Parameter.UseGoogleDrive.inEither()) {
-                //TODO test this with actual assignment
+                //TODO dependencies.conf this with actual assignment
 //                neoExecutor.push(filename, GoogleUtils.getEmbedUrl(GoogleUtils.uploadImage(filename).getId()));
             }
             cleanupFiles(new File(filename + "/"));

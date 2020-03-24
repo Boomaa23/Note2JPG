@@ -8,6 +8,10 @@
     <artifactId>Note2JPG</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -76,9 +80,9 @@
             <version>v3-rev20200306-1.30.9</version>
         </dependency>
         <dependency>
-            <groupId>com.google.http-client</groupId>
-            <artifactId>google-http-client-gson</artifactId>
-            <version>1.30.2</version>
+            <groupId>com.google.auth</groupId>
+            <artifactId>google-auth-library-oauth2-http</artifactId>
+            <version>0.20.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>

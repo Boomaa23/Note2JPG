@@ -7,5 +7,6 @@ out/
 *.txt
 *.pdf
 target/
+lib/
 GoogleSvcAcctPrivateKey.p12
-GoogleSvcAcctID.conf
+GoogleSvcAcctPrivateKey.json

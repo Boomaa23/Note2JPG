@@ -17,7 +17,7 @@ public class NEOExecutor extends NFields {
     }
 
     public final NEOExecutor push(String assignName, String imageUrl) {
-        //TODO test this with an open assignment
+        //TODO dependencies.conf this with an open assignment
         Element img = new Element("img");
         img.attr("src", imageUrl);
         img.attr("width", String.valueOf(NFields.iPadWidth));

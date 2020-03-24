@@ -17,7 +17,7 @@ github.com/Boomaa23/Note2JPG | Copyright © 2020. All Rights Reserved
 
 
 
-[Download .jar](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JPG.jar?raw=true)
+[com.boomaa.note2jpg.dependencies.Download .jar](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JPG.jar?raw=true)
 
 ## Usage
 `java -jar Note2JPG.jar`
