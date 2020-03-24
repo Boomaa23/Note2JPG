@@ -15,9 +15,12 @@ Converts Notability .note files into .jpg images
 
 github.com/Boomaa23/Note2JPG | Copyright © 2020. All Rights Reserved
 
+## Installation
+Download both JAR files listed below. Run the dependency puller JAR once (`java -jar Note2JPGDeps.jar`), then run the application JAR as listed in "Usage" each time you'd like to use the program. The dependency puller requires an internet connection, but the application does not.
 
+[Depdendency Puller JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JPGDeps.jar?raw=true)
 
-[com.boomaa.note2jpg.dependencies.Download .jar](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JPG.jar?raw=true)
+[Application JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JPG.jar?raw=true)
 
 ## Usage
 `java -jar Note2JPG.jar`
@@ -44,7 +47,7 @@ If you want to store configs without passing them through each time, create a JS
 
 ## Integration
 ### Google
-You will need to provide your own `.p12` private key and service account ID for Google integration. The private key should be renamed to `GoogleSvcAcctPrivateKey.p12`. The account ID can either be provided through `--gacctid` or through the config JSON.
+You will need to provide your own `.json` private key and service account ID for Google integration. The private key should be renamed to `GoogleSvcAcctPrivateKey.json`. The account ID can either be provided through `--gacctid` or through the config JSON.
 
 ### NEO
 NEO integration requires that you set a NEO username and password each time through `--neo` or through the NEO keys in the config JSON. The default class ID can be overridden by `--classid` or through the config JSON.
