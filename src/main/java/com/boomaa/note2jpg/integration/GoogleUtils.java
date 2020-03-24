@@ -41,7 +41,7 @@ public class GoogleUtils {
         return new GoogleCredential.Builder()
             .setTransport(GoogleNetHttpTransport.newTrustedTransport())
             .setJsonFactory(new GsonFactory())
-            .setServiceAccountId(Parameter.GoogleSvcAcctID.getPriority())
+            .setServiceAccountId(Parameter.GoogleSvcAcctID.getValue())
             //TODO sort out this scopes issues
             .setServiceAccountScopes(Collections.singletonList(DriveScopes.DRIVE))
             .setServiceAccountPrivateKeyFromP12File(new java.io.File("GoogleSvcAcctPrivateKey.p12"))

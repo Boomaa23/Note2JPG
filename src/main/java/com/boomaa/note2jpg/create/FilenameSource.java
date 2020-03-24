@@ -3,7 +3,7 @@ package com.boomaa.note2jpg.create;
 import com.boomaa.note2jpg.config.Parameter;
 
 public enum FilenameSource {
-    PARAMETER("Filename passed as parameter", "-f"),
+    PARAMETER("Single filename specified", "-f"),
     ALL("Converting all available .note files", "--all"),
     RANDOM("Randomly selecting a .note file to convert", "--randomfile"),
     NEO("Converting files matching unsubmitted NEO assignments", "--neo"),

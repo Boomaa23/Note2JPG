@@ -13,44 +13,37 @@ import java.util.Scanner;
 
 public class Args extends NFields {
     public static void parse() {
-        boolean parseNeo = false;
+        boolean neoFound = Parameter.NEOUsername.inEither() || Parameter.NEOPassword.inEither();
         int found = 0;
         for (Parameter p : Parameter.values()) {
             if (p.inEither()) {
                 switch (p.getType()) {
                     case FILENAME:
-                        ConfigVars.FILENAME_SOURCE = FilenameSource.matches(p);
+                        Parameter.ConfigVars.FILENAME_SOURCE = FilenameSource.matches(p);
                         found++;
-                        if (found > 1) {
+                        if (found > 1 || neoFound) {
                             throw new IllegalArgumentException("Cannot use multiple filename selectors");
                         }
                         break;
                     case INTEGER:
-                        p.setLinkedField(Integer.parseInt(p.getPriority()));
-                        break;
-                    case BOOLEAN:
-                        p.setLinkedField(p.inEither());
+                        p.setLinkedField(Integer.parseInt(p.getValue()));
                         break;
                     case STRING:
-                        p.setLinkedField(p.getPriority());
+                        p.setLinkedField(p.getValue());
                         break;
-                    case NEO:
-                        if (!parseNeo) {
-                            if (p.inArgs()) {
-                                String[] usrPw = p.argsValue(2);
-                                Parameter.NEOUsername.setLinkedField(usrPw[0]);
-                                Parameter.NEOPassword.setLinkedField(usrPw[1]);
-                                parseNeo = true;
-                            } else if (p.inJson()) {
-                                Parameter.NEOUsername.setLinkedField(JSONHelper.getJsonValue(Parameter.NEOUsername.name()));
-                                Parameter.NEOPassword.setLinkedField(JSONHelper.getJsonValue(Parameter.NEOPassword.name()));
-                                parseNeo = true;
-                            }
-                        }
-                        break;
-                    default:
                 }
             }
+        }
+        if (neoFound) {
+            if (Parameter.NEOUsername.inArgs() && Parameter.NEOPassword.inArgs()) {
+                String[] usrPw = Parameter.NEOUsername.argsValue(2);
+                Parameter.NEOUsername.setLinkedField(usrPw[0]);
+                Parameter.NEOPassword.setLinkedField(usrPw[1]);
+            } else if (Parameter.NEOUsername.inJson() && Parameter.NEOPassword.inJson()) {
+                Parameter.NEOUsername.setLinkedField(JSONHelper.getJsonValue(Parameter.NEOUsername.name()));
+                Parameter.NEOPassword.setLinkedField(JSONHelper.getJsonValue(Parameter.NEOPassword.name()));
+            }
+            Parameter.ConfigVars.FILENAME_SOURCE = FilenameSource.NEO;
         }
     }
 
@@ -58,12 +51,15 @@ public class Args extends NFields {
         if (Parameter.GenerateConfig.inEither()) {
             System.out.println("Note2JPG will now print a blank integrations JSON template to config.json");
             System.out.println("The application will not continue to run after this has completed");
-            JSONHelper.generateTemplate();
+            JSONHelper.generateConfig(false);
             System.exit(0);
         }
+        if (Parameter.WriteConfig.inEither()) {
+            JSONHelper.generateConfig(true);
+        }
 
-        System.out.println(ConfigVars.FILENAME_SOURCE.getMessage());
-        switch (ConfigVars.FILENAME_SOURCE) {
+        System.out.println(Parameter.ConfigVars.FILENAME_SOURCE.getMessage());
+        switch (Parameter.ConfigVars.FILENAME_SOURCE) {
             case ALL:
                 filenames.addAll(getAllLocalNotes());
                 break;
@@ -72,7 +68,7 @@ public class Args extends NFields {
                 filenames = neoExecutor.getAssignments().getNames();
                 break;
             case PARAMETER:
-                filenames.add(Parameter.Filename.getPriority());
+                filenames.add(Parameter.Filename.getValue());
                 break;
             case RANDOM:
                 determineRandomFilename();
@@ -83,8 +79,8 @@ public class Args extends NFields {
                 break;
         }
 
-        Parameter.PDFScaleFactor.setLinkedField(Integer.parseInt(Parameter.PDFScaleFactor.getPriority()));
-        Parameter.ImageScaleFactor.setLinkedField(Integer.parseInt(Parameter.PDFScaleFactor.getPriority()));
+        Parameter.PDFScaleFactor.setLinkedField(Integer.parseInt(Parameter.PDFScaleFactor.getValue()));
+        Parameter.ImageScaleFactor.setLinkedField(Integer.parseInt(Parameter.PDFScaleFactor.getValue()));
 
         if (Parameter.UseGoogleDrive.inEither()) {
             GoogleUtils.retrieveNoteList();
@@ -100,7 +96,7 @@ public class Args extends NFields {
             String fname = file.getName();
             if (fname.contains(".note")) {
                 String fNameNoExt = fname.substring(0, fname.length() - 5);
-                if (ConfigVars.FILENAME_SOURCE != FilenameSource.ALL) {
+                if (Parameter.ConfigVars.FILENAME_SOURCE != FilenameSource.ALL) {
                     System.out.println(valid + ") " + fNameNoExt);
                 }
                 valid++;

@@ -33,6 +33,7 @@ github.com/Boomaa23/Note2JPG | Copyright © 2020. All Rights Reserved
 | RandomFile                    | --randomfile          | Note2JPG | boolean | Select a file randomly if not specified
 | NoTextBoxes                   | --notextboxes         | Note2JPG | boolean | Do not request positions for text boxes
 | GenerateConfig                | --genconfig           | Note2JPG | boolean | Generate a config file template
+| WriteConfig                   | --writeconfig         | Note2JPG | boolean | Write out the current config to json
 | NEOUsername <br> NEOPassword  | --neo \<userId> \<pw> | NEO      | String  | Use NEO integration for unsubmitted assignments
 | NEOClassID                    | --classid \<classid>  | NEO      | String  | Specify a class ID for NEO integration
 | UseGoogleDrive                | --usedrive            | Google   | boolean | Use Google Drive as a .note source

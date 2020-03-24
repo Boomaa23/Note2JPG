@@ -17,7 +17,7 @@ import java.util.Map;
 
 public class JSONHelper extends NFields {
     private static final String CONFIG_FILE_NAME = "config.json";
-    private static Map<String, String> JSON;
+    private static Map<String, String> json;
 
     static {
         if (hasCustom()) {
@@ -33,17 +33,21 @@ public class JSONHelper extends NFields {
         try {
             Gson gson = new Gson();
             Type type = new TypeToken<HashMap<String, String>>(){}.getType();
-            JSON = gson.fromJson(new FileReader(CONFIG_FILE_NAME), type);
+            json = gson.fromJson(new FileReader(CONFIG_FILE_NAME), type);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    public static void generateTemplate() {
+    public static void generateConfig(boolean fillValues) {
         try {
             JsonObject json = new JsonObject();
             for (Parameter p : Parameter.values()) {
-                json.addProperty(p.name(), "");
+                if (!fillValues) {
+                    json.addProperty(p.name(), "");
+                } else {
+                    json.addProperty(p.name(), p.getValue());
+                }
             }
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             FileWriter writer = new FileWriter(CONFIG_FILE_NAME);
@@ -55,14 +59,21 @@ public class JSONHelper extends NFields {
     }
 
     public static Map<String, String> getJson() {
-        return JSON;
+        return json;
     }
 
-    public static boolean inJson(String key) {
-        return JSON != null && JSON.containsKey(key) && !JSON.get(key).equals("");
+    public static boolean inJsonBoolean(String key) {
+        if (json != null && json.containsKey(key) && !json.get(key).equals("")) {
+            return Boolean.parseBoolean(json.get(key));
+        }
+        return false;
+    }
+
+    public static boolean inJsonSimple(String key) {
+        return json != null && json.containsKey(key) && !json.get(key).equals("");
     }
 
     public static String getJsonValue(String key) {
-        return JSON.get(key);
+        return json.get(key);
     }
 }

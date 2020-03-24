@@ -10,7 +10,7 @@ public class NEOExecutorBuilder {
     public NEOExecutorBuilder(String username, String password) {
         this.username = username.toCharArray();
         this.password = password.toCharArray();
-        this.classID = Parameter.NEOClassID.getPriority();
+        this.classID = Parameter.NEOClassID.getValue();
     }
 
     public NEOExecutorBuilder setUsername(String username) {

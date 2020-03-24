@@ -1,5 +1,6 @@
 package com.boomaa.note2jpg.config;
 
+import com.boomaa.note2jpg.create.FilenameSource;
 import com.boomaa.note2jpg.function.NFields;
 
 import java.lang.reflect.Field;
@@ -10,14 +11,15 @@ public enum Parameter {
     ConvertAll("--all", Type.FILENAME, "FILENAME_SOURCE"),
     ImageScaleFactor("-s", Type.INTEGER, "IMAGE_SCALE_FACTOR"),
     PDFScaleFactor("-p", Type.INTEGER, "PDF_SCALE_FACTOR"),
-    DisplayConverted("--display", Type.BOOLEAN, "DISPLAY_CONVERTED"),
-    NoFileOutput("--nofile", Type.BOOLEAN, "DISPLAY_CONVERTED"),
-    NoTextBoxes("--notextboxes", Type.BOOLEAN, "DISPLAY_CONVERTED"),
-    GenerateConfig("--genconfig", Type.BOOLEAN, "GENERATE_CONFIG"),
+    DisplayConverted("--display", Type.BOOLEAN),
+    NoFileOutput("--nofile", Type.BOOLEAN),
+    NoTextBoxes("--notextboxes", Type.BOOLEAN),
+    GenerateConfig("--genconfig", Type.BOOLEAN),
+    WriteConfig("--writeconfig", Type.BOOLEAN),
     NEOUsername("--neo", Type.NEO, "NEO_USR"),
     NEOPassword("--neo", Type.NEO, "NEO_PW"),
     NEOClassID("--classid", Type.STRING, "NEO_CLASS_ID"),
-    UseGoogleDrive("--usedrive", Type.BOOLEAN, "USE_GOOGLE_DRIVE"),
+    UseGoogleDrive("--usedrive", Type.BOOLEAN),
     GoogleSvcAcctID("--gacctid", Type.STRING, "GOOGLE_SVC_ACCT_ID");
 
     private final String flag;
@@ -30,7 +32,16 @@ public enum Parameter {
         this.flag = flag;
         this.type = type;
         this.linkedField = linkedField;
-        this.inJson = JSONHelper.inJson(name());
+        this.inJson = JSONHelper.inJsonSimple(name());
+    }
+
+    Parameter(String flag, Type type) {
+        if (type != Type.BOOLEAN) {
+            throw new IllegalArgumentException("Must have a linked field for non-boolean types");
+        }
+        this.flag = flag;
+        this.type = type;
+        this.inJson = JSONHelper.inJsonBoolean(name());
     }
 
     public boolean inEither() {
@@ -61,16 +72,26 @@ public enum Parameter {
         return NFields.argsList.get(NFields.argsList.indexOf(flag) + 1);
     }
 
-    public int getPriorityInt() {
-        return Integer.parseInt(getPriority());
+    public int getValueInt() {
+        return Integer.parseInt(getValue());
     }
 
-    public String getPriority() {
+    public String getValue() {
+        if (type == Type.BOOLEAN) {
+            return Boolean.toString(inEither());
+        }
+        if (this.equals(NEOUsername)) {
+            return argsValue();
+        } else if (this.equals(NEOPassword)) {
+            return argsValue(2)[1];
+        }
+
         if (inArgs()) {
             return argsValue();
         } else if (inJson()) {
             return JSONHelper.getJsonValue(name());
         }
+
         try {
             var def = getLinkedField().get(null);
             if (def instanceof String) {
@@ -87,7 +108,7 @@ public enum Parameter {
     }
 
     public Field getLinkedField() {
-        return getLinkedField(ConfigVars.class);
+        return getLinkedField(Parameter.ConfigVars.class);
     }
 
     public Field getLinkedField(Class<?> targetClass) {
@@ -119,5 +140,14 @@ public enum Parameter {
         FILENAME, INTEGER, BOOLEAN, STRING, NEO
     }
 
+    public static class ConfigVars {
+        public static FilenameSource FILENAME_SOURCE = FilenameSource.USER_SELECT;
+        private static int IMAGE_SCALE_FACTOR = 8;
+        private static int PDF_SCALE_FACTOR = 2;
+        private static String GOOGLE_SVC_ACCT_ID = "102602978922283269345";
+        private static String NEO_CLASS_ID = "1543270";
+        private static String NEO_USR = "";
+        private static String NEO_PW = "";
+    }
 }
 

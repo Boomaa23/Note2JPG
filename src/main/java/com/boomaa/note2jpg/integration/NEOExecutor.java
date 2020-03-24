@@ -71,9 +71,9 @@ public class NEOExecutor extends NFields {
     }
 
     public static NEOExecutor parseArgs() {
-        NEOExecutorBuilder executorBuilder = new NEOExecutorBuilder(Parameter.NEOUsername.getPriority(), Parameter.NEOPassword.getPriority());
+        NEOExecutorBuilder executorBuilder = new NEOExecutorBuilder(Parameter.NEOUsername.getValue(), Parameter.NEOPassword.getValue());
         if (Parameter.NEOClassID.inEither()) {
-            executorBuilder.setClassID(Parameter.NEOClassID.getPriority());
+            executorBuilder.setClassID(Parameter.NEOClassID.getValue());
         }
         return executorBuilder.build();
     }
