@@ -7,9 +7,9 @@ import org.jsoup.nodes.Document;
 import java.io.IOException;
 import java.util.Map;
 
-public class NEOSession {
+public final class NEOSession {
     private final String classId;
-    private String urlBase = "https://neo.sbunified.org";
+    private String baseUrl = "https://neo.sbunified.org";
     private String authCookieName = "secure_lmssessionkey2";
     private String authCookieValue = null;
 
@@ -45,12 +45,16 @@ public class NEOSession {
         return null;
     }
 
-    private Connection getConnection(String url) {
-        return Jsoup.connect(urlBase + url).cookie(authCookieName, authCookieValue);
+    public final Connection getConnection(String url) {
+        return getConnection(url, true);
+    }
+
+    public final Connection getConnection(String url, boolean useBaseUrl) {
+        return Jsoup.connect((useBaseUrl ? baseUrl : "") + url).cookie(authCookieName, authCookieValue);
     }
 
     private String getLoginUrl(char[] username, char[] password) {
-        StringBuilder sb = new StringBuilder(urlBase + "/log_in/submit_from_portal?from=%2Fstudent_assignments%2Flist%2F");
+        StringBuilder sb = new StringBuilder(baseUrl + "/log_in/submit_from_portal?from=%2Fstudent_assignments%2Flist%2F");
         sb.append(classId);
         sb.append("&userid=");
         sb.append(username);
@@ -59,13 +63,13 @@ public class NEOSession {
         return sb.toString();
     }
 
-    public NEOSession setUrlBase(String urlBase) {
-        this.urlBase = urlBase;
+    public NEOSession setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
         return this;
     }
 
-    public String getUrlBase() {
-        return urlBase;
+    public String getBaseUrl() {
+        return baseUrl;
     }
 
     public final String getClassId() {

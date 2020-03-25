@@ -21,7 +21,7 @@ public class Args extends NFields {
                     case FILENAME:
                         Parameter.ConfigVars.FILENAME_SOURCE = FilenameSource.matches(p);
                         found++;
-                        if (found > 1 || neoFound) {
+                        if (found > 1) {
                             throw new IllegalArgumentException("Cannot use multiple filename selectors");
                         }
                         break;
@@ -30,6 +30,8 @@ public class Args extends NFields {
                         break;
                     case STRING:
                         p.setLinkedField(p.getValue());
+                        break;
+                    default:
                         break;
                 }
             }
@@ -44,6 +46,13 @@ public class Args extends NFields {
                 Parameter.NEOPassword.setLinkedField(JSONHelper.getJsonValue(Parameter.NEOPassword.name()));
             }
             Parameter.ConfigVars.FILENAME_SOURCE = FilenameSource.NEO;
+            neoExecutor = NEOExecutor.parseArgs();
+        }
+        if (Parameter.UseDriveDownload.inEither() && Parameter.Filename.inEither() && neoFound) {
+            Parameter.ConfigVars.FILENAME_SOURCE = FilenameSource.PARAMETER;
+        }
+        if (Parameter.UseDriveDownload.inEither() && found == 0) {
+            Parameter.ConfigVars.FILENAME_SOURCE = FilenameSource.DRIVE;
         }
     }
 
@@ -58,13 +67,17 @@ public class Args extends NFields {
             JSONHelper.generateConfig(true);
         }
 
+        if (Parameter.UseDriveDownload.inEither()) {
+            GoogleUtils.retrieveNoteList();
+        }
+
         System.out.println(Parameter.ConfigVars.FILENAME_SOURCE.getMessage());
         switch (Parameter.ConfigVars.FILENAME_SOURCE) {
             case ALL:
                 filenames.addAll(getAllLocalNotes());
                 break;
             case NEO:
-                neoExecutor = NEOExecutor.parseArgs().pull();
+                neoExecutor.pull();
                 filenames = neoExecutor.getAssignments().getNames();
                 break;
             case PARAMETER:
@@ -72,6 +85,13 @@ public class Args extends NFields {
                 break;
             case RANDOM:
                 determineRandomFilename();
+                break;
+            case DRIVE:
+                List<String> driveNotes = GoogleUtils.getNoteList();
+                for (int i = 0;i < driveNotes.size();i++) {
+                    System.out.println((i + 1) + ") " + driveNotes.get(i));
+                }
+                filenameSelector(driveNotes);
                 break;
             case USER_SELECT:
             default:
@@ -81,9 +101,19 @@ public class Args extends NFields {
 
         Parameter.PDFScaleFactor.setLinkedField(Integer.parseInt(Parameter.PDFScaleFactor.getValue()));
         Parameter.ImageScaleFactor.setLinkedField(Integer.parseInt(Parameter.ImageScaleFactor.getValue()));
+    }
 
-        if (Parameter.UseGoogleDrive.inEither()) {
-            GoogleUtils.retrieveNoteList();
+    public static void check() {
+        if (Parameter.NEOAssignment.inEither() && filenames.size() > 1) {
+            throw new IllegalArgumentException("Cannot specify an assignment name for multiple notes");
+        }
+
+        if (Parameter.UseDriveUpload.inEither() && Parameter.UseAWS.inEither()) {
+            throw new IllegalArgumentException("Cannot use AWS and Drive to upload final product");
+        }
+
+        if (filenames.isEmpty()) {
+            System.err.println("No .note files selected to convert");
         }
     }
 

@@ -1,21 +1,11 @@
 package com.boomaa.note2jpg.dependencies;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,12 +49,22 @@ public class Download {
             dependencyList.add(new MavenDependency(parts[0], parts[1], parts[3]));
         }
 
+        long originalFolderSize = FileUtil.folderSize(new File(LIBRARY_FOLDER));
+        int downloadCounter = 0;
         for (MavenDependency dependency : dependencyList) {
             if (!new File(LIBRARY_FOLDER + getMavenJarName(dependency)).exists()) {
                 System.out.println("Downloading " + dependency);
                 downloadDependency(dependency);
+                downloadCounter++;
             }
         }
+        if (downloadCounter > 0) {
+            System.out.println();
+        }
+
+        String folderSize = FileUtil.humanReadable(FileUtil.folderSize(new File(LIBRARY_FOLDER)) - originalFolderSize);
+        System.out.println("Downloaded " + downloadCounter + " dependencies to " +
+            "/" + LIBRARY_FOLDER + " (" + folderSize + ")");
     }
 
     private static String getMavenUrl(MavenDependency dependency) {

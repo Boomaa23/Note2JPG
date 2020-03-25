@@ -19,7 +19,12 @@ public enum Parameter {
     NEOUsername("--neo", Type.NEO, "NEO_USR"),
     NEOPassword("--neo", Type.NEO, "NEO_PW"),
     NEOClassID("--classid", Type.STRING, "NEO_CLASS_ID"),
-    UseGoogleDrive("--usedrive", Type.BOOLEAN),
+    NEOAssignment("-a", Type.STRING, "ASSIGNMENT_NAME"),
+    NEONoLink("--neonolink", Type.BOOLEAN),
+    UseAWS("--aws", Type.BOOLEAN),
+    UseDriveDownload("--gdrivedl", Type.BOOLEAN),
+    UseDriveUpload("--gdriveup", Type.BOOLEAN),
+    LimitDriveNotes("--gdrivelim", Type.INTEGER, "GDRIVE_LIMIT_NOTES"),
     GoogleSvcAcctID("--gacctid", Type.STRING, "GOOGLE_SVC_ACCT_ID");
 
     private final String flag;
@@ -149,6 +154,8 @@ public enum Parameter {
         public static FilenameSource FILENAME_SOURCE = FilenameSource.USER_SELECT;
         public static int IMAGE_SCALE_FACTOR = 8;
         public static int PDF_SCALE_FACTOR = 2;
+        public static int GDRIVE_LIMIT_NOTES = 20;
+        public static String ASSIGNMENT_NAME = "";
         public static String GOOGLE_SVC_ACCT_ID = "102602978922283269345";
         public static String NEO_CLASS_ID = "1543270";
         public static String NEO_USR = "";

@@ -1,7 +1,5 @@
 package com.boomaa.note2jpg.dependencies;
 
-import org.w3c.dom.Node;
-
 public class MavenDependency {
     private final String groupId;
     private final String artifactId;
@@ -11,10 +9,6 @@ public class MavenDependency {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
-    }
-
-    private String nodeToString(Node input) {
-        return input.getTextContent().replaceAll("[\\t\\n]", "");
     }
 
     public String getGroupId() {
@@ -31,10 +25,6 @@ public class MavenDependency {
 
     @Override
     public String toString() {
-        return "MavenDependency{" +
-            "groupId='" + groupId + '\'' +
-            ", artifactId='" + artifactId + '\'' +
-            ", version='" + version + '\'' +
-            '}';
+        return groupId + ':' + artifactId + ':' + version;
     }
 }

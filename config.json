@@ -12,6 +12,11 @@
   "NEOUsername": "",
   "NEOPassword": "",
   "NEOClassID": "",
-  "UseGoogleDrive": "",
+  "NEOAssignment": "",
+  "NEONoLink": "",
+  "UseAWS": "",
+  "UseDriveDownload": "",
+  "UseDriveUpload": "",
+  "LimitDriveNotes": "",
   "GoogleSvcAcctID": ""
 }

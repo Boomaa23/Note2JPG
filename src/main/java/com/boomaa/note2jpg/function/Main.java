@@ -68,9 +68,8 @@ public class Main extends NFields {
         argsList = Arrays.asList(args);
         Args.parse();
         Args.logic();
-        if (filenames.isEmpty()) {
-            System.err.println("No .note files selected to convert");
-        }
+        Args.check();
+
         for (String filename : filenames) {
             startTime = System.currentTimeMillis();
             try {
@@ -79,7 +78,7 @@ public class Main extends NFields {
                 if (Parameter.ConfigVars.FILENAME_SOURCE == FilenameSource.NEO) {
                     System.err.println("Could not find local .note file for NEO assignment \"" + filename + "\"");
                 }
-                if (Parameter.UseGoogleDrive.inEither() && GoogleUtils.isFilenameMatch(filename)) {
+                if (Parameter.UseDriveDownload.inEither() && GoogleUtils.isFilenameMatch(filename)) {
                     GoogleUtils.downloadNote(filename);
                     filename = unzipNote(filename);
                 } else {
@@ -157,13 +156,35 @@ public class Main extends NFields {
             } else if (frame != null) {
                 frame.dispose();
             }
+
             if (!Parameter.NoFileOutput.inEither()) {
                 saveToFile(filename);
             }
-            if (Parameter.ConfigVars.FILENAME_SOURCE == FilenameSource.NEO && Parameter.UseGoogleDrive.inEither()) {
+
+            if (Parameter.NEOUsername.inEither() && Parameter.NEOPassword.inEither()) {
+                String imageUrl = null;
+                if (Parameter.UseAWS.inEither()) {
+                    imageUrl = neoExecutor.aws().execute(filename);
+                } else if (Parameter.UseDriveUpload.inEither()) {
+                    imageUrl = GoogleUtils.getEmbedUrl(GoogleUtils.uploadImage(filename).getId());
+                }
                 //TODO test this with actual assignment
-//                neoExecutor.push(filename, GoogleUtils.getEmbedUrl(GoogleUtils.uploadImage(filename).getId()));
+                if (imageUrl != null) {
+                    System.out.println();
+                    System.out.println(filename + " uploaded to " + imageUrl);
+
+                    if (!Parameter.NEONoLink.inEither()) {
+                        String assignName = filename;
+                        if (Parameter.NEOAssignment.inEither()) {
+                            assignName = Parameter.NEOAssignment.getValue();
+                        }
+//                        String assignmentUrl = neoExecutor.push(assignName, imageUrl);
+                        String assignmentUrl = "N/A";
+                        System.out.println("Posted to the NEO assignment at " + assignmentUrl);
+                    }
+                }
             }
+
             cleanupFiles(new File(filename + "/"));
             if (!filename.equals(filenames.get(filenames.size() - 1))) {
                 System.out.println();

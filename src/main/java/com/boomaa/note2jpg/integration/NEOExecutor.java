@@ -11,19 +11,30 @@ import java.util.Collections;
 public class NEOExecutor extends NFields {
     private Assignments ufAssignments;
     private NEOSession session;
+    private AWSExecutor aws;
 
     public NEOExecutor(String classId, char[] username, char[] password) {
-        session = new NEOSession(classId).login(username, password);
+        this.session = new NEOSession(classId).login(username, password);
+        this.aws = new AWSExecutor(this.session);
     }
 
-    public final NEOExecutor push(String assignName, String imageUrl) {
+    public final AWSExecutor aws() {
+        return aws;
+    }
+
+    public final String push(String assignName, String imageUrl) {
         //TODO test this with an open assignment
         Element img = new Element("img");
         img.attr("src", imageUrl);
         img.attr("width", String.valueOf(NFields.iPadWidth));
         img.attr("height", String.valueOf(NFields.heightFinal));
-        session.post(Collections.singletonMap("answer", img.outerHtml()), "/student_freeform_assignment/create/" + ufAssignments.get(assignName));
-        return this;
+        String assign = ufAssignments.get(assignName);
+        if (assign != null) {
+            String url = "/student_freeform_assignment/create/" + assign;
+            session.post(Collections.singletonMap("answer", img.outerHtml()), url);
+            return url;
+        }
+        return null;
     }
 
     public final NEOExecutor pull() {

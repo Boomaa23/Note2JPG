@@ -1,5 +1,6 @@
 package com.boomaa.note2jpg.integration;
 
+import com.boomaa.note2jpg.config.Parameter;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.HttpRequestInitializer;
@@ -16,6 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,8 +56,14 @@ public class GoogleUtils {
                 .setFields("files")
                 .setOrderBy("modifiedTime desc")
                 .execute().getFiles();
-            for (File note : notes) {
-                noteList.put(note.getName(), note);
+            for (int i = 0;i < notes.size();i++) {
+                if (i >= Parameter.LimitDriveNotes.getValueInt()) {
+                    break;
+                }
+                String note = notes.get(i).getName();
+                if (note.substring(note.length() - 5).equals(".note")) {
+                    noteList.put(note.substring(0, note.length() - 5), notes.get(i));
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -63,7 +71,7 @@ public class GoogleUtils {
     }
 
     public static boolean isFilenameMatch(String filename) {
-        return noteList.containsKey(filename + ".note");
+        return noteList.containsKey(filename);
     }
 
     public static String getEmbedUrl(String fileId) {
@@ -72,8 +80,7 @@ public class GoogleUtils {
 
     public static void downloadNote(String filename) {
         try {
-            filename += ".note";
-            java.io.File outputFile = new java.io.File(filename);
+            java.io.File outputFile = new java.io.File(filename + ".note");
             if (!outputFile.exists()) {
                 outputFile.createNewFile();
             }
@@ -88,14 +95,13 @@ public class GoogleUtils {
     }
 
     public static File uploadImage(String filename) {
-        //TODO figure out the NEO AWS uploader and use that instead of drive
         try {
-            File fileMetadata = new File();
-            fileMetadata.setName(filename);
-            fileMetadata.setMimeType("image/jpeg");
+            File imageMetadata = new File();
+            imageMetadata.setName(filename);
+            imageMetadata.setMimeType("image/jpeg");
 
-            FileContent mediaContent = new FileContent("image/jpeg", new java.io.File(filename + ".jpg"));
-            File f = driveService.files().create(fileMetadata, mediaContent).execute();
+            FileContent imageContent = new FileContent("image/jpeg", new java.io.File(filename + ".jpg"));
+            File f = driveService.files().create(imageMetadata, imageContent).execute();
             insertPermissions(f.getId());
             return f;
         } catch (IOException e) {
@@ -114,5 +120,12 @@ public class GoogleUtils {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static List<String> getNoteList() {
+        if (noteList == null) {
+            retrieveNoteList();
+        }
+        return new ArrayList<>(noteList.keySet());
     }
 }

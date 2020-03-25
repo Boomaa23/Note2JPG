@@ -27,7 +27,7 @@ Download both JAR files listed below. Run the dependency puller JAR once (`java 
 
 | JSON Key | Flag \<Value> | Source | JSON Value | Action
 |-------------------------------|-----------------------|----------|---------|------------------------------------|
-| Filename                      |  -f \<filename>       | Note2JPG | String  | Specify name of .note file
+| Filename                      | -f \<filename>        | Note2JPG | String  | Specify name of .note file
 | ImageScaleFactor              | -s \<scaleFactor>     | Note2JPG | int     | Multiplier to superscale the whole image by
 | PDFScaleFactor                | -p \<pdfScaleFactor>  | Note2JPG | int     | Multiplier to superscale the PDFs by
 | ConvertAll                    | --all                 | Note2JPG | boolean | Convert all available notes
@@ -39,8 +39,13 @@ Download both JAR files listed below. Run the dependency puller JAR once (`java 
 | WriteConfig                   | --writeconfig         | Note2JPG | boolean | Write out the current config to json
 | NEOUsername <br> NEOPassword  | --neo \<userId> \<pw> | NEO      | String  | Use NEO integration for unsubmitted assignments
 | NEOClassID                    | --classid \<classid>  | NEO      | String  | Specify a class ID for NEO integration
-| UseGoogleDrive                | --usedrive            | Google   | boolean | Use Google Drive as a .note source
-| GoogleSvcAcctID               |  --gacctid \<acctid>  | Google   | String  | The Google service account ID to use
+| NEOAssignment                 | -a \<assignment>      | NEO      | String  | Set a different assignment name for image
+| NEONoLink                     | --neonolink           | NEO      | boolean | Don't link image to NEO assignment
+| UseAWS                        | --aws                 | Amazon   | boolean | Upload images to AWS (via NEO)
+| UseDriveDownload              | --gdrivedl            | Google   | boolean | Use Google Drive as a .note source
+| UseDriveUpload                | --gdriveup            | Google   | boolean | Upload images to Google Drive
+| LimitDriveNotes               | --gdrivelim \<limit>  | Google   | int     | Define a limit for Drive-retrieved notes
+| GoogleSvcAcctID               | --gacctid \<acctid>   | Google   | String  | The Google service account ID to use
 
 ## Config JSON
 If you want to store configs without passing them through each time, create a JSON called `config.json` in your root directory. Use keys as listed in the table above. If you would like a template generated, pass `--genconfig`. The application will stop after generating the config file.
