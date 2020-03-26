@@ -1,7 +1,7 @@
-package com.boomaa.note2jpg.integration;
+package com.boomaa.note2jpg.integration.google;
 
-import com.boomaa.note2jpg.config.Parameter;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -13,6 +13,7 @@ import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -26,22 +27,35 @@ public class GoogleUtils {
     private static final String APPLICATION_NAME = "Note2JPG";
     private static final String PRIVATE_KEY_NAME = "GoogleSvcAcctPrivateKey.json";
     private static Drive driveService;
-    private static Map<String, File> noteList;
+    private static Map<String, File> noteList; //Keys are Google file names
+    private static Map<String, File> imageList; //Keys are Google file IDs
 
     static {
         try {
             driveService = GoogleUtils.getDriveService();
             noteList = new HashMap<>();
+            imageList = new HashMap<>();
+            retrieveData(RequestDataType.NOTE);
+            retrieveData(RequestDataType.JPG);
         } catch (GeneralSecurityException | IOException e) {
             e.printStackTrace();
         }
     }
 
     private static HttpRequestInitializer authorize() throws IOException {
-        return new HttpCredentialsAdapter(
-            GoogleCredentials.fromStream(
-                new FileInputStream(PRIVATE_KEY_NAME))
-                .createScoped(DriveScopes.DRIVE));
+        try {
+            return new HttpCredentialsAdapter(
+                GoogleCredentials.fromStream(
+                    new FileInputStream(PRIVATE_KEY_NAME))
+                    .createScoped(DriveScopes.DRIVE));
+        } catch (FileNotFoundException e) {
+            System.err.println("Cannot find Google private key. Add a key or do not specify Google integration parameters.");
+            e.printStackTrace();
+            System.exit(1);
+        } catch (GoogleJsonResponseException ignored) {
+            System.exit(1);
+        }
+        return null;
     }
 
     private static Drive getDriveService() throws IOException, GeneralSecurityException {
@@ -49,28 +63,46 @@ public class GoogleUtils {
             GoogleUtils.authorize()).setApplicationName(APPLICATION_NAME).build();
     }
 
-    public static void retrieveNoteList() {
+    public static void retrieveData(RequestDataType type) {
+        List<File> notes = null;
         try {
-            List<File> notes = driveService.files().list()
-                .setQ("mimeType = 'application/x-zip'")
+            notes = driveService.files().list()
+                .setQ(type.q)
                 .setFields("files")
                 .setOrderBy("modifiedTime desc")
                 .execute().getFiles();
-            for (int i = 0;i < notes.size();i++) {
-                if (noteList.size() >= Parameter.LimitDriveNotes.getValueInt()) {
-                    break;
-                }
-                String note = notes.get(i).getName();
-                if (note.substring(note.length() - 5).equals(".note")) {
-                    noteList.put(note.substring(0, note.length() - 5), notes.get(i));
-                }
-            }
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        for (int i = 0;i < notes.size();i++) {
+            File note = notes.get(i);
+            String noteName = note.getName();
+            int noExtEnd = noteName.length() - type.ext.length();
+            if (noteName.substring(noExtEnd).equals(type.ext)) {
+                if (type == RequestDataType.NOTE) {
+                    noteList.put(noteName.substring(0, noExtEnd), note);
+                } else {
+                    imageList.put(note.getId(), note);
+                }
+            }
+        }
     }
 
-    public static boolean isFilenameMatch(String filename) {
+    public static void deleteAllMatchingImages(String filename) {
+        for (Map.Entry<String, File> entry : imageList.entrySet()) {
+            File file = entry.getValue();
+            if (file != null && file.getName().equals(filename + ".jpg")) {
+                try {
+                    driveService.files().delete(file.getId()).execute();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static boolean isNoteMatch(String filename) {
         return noteList.containsKey(filename);
     }
 
@@ -97,7 +129,7 @@ public class GoogleUtils {
     public static File uploadImage(String filename) {
         try {
             File imageMetadata = new File();
-            imageMetadata.setName(filename);
+            imageMetadata.setName(filename + ".jpg");
             imageMetadata.setMimeType("image/jpeg");
 
             FileContent imageContent = new FileContent("image/jpeg", new java.io.File(filename + ".jpg"));
@@ -122,10 +154,12 @@ public class GoogleUtils {
         return null;
     }
 
-    public static List<String> getNoteList() {
-        if (noteList == null) {
-            retrieveNoteList();
-        }
+    public static List<String> getNoteNameList() {
         return new ArrayList<>(noteList.keySet());
     }
+
+    public static List<String> getImageNameList() {
+        return new ArrayList<>(imageList.keySet());
+    }
+
 }

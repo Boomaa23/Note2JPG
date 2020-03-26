@@ -1,9 +1,9 @@
-package com.boomaa.note2jpg.function;
+package com.boomaa.note2jpg.convert;
 
 import com.boomaa.note2jpg.config.Parameter;
 import com.boomaa.note2jpg.create.Curve;
-import com.boomaa.note2jpg.conditional.NumberType;
 import com.boomaa.note2jpg.create.Point;
+import com.boomaa.note2jpg.state.NumberType;
 import com.dd.plist.NSData;
 import com.dd.plist.NSDictionary;
 import com.dd.plist.NSNumber;

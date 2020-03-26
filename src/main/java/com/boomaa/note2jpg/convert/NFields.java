@@ -1,10 +1,10 @@
-package com.boomaa.note2jpg.function;
+package com.boomaa.note2jpg.convert;
 
 import com.boomaa.note2jpg.create.Box;
 import com.boomaa.note2jpg.create.Circles;
-import com.boomaa.note2jpg.conditional.PDFState;
 import com.boomaa.note2jpg.create.Point;
-import com.boomaa.note2jpg.integration.NEOExecutor;
+import com.boomaa.note2jpg.integration.neo.NEOExecutor;
+import com.boomaa.note2jpg.state.PDFState;
 
 import javax.swing.JFrame;
 import java.awt.image.BufferedImage;
@@ -18,7 +18,7 @@ public class NFields {
     protected static JFrame frame;
     protected static Circles circles;
     protected static Point bounds;
-    protected static BufferedImage upscaledAll;
+    public static BufferedImage upscaledAll;
     protected static List<Box> textBoxBounds = new ArrayList<>();
     protected static List<String> textBoxContents = new ArrayList<>();
     protected static int iPadWidth = 1536;

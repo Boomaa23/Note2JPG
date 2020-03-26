@@ -1,7 +1,7 @@
 package com.boomaa.note2jpg.config;
 
-import com.boomaa.note2jpg.conditional.FilenameSource;
-import com.boomaa.note2jpg.function.NFields;
+import com.boomaa.note2jpg.convert.NFields;
+import com.boomaa.note2jpg.state.FilenameSource;
 
 import java.lang.reflect.Field;
 
@@ -21,7 +21,10 @@ public enum Parameter {
     NEOClassID("--classid", Type.STRING, "NEO_CLASS_ID"),
     NEOAssignment("-a", Type.STRING, "ASSIGNMENT_NAME"),
     NEONoLink("--neonolink", Type.BOOLEAN),
+    NewNEOFilename("--newneofn", Type.BOOLEAN),
+    WipeUploaded("--wipeup", Type.BOOLEAN),
     UseAWS("--aws", Type.BOOLEAN),
+    UseDrive("--gdrive", Type.BOOLEAN),
     UseDriveDownload("--gdrivedl", Type.BOOLEAN),
     UseDriveUpload("--gdriveup", Type.BOOLEAN),
     LimitDriveNotes("--gdrivelim", Type.INTEGER, "GDRIVE_LIMIT_NOTES"),
@@ -55,14 +58,14 @@ public enum Parameter {
     }
 
     public boolean inJson() {
-        return inJson;
+        return inJson || (setOverride && type == Type.BOOLEAN);
     }
 
     public boolean inArgs() {
         if (inArgs == null) {
             inArgs = NFields.argsList.contains(this.flag);
         }
-        return inArgs;
+        return inArgs || (setOverride && type == Type.BOOLEAN);
     }
 
     public String[] argsValue(int buffer) {
@@ -131,6 +134,9 @@ public enum Parameter {
 
     public <T> void setLinkedField(T value) {
         setOverride = true;
+        if (type == Type.BOOLEAN) {
+            return;
+        }
         try {
             getLinkedField().set(null, value);
         } catch (IllegalAccessException e) {

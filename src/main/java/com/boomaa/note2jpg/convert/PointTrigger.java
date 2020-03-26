@@ -1,12 +1,12 @@
-package com.boomaa.note2jpg.function;
+package com.boomaa.note2jpg.convert;
 
-import static com.boomaa.note2jpg.function.NFields.displayedHeight;
-import static com.boomaa.note2jpg.function.NFields.displayedWidth;
-import static com.boomaa.note2jpg.function.NFields.frame;
-import static com.boomaa.note2jpg.function.NFields.originalHeight;
-import static com.boomaa.note2jpg.function.NFields.scaledWidth;
-import static com.boomaa.note2jpg.function.NFields.textBoxBounds;
-import static com.boomaa.note2jpg.function.NFields.textBoxContents;
+import static com.boomaa.note2jpg.convert.NFields.displayedHeight;
+import static com.boomaa.note2jpg.convert.NFields.displayedWidth;
+import static com.boomaa.note2jpg.convert.NFields.frame;
+import static com.boomaa.note2jpg.convert.NFields.originalHeight;
+import static com.boomaa.note2jpg.convert.NFields.scaledWidth;
+import static com.boomaa.note2jpg.convert.NFields.textBoxBounds;
+import static com.boomaa.note2jpg.convert.NFields.textBoxContents;
 
 import com.boomaa.note2jpg.create.Box;
 import com.boomaa.note2jpg.create.Corner;

@@ -1,13 +1,14 @@
-package com.boomaa.note2jpg.function;
+package com.boomaa.note2jpg.convert;
 
-import com.boomaa.note2jpg.conditional.PDFState;
 import com.boomaa.note2jpg.config.Parameter;
 import com.boomaa.note2jpg.create.Corner;
+import com.boomaa.note2jpg.state.PDFState;
 import org.ghost4j.document.DocumentException;
 import org.ghost4j.document.PDFDocument;
 import org.ghost4j.renderer.RendererException;
 import org.ghost4j.renderer.SimpleRenderer;
 
+import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -18,8 +19,11 @@ import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageFilter;
 import java.awt.image.ImageProducer;
 import java.awt.image.RGBImageFilter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -141,5 +145,15 @@ public class ImageUtil extends NFields {
             System.out.println("PDF: None");
         }
         return canvas;
+    }
+
+    public static InputStream imageToInputStream(BufferedImage img) {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(img, "jpg", os);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new ByteArrayInputStream(os.toByteArray());
     }
 }

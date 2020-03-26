@@ -1,7 +1,7 @@
-package com.boomaa.note2jpg.integration;
+package com.boomaa.note2jpg.integration.neo;
 
 import com.boomaa.note2jpg.config.Parameter;
-import com.boomaa.note2jpg.function.NFields;
+import com.boomaa.note2jpg.convert.NFields;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;

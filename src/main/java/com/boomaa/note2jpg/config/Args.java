@@ -1,9 +1,9 @@
 package com.boomaa.note2jpg.config;
 
-import com.boomaa.note2jpg.conditional.FilenameSource;
-import com.boomaa.note2jpg.function.NFields;
-import com.boomaa.note2jpg.integration.GoogleUtils;
-import com.boomaa.note2jpg.integration.NEOExecutor;
+import com.boomaa.note2jpg.convert.NFields;
+import com.boomaa.note2jpg.integration.google.GoogleUtils;
+import com.boomaa.note2jpg.integration.neo.NEOExecutor;
+import com.boomaa.note2jpg.state.FilenameSource;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -50,6 +50,11 @@ public class Args extends NFields {
             }
             neoExecutor = NEOExecutor.parseArgs();
         }
+
+        if (Parameter.UseDrive.inEither()) {
+            Parameter.UseDriveUpload.setLinkedField(true);
+            Parameter.UseDriveDownload.setLinkedField(true);
+        }
         if (Parameter.UseDriveDownload.inEither() && Parameter.Filename.inEither() && neoFound) {
             Parameter.ConfigVars.FILENAME_SOURCE = FilenameSource.PARAMETER;
         }
@@ -69,10 +74,6 @@ public class Args extends NFields {
             JSONHelper.generateConfig(true);
         }
 
-        if (Parameter.UseDriveDownload.inEither()) {
-            GoogleUtils.retrieveNoteList();
-        }
-
         System.out.println(Parameter.ConfigVars.FILENAME_SOURCE.getMessage());
         switch (Parameter.ConfigVars.FILENAME_SOURCE) {
             case ALL:
@@ -89,15 +90,18 @@ public class Args extends NFields {
                 determineRandomFilename();
                 break;
             case DRIVE:
-                List<String> driveNotes = GoogleUtils.getNoteList();
+                List<String> driveNotes = GoogleUtils.getNoteNameList();
                 for (int i = 0;i < driveNotes.size();i++) {
+                    if (i >= Parameter.LimitDriveNotes.getValueInt()) {
+                        break;
+                    }
                     System.out.println((i + 1) + ") " + driveNotes.get(i));
                 }
-                filenameSelector(driveNotes);
+                filenames.add(filenameSelector(driveNotes));
                 break;
             case USER_SELECT:
             default:
-                filenameSelector(getAllLocalNotes());
+                filenames.add(filenameSelector(getAllLocalNotes()));
                 break;
         }
 
@@ -110,8 +114,8 @@ public class Args extends NFields {
             throw new IllegalArgumentException("Cannot specify an assignment name for multiple notes");
         }
 
-        if (Parameter.UseDriveUpload.inEither() && Parameter.UseAWS.inEither()) {
-            throw new IllegalArgumentException("Cannot use AWS and Drive to upload final product");
+        if (!(Parameter.NEOUsername.inEither() || Parameter.NEOPassword.inEither()) && Parameter.UseAWS.inEither()) {
+            System.err.println("Not uploading to AWS as no NEO credentials were specified");
         }
 
         if (filenames.isEmpty()) {
@@ -138,16 +142,16 @@ public class Args extends NFields {
         return notes;
     }
 
-    public static void filenameSelector(List<String> notes) {
+    public static String filenameSelector(List<String> list) {
         Scanner sc = new Scanner(System.in);
         System.out.print(">> ");
         int selected = 0;
         while (true) {
-            if (sc.hasNext() && (selected = Integer.parseInt(sc.next())) != 0 && selected <= notes.size()) {
+            if (sc.hasNext() && (selected = Integer.parseInt(sc.next())) != 0 && selected <= list.size()) {
                 break;
             }
-            if (selected > notes.size()) {
-                System.err.println("Note not found for supplied index. Please try again");
+            if (selected > list.size()) {
+                System.err.println("Item not found for supplied index. Please try again");
                 System.out.println();
                 System.out.print(">> ");
             }
@@ -158,8 +162,8 @@ public class Args extends NFields {
             }
         }
         sc.close();
-        filenames.add(notes.get(selected - 1));
         System.out.println();
+        return list.get(selected - 1);
     }
 
     public static void determineRandomFilename() {

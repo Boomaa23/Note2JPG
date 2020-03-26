@@ -1,4 +1,4 @@
-package com.boomaa.note2jpg.integration;
+package com.boomaa.note2jpg.integration.neo;
 
 import com.boomaa.note2jpg.config.Parameter;
 

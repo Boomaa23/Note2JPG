@@ -1,6 +1,6 @@
 package com.boomaa.note2jpg.config;
 
-import com.boomaa.note2jpg.function.NFields;
+import com.boomaa.note2jpg.convert.NFields;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

@@ -1,4 +1,4 @@
-package com.boomaa.note2jpg.integration;
+package com.boomaa.note2jpg.integration.neo;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;

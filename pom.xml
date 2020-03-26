@@ -30,7 +30,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.boomaa.note2jpg.function.Main</mainClass>
+                            <mainClass>com.boomaa.note2jpg.convert.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -42,7 +42,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.boomaa.note2jpg.function.Main</mainClass>
+                            <mainClass>com.boomaa.note2jpg.convert.Main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

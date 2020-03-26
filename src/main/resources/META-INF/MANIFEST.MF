@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Main-Class: com.boomaa.note2jpg.function.Main
+Main-Class: com.boomaa.note2jpg.convert.Main
 Class-Path: lib/jna-4.1.0.jar lib/error_prone_annotations-2.3.4.jar lib/auto-value-a
  nnotations-1.7.jar lib/opencensus-contrib-http-util-0.24.0.jar lib/checker-comp
  at-qual-2.5.5.jar lib/zip4j-2.5.0.jar lib/opencensus-api-0.24.0.jar lib/failureacce
