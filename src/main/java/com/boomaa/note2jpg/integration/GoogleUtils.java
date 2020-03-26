@@ -57,7 +57,7 @@ public class GoogleUtils {
                 .setOrderBy("modifiedTime desc")
                 .execute().getFiles();
             for (int i = 0;i < notes.size();i++) {
-                if (i >= Parameter.LimitDriveNotes.getValueInt()) {
+                if (noteList.size() >= Parameter.LimitDriveNotes.getValueInt()) {
                     break;
                 }
                 String note = notes.get(i).getName();

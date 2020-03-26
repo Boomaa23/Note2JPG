@@ -2,6 +2,7 @@ package com.boomaa.note2jpg.function;
 
 import com.boomaa.note2jpg.create.Box;
 import com.boomaa.note2jpg.create.Circles;
+import com.boomaa.note2jpg.conditional.PDFState;
 import com.boomaa.note2jpg.create.Point;
 import com.boomaa.note2jpg.integration.NEOExecutor;
 
@@ -29,6 +30,6 @@ public class NFields {
     protected static double displayedHeight;
     protected static double displayedWidth;
     protected static int pages;
-    protected static boolean noPdf = false;
+    protected static PDFState pdfState = PDFState.NONE;
     protected static long startTime;
 }

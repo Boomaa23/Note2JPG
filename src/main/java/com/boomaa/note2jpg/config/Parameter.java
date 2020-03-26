@@ -1,6 +1,6 @@
 package com.boomaa.note2jpg.config;
 
-import com.boomaa.note2jpg.create.FilenameSource;
+import com.boomaa.note2jpg.conditional.FilenameSource;
 import com.boomaa.note2jpg.function.NFields;
 
 import java.lang.reflect.Field;

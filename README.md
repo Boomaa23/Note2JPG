@@ -29,7 +29,7 @@ Download both JAR files listed below. Run the dependency puller JAR once (`java 
 |-------------------------------|-----------------------|----------|---------|------------------------------------|
 | Filename                      | -f \<filename>        | Note2JPG | String  | Specify name of .note file
 | ImageScaleFactor              | -s \<scaleFactor>     | Note2JPG | int     | Multiplier to superscale the whole image by
-| PDFScaleFactor                | -p \<pdfScaleFactor>  | Note2JPG | int     | Multiplier to superscale the PDFs by
+| PDFScaleFactor                | -p \<pdfScale>        | Note2JPG | int     | Multiplier to superscale the PDFs by
 | ConvertAll                    | --all                 | Note2JPG | boolean | Convert all available notes
 | DisplayConverted              | --display             | Note2JPG | boolean | Show the image after processing
 | NoFileOutput                  | --nofile              | Note2JPG | boolean | Do not write the image to file

@@ -5,8 +5,9 @@ import com.boomaa.note2jpg.config.Parameter;
 import com.boomaa.note2jpg.create.Circles;
 import com.boomaa.note2jpg.create.Corner;
 import com.boomaa.note2jpg.create.Curve;
-import com.boomaa.note2jpg.create.FilenameSource;
-import com.boomaa.note2jpg.create.NumberType;
+import com.boomaa.note2jpg.conditional.FilenameSource;
+import com.boomaa.note2jpg.conditional.NumberType;
+import com.boomaa.note2jpg.conditional.PDFState;
 import com.boomaa.note2jpg.create.Point;
 import com.boomaa.note2jpg.integration.GoogleUtils;
 import com.dd.plist.NSArray;
@@ -107,14 +108,24 @@ public class Main extends NFields {
                     Point[] points = Decode.getPoints(curvespoints);
                     Curve[] curves = Decode.pointsToCurves(points, colors, curvesnumpoints, curveswidth);
                     scaledWidth = Decode.getNumberFromDict(sessionDict, "pageWidthInDocumentCoordsKey") * Parameter.ImageScaleFactor.getValueInt();
-                    if (!noPdf) {
-                        NSDictionary pdfMain = (NSDictionary) PropertyListParser.parse(new File(filename + "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist"));
-                        String[] pdfLocs = ((NSDictionary) (pdfMain.getHashMap().get("pageNumbers"))).allKeys();
-                        for (String pdfLoc : pdfLocs) {
-                            pdfs.addAll(ImageUtil.getPdfImages(filename, pdfLoc));
+                    if (pdfState != PDFState.NONE) {
+                        String[] pdfLocs = null;
+                        if (pdfState == PDFState.PLIST) {
+                            NSDictionary pdfMain = (NSDictionary) PropertyListParser.parse(new File(filename + "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist"));
+                            pdfLocs = ((NSDictionary) (pdfMain.getHashMap().get("pageNumbers"))).allKeys();
+                            for (String pdfLoc : pdfLocs) {
+                                pdfs.addAll(ImageUtil.getPdfImages(filename, pdfLoc));
+                            }
+                            //TODO implement by-page setting for pdfs in the plist
+                        } else if (pdfState == PDFState.FILE_ONLY) {
+                            File pdfDir = new File(filename + "/PDFs/");
+                            for (File pdf : pdfDir.listFiles()) {
+                                pdfs.addAll(ImageUtil.getPdfImages(filename, pdf.getName()));
+                            }
                         }
                         pages = pdfs.size();
                     } else {
+                        //TODO actually calculate this for non-pdfs
                         pages = 1;
                     }
                     scaledHeight = (int) (scaledWidth * pages * 11 / 8.5);
@@ -240,15 +251,18 @@ public class Main extends NFields {
         zipFile.extractFile(filename + "/Session.plist", ".");
         try {
             zipFile.extractFile(filename + "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist", ".");
-            noPdf = false;
+            pdfState = PDFState.PLIST;
         } catch (ZipException e) {
-            noPdf = true;
+            pdfState = PDFState.NONE;
         }
         try {
             List<FileHeader> files = zipFile.getFileHeaders();
             for (FileHeader file : files) {
                 if (file.getFileName().contains("PDFs")) {
                     zipFile.extractFile(file, ".");
+                    if (pdfState == PDFState.NONE) {
+                        pdfState = PDFState.FILE_ONLY;
+                    }
                 }
             }
         } catch (ZipException e) {

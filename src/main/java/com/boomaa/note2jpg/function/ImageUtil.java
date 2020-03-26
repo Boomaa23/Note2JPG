@@ -1,5 +1,6 @@
 package com.boomaa.note2jpg.function;
 
+import com.boomaa.note2jpg.conditional.PDFState;
 import com.boomaa.note2jpg.config.Parameter;
 import com.boomaa.note2jpg.create.Corner;
 import org.ghost4j.document.DocumentException;
@@ -52,7 +53,7 @@ public class ImageUtil extends NFields {
 
     public static void populateUnscaledAll(BufferedImage pdfs) {
         Graphics2D g2 = (Graphics2D) pdfs.getGraphics();
-        if (noPdf) {
+        if (pdfState == PDFState.NONE) {
             circles.print(g2);
         } else {
             System.out.println();
@@ -127,7 +128,7 @@ public class ImageUtil extends NFields {
 
     public static BufferedImage getPdfCanvas(List<Image> pdfs) throws OutOfMemoryError, NegativeArraySizeException {
         BufferedImage canvas = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_RGB);
-        if (!noPdf) {
+        if (pdfState != PDFState.NONE) {
             Graphics2D g2 = (Graphics2D) canvas.getGraphics();
             int lastBottom = 0;
             for (int i = 0; i < pdfs.size(); i++) {

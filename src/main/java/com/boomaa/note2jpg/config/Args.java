@@ -1,6 +1,6 @@
 package com.boomaa.note2jpg.config;
 
-import com.boomaa.note2jpg.create.FilenameSource;
+import com.boomaa.note2jpg.conditional.FilenameSource;
 import com.boomaa.note2jpg.function.NFields;
 import com.boomaa.note2jpg.integration.GoogleUtils;
 import com.boomaa.note2jpg.integration.NEOExecutor;
@@ -45,7 +45,9 @@ public class Args extends NFields {
                 Parameter.NEOUsername.setLinkedField(JSONHelper.getJsonValue(Parameter.NEOUsername.name()));
                 Parameter.NEOPassword.setLinkedField(JSONHelper.getJsonValue(Parameter.NEOPassword.name()));
             }
-            Parameter.ConfigVars.FILENAME_SOURCE = FilenameSource.NEO;
+            if (found == 0) {
+                Parameter.ConfigVars.FILENAME_SOURCE = FilenameSource.NEO;
+            }
             neoExecutor = NEOExecutor.parseArgs();
         }
         if (Parameter.UseDriveDownload.inEither() && Parameter.Filename.inEither() && neoFound) {
