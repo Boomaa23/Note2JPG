@@ -2,9 +2,32 @@
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
                       http://maven.apache.org/xsd/settings-1.0.0.xsd">
+    <profiles>
+        <profile>
+            <id>github-ci</id>
+            <repositories>
+                <repository>
+                    <id>central</id>
+                    <url>https://repo1.maven.org/maven2</url>
+                    <releases><enabled>true</enabled></releases>
+                    <snapshots><enabled>true</enabled></snapshots>
+                </repository>
+                <repository>
+                    <id>github-ci</id>
+                    <name>GitHub Boomaa23 Apache Maven Packages</name>
+                    <url>https://maven.pkg.github.com/Boomaa23/neo-aws-s3-upload</url>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+
+    <activeProfiles>
+        <activeProfile>github-ci</activeProfile>
+    </activeProfiles>
+
     <servers>
         <server>
-            <id>github2</id>
+            <id>github-ci</id>
             <username>Boomaa23</username>
             <password>b344cf374b3f1db19ed991c9e4dd4914ae21cb37</password>
         </server>
