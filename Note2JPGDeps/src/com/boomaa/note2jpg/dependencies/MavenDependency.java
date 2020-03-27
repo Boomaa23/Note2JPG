@@ -23,6 +23,10 @@ public class MavenDependency {
         return version;
     }
 
+    public String getJarName() {
+        return this.artifactId + "-" + this.version + ".jar";
+    }
+
     @Override
     public String toString() {
         return groupId + ':' + artifactId + ':' + version;

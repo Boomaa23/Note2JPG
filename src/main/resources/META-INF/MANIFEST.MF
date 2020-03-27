@@ -5,7 +5,7 @@ Class-Path: lib/jna-4.1.0.jar lib/error_prone_annotations-2.3.4.jar lib/auto-val
  at-qual-2.5.5.jar lib/zip4j-2.5.0.jar lib/opencensus-api-0.24.0.jar lib/failureacce
  ss-1.0.1.jar lib/jsoup-1.13.1.jar lib/log4j-1.2.17.jar lib/google-api-client-1.30.9
  .jar lib/google-http-client-jackson2-1.34.0.jar lib/jsr305-3.0.2.jar lib/commons-co
- dec-1.11.jar lib/ghost4j-1.0.1.jar lib/itext-2.1.7.jar lib/jna-4.1.0.jar lib/ghost4j-1.
+ dec-1.11.jar lib/ghost4j-1.0.1.jar lib/itext-2.1.7.jar lib/neo-aws-s3-upload-0.2.0.jar lib/jna-4.1.0.jar lib/ghost4j-1.
  0.1.jar lib/google-auth-library-credentials-0.20.0.jar lib/dd-plist-1.23.jar lib/gr
  pc-context-1.22.1.jar lib/zip4j-2.5.0.jar lib/guava-28.2-android.jar lib/xmlgraphic
  s-commons-1.4.jar lib/google-auth-library-oauth2-http-0.20.0.jar lib/commons-lo
