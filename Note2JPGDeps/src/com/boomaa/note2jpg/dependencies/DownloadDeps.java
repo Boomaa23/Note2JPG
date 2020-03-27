@@ -10,9 +10,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Download {
+public class DownloadDeps {
     private static String DEPENDENCIES_URL = "https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/src/main/resources/dependencies.conf";
-    private static String READ_GITHUB_PKG_TOKEN = "b344cf374b3f1db19ed991c9e4dd4914ae21cb37";
     private static String LIBRARY_FOLDER = "lib/";
     private static List<MavenDependency> dependencyList = new ArrayList<>();
 
@@ -55,11 +54,7 @@ public class Download {
         for (MavenDependency dependency : dependencyList) {
             if (!new File(LIBRARY_FOLDER + dependency.getJarName()).exists()) {
                 System.out.println("Downloading " + dependency);
-                if (dependency.getArtifactId().equals("neo-aws-s3-upload")) {
-                    downloadFile(getNEOAWSUrl(), "/" + dependency.getJarName());
-                } else {
-                    downloadDependency(dependency);
-                }
+                downloadDependency(dependency);
                 downloadCounter++;
             }
         }
@@ -70,18 +65,6 @@ public class Download {
         String folderSize = FileUtil.humanReadable(FileUtil.folderSize(new File(LIBRARY_FOLDER)) - originalFolderSize);
         System.out.println("Downloaded " + downloadCounter + " dependencies to " +
             "/" + LIBRARY_FOLDER + " (" + folderSize + ")");
-    }
-
-    private static String getNEOAWSUrl() {
-        return "https://raw.githubusercontent.com/Boomaa23/neo-aws-s3-upload/master/neo-aws-s3-upload.jar";
-    }
-
-    // TODO Doesn't work because of authentication
-    private static String getGithubUrl(MavenDependency dependency) {
-        return "https://maven.pkg.github.com/Boomaa23/" +
-            dependency.getArtifactId() + "/" +
-            dependency.getGroupId() + "." + dependency.getArtifactId() + "/" +
-            dependency.getVersion() + "/" + dependency.getJarName();
     }
 
     private static String getMavenCentralUrl(MavenDependency dependency) {

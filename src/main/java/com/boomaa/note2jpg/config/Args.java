@@ -1,10 +1,10 @@
 package com.boomaa.note2jpg.config;
 
 import com.boomaa.note2jpg.convert.NFields;
-import com.boomaa.note2jpg.integration.GoogleUtils;
-import com.boomaa.note2jpg.integration.NEOExecutor;
+import com.boomaa.note2jpg.integration.google.GoogleUtils;
+import com.boomaa.note2jpg.integration.neo.NEOExecutor;
+import com.boomaa.note2jpg.integration.s3upload.NEOAWS;
 import com.boomaa.note2jpg.state.FilenameSource;
-import com.boomaa.s3uploader.NEOAWS;
 
 import java.io.File;
 import java.util.ArrayList;

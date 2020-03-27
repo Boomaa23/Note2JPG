@@ -1,4 +1,4 @@
-package com.boomaa.note2jpg.integration;
+package com.boomaa.note2jpg.integration.google;
 
 public enum RequestDataType {
     NOTE(".note", "mimeType = 'application/x-zip'"),
