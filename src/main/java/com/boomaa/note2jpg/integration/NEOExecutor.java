@@ -1,7 +1,7 @@
-package com.boomaa.note2jpg.integration.neo;
+package com.boomaa.note2jpg.integration;
 
-import com.boomaa.note2jpg.config.Parameter;
 import com.boomaa.note2jpg.convert.NFields;
+import com.boomaa.s3uploader.NEOAWS;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -9,17 +9,11 @@ import org.jsoup.select.Elements;
 import java.util.Collections;
 
 public class NEOExecutor extends NFields {
+    private final String classId;
     private Assignments ufAssignments;
-    private NEOSession session;
-    private AWSExecutor aws;
 
-    public NEOExecutor(String classId, char[] username, char[] password) {
-        this.session = new NEOSession(classId).login(username, password);
-        this.aws = new AWSExecutor(this.session);
-    }
-
-    public final AWSExecutor aws() {
-        return aws;
+    public NEOExecutor(String classId) {
+        this.classId = classId;
     }
 
     public final String push(String assignName, String imageUrl) {
@@ -31,7 +25,7 @@ public class NEOExecutor extends NFields {
         String assign = ufAssignments.get(assignName);
         if (assign != null) {
             String url = "/student_freeform_assignment/create/" + assign;
-            session.post(Collections.singletonMap("answer", img.outerHtml()), url);
+            NEOAWS.NEO_SESSION.post(Collections.singletonMap("answer", img.outerHtml()), url);
             return url;
         }
         return null;
@@ -47,7 +41,7 @@ public class NEOExecutor extends NFields {
     }
 
     private Document retrieveAssignDoc() {
-        return session.get("/student_assignments/list/" + session.getClassId());
+        return NEOAWS.NEO_SESSION.get("/student_assignments/list/" + classId);
     }
 
     private Elements parseAssignments(Document assignmentsDocument) {
@@ -79,13 +73,5 @@ public class NEOExecutor extends NFields {
             }
         }
         return ufAssignTemp;
-    }
-
-    public static NEOExecutor parseArgs() {
-        NEOExecutorBuilder executorBuilder = new NEOExecutorBuilder(Parameter.NEOUsername.getValue(), Parameter.NEOPassword.getValue());
-        if (Parameter.NEOClassID.inEither()) {
-            executorBuilder.setClassID(Parameter.NEOClassID.getValue());
-        }
-        return executorBuilder.build();
     }
 }

@@ -1,9 +1,10 @@
 package com.boomaa.note2jpg.config;
 
 import com.boomaa.note2jpg.convert.NFields;
-import com.boomaa.note2jpg.integration.google.GoogleUtils;
-import com.boomaa.note2jpg.integration.neo.NEOExecutor;
+import com.boomaa.note2jpg.integration.GoogleUtils;
+import com.boomaa.note2jpg.integration.NEOExecutor;
 import com.boomaa.note2jpg.state.FilenameSource;
+import com.boomaa.s3uploader.NEOAWS;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -48,7 +49,8 @@ public class Args extends NFields {
             if (found == 0) {
                 Parameter.ConfigVars.FILENAME_SOURCE = FilenameSource.NEO;
             }
-            neoExecutor = NEOExecutor.parseArgs();
+            NEOAWS.create(Parameter.NEOUsername.getValue(), Parameter.NEOPassword.getValue());
+            neoExecutor = new NEOExecutor(Parameter.NEOClassID.getValue());
         }
 
         if (Parameter.UseDrive.inEither()) {

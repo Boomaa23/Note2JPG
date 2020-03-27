@@ -3,7 +3,7 @@ package com.boomaa.note2jpg.convert;
 import com.boomaa.note2jpg.create.Box;
 import com.boomaa.note2jpg.create.Circles;
 import com.boomaa.note2jpg.create.Point;
-import com.boomaa.note2jpg.integration.neo.NEOExecutor;
+import com.boomaa.note2jpg.integration.NEOExecutor;
 import com.boomaa.note2jpg.state.PDFState;
 
 import javax.swing.JFrame;

@@ -1,4 +1,4 @@
-package com.boomaa.note2jpg.integration.neo;
+package com.boomaa.note2jpg.integration;
 
 import java.util.ArrayList;
 import java.util.HashMap;

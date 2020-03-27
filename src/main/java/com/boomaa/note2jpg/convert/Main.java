@@ -6,10 +6,11 @@ import com.boomaa.note2jpg.create.Circles;
 import com.boomaa.note2jpg.create.Corner;
 import com.boomaa.note2jpg.create.Curve;
 import com.boomaa.note2jpg.create.Point;
-import com.boomaa.note2jpg.integration.google.GoogleUtils;
+import com.boomaa.note2jpg.integration.GoogleUtils;
 import com.boomaa.note2jpg.state.FilenameSource;
 import com.boomaa.note2jpg.state.NumberType;
 import com.boomaa.note2jpg.state.PDFState;
+import com.boomaa.s3uploader.NEOAWS;
 import com.dd.plist.NSArray;
 import com.dd.plist.NSDictionary;
 import com.dd.plist.PropertyListFormatException;
@@ -180,7 +181,7 @@ public class Main extends NFields {
                     if (Parameter.UseDriveDownload.inEither() || Parameter.UseAWS.inEither()) {
                         if (Parameter.UseAWS.inEither()) {
                             System.out.println("Please note AWS does not remove the file's record entirely, and instead overwrites the file data with nulls");
-                            neoExecutor.aws().wipe(filename);
+                            NEOAWS.AWS_EXECUTOR.remove(filename + ".jpg");
                         }
                         if (Parameter.UseDriveUpload.inEither()) {
                             GoogleUtils.deleteAllMatchingImages(filename);
@@ -193,7 +194,7 @@ public class Main extends NFields {
 
                 List<String> imageUrls = new ArrayList<>();
                 if (Parameter.UseAWS.inEither()) {
-                    imageUrls.addAll(Arrays.asList(neoExecutor.aws().execute(filename)));
+                    imageUrls.addAll(Arrays.asList(NEOAWS.AWS_EXECUTOR.uploadFile(filename + ".jpg")));
                 }
                 if (Parameter.UseDriveUpload.inEither()) {
                     imageUrls.add(GoogleUtils.getEmbedUrl(GoogleUtils.uploadImage(filename).getId()));

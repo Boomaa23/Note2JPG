@@ -1,4 +1,4 @@
-package com.boomaa.note2jpg.integration.google;
+package com.boomaa.note2jpg.integration;
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;

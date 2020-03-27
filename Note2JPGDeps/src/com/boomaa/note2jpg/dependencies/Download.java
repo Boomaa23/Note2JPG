@@ -12,6 +12,7 @@ import java.util.List;
 
 public class Download {
     private static String DEPENDENCIES_URL = "https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/src/main/resources/dependencies.conf";
+    private static String READ_GITHUB_PKG_TOKEN = "b344cf374b3f1db19ed991c9e4dd4914ae21cb37";
     private static String LIBRARY_FOLDER = "lib/";
     private static List<MavenDependency> dependencyList = new ArrayList<>();
 
@@ -54,7 +55,11 @@ public class Download {
         for (MavenDependency dependency : dependencyList) {
             if (!new File(LIBRARY_FOLDER + getMavenJarName(dependency)).exists()) {
                 System.out.println("Downloading " + dependency);
-                downloadDependency(dependency);
+                if (dependency.getArtifactId().equals("neo-aws-s3-upload")) {
+                    downloadFile(getNEOAWSUrl(), "neo-aws-s3-upload.jar");
+                } else {
+                    downloadDependency(dependency);
+                }
                 downloadCounter++;
             }
         }
@@ -67,7 +72,19 @@ public class Download {
             "/" + LIBRARY_FOLDER + " (" + folderSize + ")");
     }
 
-    private static String getMavenUrl(MavenDependency dependency) {
+    private static String getNEOAWSUrl() {
+        return "https://github.com/Boomaa23/neo-aws-s3-upload/blob/master/neo-aws-s3-upload.jar?raw=true";
+    }
+
+    // TODO Doesn't work because of authentication
+    private static String getGithubUrl(MavenDependency dependency) {
+        return "https://maven.pkg.github.com/Boomaa23/" +
+            dependency.getArtifactId() + "/" +
+            dependency.getGroupId() + "." + dependency.getArtifactId() + "/" +
+            dependency.getVersion() + "/" + dependency.getArtifactId() + "-" + dependency.getVersion() + ".jar";
+    }
+
+    private static String getMavenCentralUrl(MavenDependency dependency) {
         return "https://repo1.maven.org/maven2/" +
             dependency.getGroupId().replace(".", "/") + "/" +
             dependency.getArtifactId()  + "/" + dependency.getVersion()  + "/" +
@@ -79,7 +96,7 @@ public class Download {
     }
 
     private static void downloadDependency(MavenDependency dependency) {
-        downloadFile(getMavenUrl(dependency), getMavenJarName(dependency));
+        downloadFile(getMavenCentralUrl(dependency), getMavenJarName(dependency));
     }
 
     private static void downloadFile(String url, String filename) {
