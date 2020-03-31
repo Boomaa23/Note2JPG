@@ -124,10 +124,16 @@ public class ImageUtil extends NFields {
             SimpleRenderer renderer = new SimpleRenderer();
             renderer.setResolution(Parameter.PDFScaleFactor.getValueInt() * 100);
             return renderer.render(document);
+        } catch (UnsatisfiedLinkError e) {
+            System.err.println();
+            System.err.println("No PDF reader library found. Download it from the link below.");
+            System.err.println("Installer: https://www.ghostscript.com/download/gsdnld.html");
+            System.err.println("Windows DLL Only: https://s3.amazonaws.com/s3.edu20.org/files/2796766/gsdll64.dll");
+            System.exit(1);
         } catch (IOException | RendererException | DocumentException e) {
             e.printStackTrace();
-            return new ArrayList<>();
         }
+        return new ArrayList<>();
     }
 
     public static BufferedImage getPdfCanvas(List<Image> pdfs) throws OutOfMemoryError, NegativeArraySizeException {

@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class DownloadDeps {
@@ -57,6 +58,9 @@ public class DownloadDeps {
                 downloadDependency(dependency);
                 downloadCounter++;
             }
+        }
+        if (Arrays.asList(args).contains("--gsdll64")) {
+            downloadFile("https://s3.amazonaws.com/s3.edu20.org/files/2796766/gsdll64.dll", "gsdll64.dll");
         }
         if (downloadCounter > 0) {
             System.out.println();

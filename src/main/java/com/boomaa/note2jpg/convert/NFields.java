@@ -14,7 +14,7 @@ import java.util.List;
 public class NFields {
     public static NEOExecutor neoExecutor;
     public static List<String> argsList;
-    protected static List<String> filenames = new ArrayList<>();
+    protected static List<String> notenames = new ArrayList<>();
     protected static JFrame frame;
     protected static Circles circles;
     protected static Point bounds;

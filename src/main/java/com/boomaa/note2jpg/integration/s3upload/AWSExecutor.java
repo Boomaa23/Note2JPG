@@ -9,6 +9,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -64,8 +66,8 @@ public class AWSExecutor {
     }
 
     public String[] getMultiUrl(Map<String, String> credVars, String filename) {
-        String addUrl = credVars.get("aws_location") + "/" + filename;
-        return new String[] { AWS_BUCKET_URL + addUrl,  session.getBaseUrl() + "/" + addUrl };
+        String addUrl = credVars.get("aws_location") + "/" + URLEncoder.encode(filename, StandardCharsets.UTF_8);
+        return new String[] { AWS_BUCKET_URL + addUrl, session.getBaseUrl() + "/" + addUrl };
     }
 
     private String registerNeoFilename(String filename) {

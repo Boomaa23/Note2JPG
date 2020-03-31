@@ -139,4 +139,5 @@ public class Decode extends NFields {
         }
         return -1;
     }
+
 }

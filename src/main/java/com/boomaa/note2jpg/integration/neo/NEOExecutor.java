@@ -63,9 +63,9 @@ public class NEOExecutor extends NFields {
                 assignment = assignName.text();
                 assignmentId = assignName.attr("href");
                 assignmentId = assignmentId.substring(assignmentId.lastIndexOf('/'));
-                Element innerATag = e.getAllElements().get(4);
-                isSubmitted = innerATag.getElementsByAttributeValue("title", "Yes").isEmpty();
-                isAssignment = !innerATag.getElementsByAttributeValueStarting("title", "Online/essay").isEmpty();
+                Element innerTd = e.getElementsByTag("td").get(5);
+                isSubmitted = !innerTd.text().contains("-");
+                isAssignment = !assignName.getElementsByAttributeValueStarting("title", "Online/essay").isEmpty();
             } catch (IndexOutOfBoundsException ignored) {
             }
             if (assignment != null && !isSubmitted && isAssignment) {

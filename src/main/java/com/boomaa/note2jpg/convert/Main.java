@@ -38,6 +38,8 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,31 +69,34 @@ public class Main extends NFields {
     }
 
     public static void main(String[] args) throws IOException, PropertyListFormatException, ParseException, SAXException, ParserConfigurationException {
+        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
         argsList = Arrays.asList(args);
         Args.parse();
         Args.logic();
         Args.check();
 
-        for (String filename : filenames) {
+        for (String notename : notenames) {
+            String filename = validateFilename(notename + ".note");
+            String noExtFilename = filename.substring(0, filename.lastIndexOf('.'));
             if (!Parameter.WipeUploaded.inEither()) {
                 startTime = System.currentTimeMillis();
                 try {
-                    filename = unzipNote(filename);
+                    unzipNote(filename, noExtFilename);
                 } catch (ZipException e) {
                     if (Parameter.ConfigVars.FILENAME_SOURCE == FilenameSource.NEO) {
-                        System.err.println("Could not find local .note file for NEO assignment \"" + filename + "\"");
+                        System.err.println("Could not find local .note file for NEO assignment \"" + notename + "\"");
                     }
-                    if (Parameter.UseDriveDownload.inEither() && GoogleUtils.isNoteMatch(filename)) {
-                        GoogleUtils.downloadNote(filename);
-                        filename = unzipNote(filename);
+                    if (Parameter.UseDriveDownload.inEither() && GoogleUtils.isNoteMatch(notename)) {
+                        GoogleUtils.downloadNote(notename, filename);
+                        unzipNote(filename, noExtFilename);
                     } else {
-                        System.err.println("Note file matching \"" + filename + "\" could not be found");
+                        System.err.println("Note file matching \"" + notename + "\" could not be found");
                         continue;
                     }
                 }
 
-                System.out.println("Args: name=\"" + filename + "\" scale=" + Parameter.ImageScaleFactor.getValue() + " pdfScale=" + Parameter.PDFScaleFactor.getValueInt());
-                NSDictionary sessionMain = (NSDictionary) PropertyListParser.parse(new File(filename + "/Session.plist"));
+                System.out.println("Args: name=\"" + notename + "\" scale=" + Parameter.ImageScaleFactor.getValue() + " pdfScale=" + Parameter.PDFScaleFactor.getValueInt());
+                NSDictionary sessionMain = (NSDictionary) PropertyListParser.parse(new File(noExtFilename + "/Session.plist"));
                 NSDictionary[] sessionDict = Decode.isolateDictionary(((NSArray) (sessionMain.getHashMap().get("$objects"))).getArray());
                 List<Image> pdfs = new ArrayList<>();
 
@@ -112,16 +117,16 @@ public class Main extends NFields {
                         scaledWidth = Decode.getNumberFromDict(sessionDict, "pageWidthInDocumentCoordsKey") * Parameter.ImageScaleFactor.getValueInt();
                         if (pdfState != PDFState.NONE) {
                             if (pdfState == PDFState.PLIST) {
-                                NSDictionary pdfMain = (NSDictionary) PropertyListParser.parse(new File(filename + "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist"));
+                                NSDictionary pdfMain = (NSDictionary) PropertyListParser.parse(new File(noExtFilename + "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist"));
                                 String[] pdfLocs = ((NSDictionary) (pdfMain.getHashMap().get("pageNumbers"))).allKeys();
                                 for (String pdfLoc : pdfLocs) {
-                                    pdfs.addAll(ImageUtil.getPdfImages(filename, pdfLoc));
+                                    pdfs.addAll(ImageUtil.getPdfImages(noExtFilename, pdfLoc));
                                 }
                                 //TODO implement by-page setting for pdfs in the plist
                             } else if (pdfState == PDFState.FILE_ONLY) {
-                                File pdfDir = new File(filename + "/PDFs/");
+                                File pdfDir = new File(notename + "/PDFs/");
                                 for (File pdf : pdfDir.listFiles()) {
-                                    pdfs.addAll(ImageUtil.getPdfImages(filename, pdf.getName()));
+                                    pdfs.addAll(ImageUtil.getPdfImages(noExtFilename, pdf.getName()));
                                 }
                             }
                             pages = pdfs.size();
@@ -136,7 +141,7 @@ public class Main extends NFields {
                         if (!Parameter.NoTextBoxes.inEither()) {
                             textBoxContents = Decode.getTextBoxes(sessionDict);
                             if (textBoxContents.size() > 0) {
-                                setupFrame(filename);
+                                setupFrame(notename);
                                 displayFrame();
                                 frame.getContentPane().addMouseListener(new PointTrigger());
                                 System.out.print("\rPositioning: " + textBoxContents.get(0) + " (1 / " + textBoxContents.size() + ") on " + PointTrigger.selectState);
@@ -163,28 +168,28 @@ public class Main extends NFields {
                 }
 
                 if (Parameter.DisplayConverted.inEither()) {
-                    setupFrame(filename);
+                    setupFrame(notename);
                     displayFrame();
                 } else if (frame != null) {
                     frame.dispose();
                 }
 
                 if (!Parameter.NoFileOutput.inEither()) {
-                    saveToFile(filename);
+                    saveToFile(noExtFilename);
                 }
             }
 
             if (Parameter.NEOUsername.inEither() && Parameter.NEOPassword.inEither()) {
                 if (Parameter.WipeUploaded.inEither()) {
-                    System.out.println("Wiping " + filename + " from upload sources specified");
+                    System.out.println("Wiping " + notename + " from upload sources specified");
                     System.out.println("The application will exit after this takes place.");
                     if (Parameter.UseDriveDownload.inEither() || Parameter.UseAWS.inEither()) {
                         if (Parameter.UseAWS.inEither()) {
                             System.out.println("Please note AWS does not remove the file's record entirely, and instead overwrites the file data with nulls");
-                            NEOAWS.AWS_EXECUTOR.remove(filename + ".jpg");
+                            NEOAWS.AWS_EXECUTOR.remove(notename + ".jpg");
                         }
                         if (Parameter.UseDriveUpload.inEither()) {
-                            GoogleUtils.deleteAllMatchingImages(filename);
+                            GoogleUtils.deleteAllMatchingImages(notename);
                         }
                         System.exit(0);
                     } else {
@@ -194,25 +199,24 @@ public class Main extends NFields {
 
                 List<String> imageUrls = new ArrayList<>();
                 if (Parameter.UseAWS.inEither()) {
-                    imageUrls.addAll(Arrays.asList(NEOAWS.AWS_EXECUTOR.uploadFile(filename + ".jpg")));
+                    imageUrls.addAll(Arrays.asList(NEOAWS.AWS_EXECUTOR.uploadFile(noExtFilename + ".jpg")));
                 }
                 if (Parameter.UseDriveUpload.inEither()) {
-                    imageUrls.add(GoogleUtils.getEmbedUrl(GoogleUtils.uploadImage(filename).getId()));
+                    imageUrls.add(GoogleUtils.getEmbedUrl(GoogleUtils.uploadImage(noExtFilename + ".jpg").getId()));
                 }
                 //TODO test this with actual assignment
                 if (imageUrls.size() != 0) {
-                    System.out.println();
-                    System.out.println(filename + " uploaded to:");
-                    for (int i = 0;i < imageUrls.size();i++) {
-                        System.out.println((i + 1) + ") " + imageUrls.get(i));
-                    }
-
                     if (!Parameter.NEONoLink.inEither()) {
-                        System.out.print("\nSelect one to use for the NEO assignment ");
+                        System.out.println("Select an image URL to use for the NEO assignment ");
                         String picked = Args.filenameSelector(imageUrls);
-                        String assignName = filename;
+
+                        String assignName = notename;
                         if (Parameter.NEOAssignment.inEither()) {
                             assignName = Parameter.NEOAssignment.getValue();
+                        } else {
+                            List<String> neoAssignmentList = neoExecutor.getAssignments().getNames();
+                            System.out.println("Select the associated NEO assignment");
+                            assignName = Args.filenameSelector(neoAssignmentList);
                         }
 //                        String assignmentUrl = neoExecutor.push(assignName, picked);
                         String assignmentUrl = "N/A";
@@ -221,8 +225,8 @@ public class Main extends NFields {
                 }
             }
 
-            cleanupFiles(new File(filename + "/"));
-            if (!filename.equals(filenames.get(filenames.size() - 1))) {
+            cleanupFiles(new File(noExtFilename + "/"));
+            if (!notename.equals(notenames.get(notenames.size() - 1))) {
                 System.out.println();
             }
         }
@@ -271,20 +275,29 @@ public class Main extends NFields {
         System.out.println("Completed in " + (System.currentTimeMillis() - startTime) / 1000.0 + " seconds with scale=" + Parameter.ImageScaleFactor.getValueInt());
     }
 
-    public static String unzipNote(String filename) throws ZipException {
-        ZipFile zipFile = new ZipFile(filename + ".note");
-        zipFile.extractFile(filename + "/Session.plist", ".");
+    public static void unzipNote(String filename, String noExtNoteName) throws ZipException {
+        ZipFile zipFile = new ZipFile(filename);
+        String innerFolder = "";
         try {
-            zipFile.extractFile(filename + "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist", ".");
-            pdfState = PDFState.PLIST;
-        } catch (ZipException e) {
-            pdfState = PDFState.NONE;
+            innerFolder = zipFile.getFileHeaders().get(0).getFileName();
+        } catch (IndexOutOfBoundsException ignored) {
+            throw new ZipException("Throwing exception to illicit no-zip response");
         }
+        innerFolder = innerFolder.substring(0, innerFolder.lastIndexOf("/"));
+        zipFile.extractFile(innerFolder + "/Session.plist", noExtNoteName, "/Session.plist");
         try {
+            try {
+                zipFile.extractFile(innerFolder + "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist", noExtNoteName, "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist");
+                pdfState = PDFState.PLIST;
+            } catch (ZipException e) {
+                pdfState = PDFState.NONE;
+            }
             List<FileHeader> files = zipFile.getFileHeaders();
             for (FileHeader file : files) {
                 if (file.getFileName().contains("PDFs")) {
-                    zipFile.extractFile(file, ".");
+                    String actualFileName =  file.getFileName().substring(file.getFileName().lastIndexOf('/') + 1);
+                    zipFile.extractFile(innerFolder + "/PDFs/" + actualFileName, noExtNoteName,
+                            "/PDFs/" + actualFileName);
                     if (pdfState == PDFState.NONE) {
                         pdfState = PDFState.FILE_ONLY;
                     }
@@ -294,7 +307,6 @@ public class Main extends NFields {
             e.printStackTrace();
             System.exit(1);
         }
-        return filename;
     }
 
     public static void cleanupFiles(File fn) {
@@ -305,5 +317,9 @@ public class Main extends NFields {
             }
         }
         fn.delete();
+    }
+
+    public static String validateFilename(String filename) {
+        return filename.replaceAll("[^a-zA-Z0-9-_\\.\\ ]", "_");
     }
 }

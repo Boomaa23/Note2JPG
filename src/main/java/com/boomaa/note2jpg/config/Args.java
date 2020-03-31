@@ -50,7 +50,7 @@ public class Args extends NFields {
                 Parameter.ConfigVars.FILENAME_SOURCE = FilenameSource.NEO;
             }
             NEOAWS.create(Parameter.NEOUsername.getValue(), Parameter.NEOPassword.getValue());
-            neoExecutor = new NEOExecutor(Parameter.NEOClassID.getValue());
+            neoExecutor = new NEOExecutor(Parameter.NEOClassID.getValue()).pull();
         }
 
         if (Parameter.UseDrive.inEither()) {
@@ -79,31 +79,24 @@ public class Args extends NFields {
         System.out.println(Parameter.ConfigVars.FILENAME_SOURCE.getMessage());
         switch (Parameter.ConfigVars.FILENAME_SOURCE) {
             case ALL:
-                filenames.addAll(getAllLocalNotes());
+                notenames.addAll(getAllLocalNotes());
                 break;
             case NEO:
-                neoExecutor.pull();
-                filenames = neoExecutor.getAssignments().getNames();
+                notenames = neoExecutor.getAssignments().getNames();
                 break;
             case PARAMETER:
-                filenames.add(Parameter.Filename.getValue());
+                notenames.add(Parameter.Filename.getValue());
                 break;
             case RANDOM:
                 determineRandomFilename();
                 break;
             case DRIVE:
-                List<String> driveNotes = GoogleUtils.getNoteNameList();
-                for (int i = 0;i < driveNotes.size();i++) {
-                    if (i >= Parameter.LimitDriveNotes.getValueInt()) {
-                        break;
-                    }
-                    System.out.println((i + 1) + ") " + driveNotes.get(i));
-                }
-                filenames.add(filenameSelector(driveNotes));
+                notenames.add(filenameSelector(GoogleUtils.getNoteNameList()
+                        .subList(0, Parameter.LimitDriveNotes.getValueInt())));
                 break;
             case USER_SELECT:
             default:
-                filenames.add(filenameSelector(getAllLocalNotes()));
+                notenames.add(filenameSelector(getAllLocalNotes()));
                 break;
         }
 
@@ -112,7 +105,7 @@ public class Args extends NFields {
     }
 
     public static void check() {
-        if (Parameter.NEOAssignment.inEither() && filenames.size() > 1) {
+        if (Parameter.NEOAssignment.inEither() && notenames.size() > 1) {
             throw new IllegalArgumentException("Cannot specify an assignment name for multiple notes");
         }
 
@@ -120,7 +113,7 @@ public class Args extends NFields {
             System.err.println("Not uploading to AWS as no NEO credentials were specified");
         }
 
-        if (filenames.isEmpty()) {
+        if (notenames.isEmpty()) {
             System.err.println("No .note files selected to convert");
         }
     }
@@ -145,6 +138,7 @@ public class Args extends NFields {
     }
 
     public static String filenameSelector(List<String> list) {
+        displayListOptions(list);
         Scanner sc = new Scanner(System.in);
         System.out.print(">> ");
         int selected = 0;
@@ -200,7 +194,7 @@ public class Args extends NFields {
                 throw new NullPointerException("Filename cannot be determined as there are no free note files");
             }
         }
-        filenames.add(filename);
+        notenames.add(filename);
     }
 
     public static File[] shuffleArr(File[] base) {
@@ -213,5 +207,11 @@ public class Args extends NFields {
             out[newIndex] = file;
         }
         return out;
+    }
+
+    public static void displayListOptions(List<String> options) {
+        for (int i = 0;i < options.size();i++) {
+            System.out.println((i + 1) + ") " + options.get(i));
+        }
     }
 }

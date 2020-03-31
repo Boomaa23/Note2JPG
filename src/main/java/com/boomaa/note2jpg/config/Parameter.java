@@ -90,10 +90,12 @@ public enum Parameter {
             return Boolean.toString(inEither());
         }
 
-        if (this.equals(NEOUsername)) {
-            return argsValue();
-        } else if (this.equals(NEOPassword)) {
-            return argsValue(2)[1];
+        if (inArgs) {
+            if (this.equals(NEOUsername)) {
+                return argsValue();
+            } else if (this.equals(NEOPassword)) {
+                return argsValue(2)[1];
+            }
         }
 
         if (!setOverride) {

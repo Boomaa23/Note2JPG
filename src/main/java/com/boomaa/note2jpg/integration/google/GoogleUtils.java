@@ -1,5 +1,6 @@
 package com.boomaa.note2jpg.integration.google;
 
+import com.boomaa.note2jpg.convert.Decode;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.FileContent;
@@ -17,6 +18,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -110,14 +113,14 @@ public class GoogleUtils {
         return "https://drive.google.com/open?id=" + fileId;
     }
 
-    public static void downloadNote(String filename) {
+    public static void downloadNote(String gdriveFilename, String outputFilename) {
         try {
-            java.io.File outputFile = new java.io.File(filename + ".note");
+            java.io.File outputFile = new java.io.File(outputFilename);
             if (!outputFile.exists()) {
                 outputFile.createNewFile();
             }
             OutputStream outputStream = new FileOutputStream(outputFile);
-            driveService.files().get(noteList.get(filename).getId())
+            driveService.files().get(noteList.get(gdriveFilename).getId())
                 .executeMediaAndDownloadTo(outputStream);
             outputStream.flush();
             outputStream.close();
@@ -129,10 +132,10 @@ public class GoogleUtils {
     public static File uploadImage(String filename) {
         try {
             File imageMetadata = new File();
-            imageMetadata.setName(filename + ".jpg");
+            imageMetadata.setName(filename);
             imageMetadata.setMimeType("image/jpeg");
 
-            FileContent imageContent = new FileContent("image/jpeg", new java.io.File(filename + ".jpg"));
+            FileContent imageContent = new FileContent("image/jpeg", new java.io.File(filename));
             File f = driveService.files().create(imageMetadata, imageContent).execute();
             insertPermissions(f.getId());
             return f;
