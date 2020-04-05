@@ -1,7 +1,6 @@
 package com.boomaa.note2jpg.integration.s3upload;
 
 import com.google.gson.JsonParser;
-import org.apache.commons.io.input.NullInputStream;
 import org.jsoup.nodes.Document;
 
 import java.io.ByteArrayInputStream;
@@ -29,11 +28,12 @@ public class AWSExecutor {
     }
 
     public String[] remove(String filename) {
+        Extension ext = Extension.getFromFilename(filename);
         Map<String, String> credVars = getAWSCredentials();
         MultipartFormData fileData = new MultipartFormData.DefaultBuilder(filename)
-            .setInputStream(new ByteArrayInputStream(new byte[0])).build();
-        String extension = filename.substring(filename.lastIndexOf(".") + 1);
-        uploadImage(getAWSFormData(credVars, filename, Extension.valueOf(extension).getMimeType()), fileData);
+                .setInputStream(new ByteArrayInputStream(new byte[0]))
+                .setExtension(ext).build();
+        uploadImage(getAWSFormData(credVars, filename, ext.mimeType), fileData);
         return getMultiUrl(credVars, filename);
     }
 
@@ -54,14 +54,14 @@ public class AWSExecutor {
     }
 
     public String[] upload(String filename, boolean registerFilename, Supplier<InputStream> input) {
+        Extension ext = Extension.getFromFilename(filename);
         if (registerFilename) {
             filename = registerNeoFilename(filename);
         }
         Map<String, String> credVars = getAWSCredentials();
         MultipartFormData fileData = new MultipartFormData.DefaultBuilder(filename)
-            .setInputStream(input.get()).build();
-        String extension = filename.substring(filename.lastIndexOf(".") + 1);
-        uploadImage(getAWSFormData(credVars, filename, Extension.valueOf(extension).getMimeType()), fileData);
+            .setInputStream(input.get()).setExtension(ext).build();
+        uploadImage(getAWSFormData(credVars, filename, ext.mimeType), fileData);
         return getMultiUrl(credVars, filename);
     }
 

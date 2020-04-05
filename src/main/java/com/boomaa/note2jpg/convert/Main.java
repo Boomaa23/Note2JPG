@@ -6,8 +6,8 @@ import com.boomaa.note2jpg.create.Circles;
 import com.boomaa.note2jpg.create.Corner;
 import com.boomaa.note2jpg.create.Curve;
 import com.boomaa.note2jpg.create.Point;
-import com.boomaa.note2jpg.integration.google.GoogleUtils;
-import com.boomaa.note2jpg.integration.s3upload.NEOAWS;
+import com.boomaa.note2jpg.integration.GoogleUtils;
+import com.boomaa.note2jpg.integration.s3upload.Connections;
 import com.boomaa.note2jpg.state.FilenameSource;
 import com.boomaa.note2jpg.state.NumberType;
 import com.boomaa.note2jpg.state.PDFState;
@@ -38,8 +38,6 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -186,7 +184,7 @@ public class Main extends NFields {
                     if (Parameter.UseDriveDownload.inEither() || Parameter.UseAWS.inEither()) {
                         if (Parameter.UseAWS.inEither()) {
                             System.out.println("Please note AWS does not remove the file's record entirely, and instead overwrites the file data with nulls");
-                            NEOAWS.AWS_EXECUTOR.remove(notename + ".jpg");
+                            Connections.getAwsExecutor().remove(notename + ".jpg");
                         }
                         if (Parameter.UseDriveUpload.inEither()) {
                             GoogleUtils.deleteAllMatchingImages(notename);
@@ -199,7 +197,7 @@ public class Main extends NFields {
 
                 List<String> imageUrls = new ArrayList<>();
                 if (Parameter.UseAWS.inEither()) {
-                    imageUrls.addAll(Arrays.asList(NEOAWS.AWS_EXECUTOR.uploadFile(noExtFilename + ".jpg")));
+                    imageUrls.addAll(Arrays.asList(Connections.getAwsExecutor().uploadFile(noExtFilename + ".jpg")));
                 }
                 if (Parameter.UseDriveUpload.inEither()) {
                     imageUrls.add(GoogleUtils.getEmbedUrl(GoogleUtils.uploadImage(noExtFilename + ".jpg").getId()));
@@ -218,8 +216,8 @@ public class Main extends NFields {
                             System.out.println("Select the associated NEO assignment");
                             assignName = Args.filenameSelector(neoAssignmentList);
                         }
-//                        String assignmentUrl = neoExecutor.push(assignName, picked);
-                        String assignmentUrl = "N/A";
+                        String assignmentUrl = neoExecutor.push(assignName, picked);
+//                        String assignmentUrl = "N/A";
                         System.out.println("Posted to the NEO assignment at " + assignmentUrl);
                     }
                 }

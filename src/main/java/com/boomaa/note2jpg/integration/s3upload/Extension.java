@@ -93,6 +93,7 @@ public enum Extension {
     mpv2("video/mpeg"),
     ms("application/x-troff-ms"),
     mvb("application/x-msmediaview"),
+    note("application/x-zip"),
     nws("message/rfc822"),
     oda("application/oda"),
     p10("application/pkcs10"),
@@ -191,10 +192,10 @@ public enum Extension {
     public final String mimeType;
 
     Extension(String mimeType) {
-        this.mimeType = mimeType;
+        this.mimeType = "mimeType = '" + mimeType + "'";
     }
 
-    public String getMimeType() {
-        return mimeType;
+    public static Extension getFromFilename(String filename) {
+        return Extension.valueOf(filename.substring(filename.lastIndexOf('.') + 1));
     }
 }

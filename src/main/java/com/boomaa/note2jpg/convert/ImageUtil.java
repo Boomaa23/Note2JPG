@@ -28,6 +28,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ImageUtil extends NFields {
+    static {
+        System.load(System.getProperty("user.dir") + "/lib/gsdll64.dll");
+    }
+
     public static Image scaleImageFrame(Image image) {
         double width = image.getWidth(null);
         double height = image.getHeight(null);
@@ -126,9 +130,8 @@ public class ImageUtil extends NFields {
             return renderer.render(document);
         } catch (UnsatisfiedLinkError e) {
             System.err.println();
-            System.err.println("No PDF reader library found. Download it from the link below.");
-            System.err.println("Installer: https://www.ghostscript.com/download/gsdnld.html");
-            System.err.println("Windows DLL Only: https://s3.amazonaws.com/s3.edu20.org/files/2796766/gsdll64.dll");
+            System.err.println("No PDF reader library found. Try downloading dependencies again OR");
+            System.err.println("Download this and place in lib/ https://s3.amazonaws.com/s3.edu20.org/files/2796766/gsdll64.dll");
             System.exit(1);
         } catch (IOException | RendererException | DocumentException e) {
             e.printStackTrace();

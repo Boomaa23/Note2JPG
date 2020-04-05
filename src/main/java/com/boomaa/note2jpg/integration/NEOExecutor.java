@@ -1,7 +1,7 @@
-package com.boomaa.note2jpg.integration.neo;
+package com.boomaa.note2jpg.integration;
 
 import com.boomaa.note2jpg.convert.NFields;
-import com.boomaa.note2jpg.integration.s3upload.NEOAWS;
+import com.boomaa.note2jpg.integration.s3upload.Connections;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -25,7 +25,7 @@ public class NEOExecutor extends NFields {
         String assign = ufAssignments.get(assignName);
         if (assign != null) {
             String url = "/student_freeform_assignment/create/" + assign;
-            NEOAWS.NEO_SESSION.post(Collections.singletonMap("answer", img.outerHtml()), url);
+            Connections.getNeoSession().post(Collections.singletonMap("answer", img.outerHtml()), url);
             return url;
         }
         return null;
@@ -41,7 +41,7 @@ public class NEOExecutor extends NFields {
     }
 
     private Document retrieveAssignDoc() {
-        return NEOAWS.NEO_SESSION.get("/student_assignments/list/" + classId);
+        return Connections.getNeoSession().get("/student_assignments/list/" + classId);
     }
 
     private Elements parseAssignments(Document assignmentsDocument) {

@@ -31,12 +31,17 @@ public class MultipartFormData {
         private InputStream inputStream;
 
         public DefaultBuilder(String filename) {
-            this.filename = filename + ".jpg";
+            this.filename = filename;
             this.key = "file";
         }
 
         public DefaultBuilder setInputStream(InputStream inputStream) {
             this.inputStream = inputStream;
+            return this;
+        }
+
+        public DefaultBuilder setExtension(Extension extension) {
+            this.filename += '.' + extension.name();
             return this;
         }
 

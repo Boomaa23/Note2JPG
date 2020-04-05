@@ -1,6 +1,6 @@
-package com.boomaa.note2jpg.integration.google;
+package com.boomaa.note2jpg.integration;
 
-import com.boomaa.note2jpg.convert.Decode;
+import com.boomaa.note2jpg.integration.s3upload.Extension;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.FileContent;
@@ -18,8 +18,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,8 +36,8 @@ public class GoogleUtils {
             driveService = GoogleUtils.getDriveService();
             noteList = new HashMap<>();
             imageList = new HashMap<>();
-            retrieveData(RequestDataType.NOTE);
-            retrieveData(RequestDataType.JPG);
+            retrieveData(Extension.note);
+            retrieveData(Extension.jpg);
         } catch (GeneralSecurityException | IOException e) {
             e.printStackTrace();
         }
@@ -66,12 +64,13 @@ public class GoogleUtils {
             GoogleUtils.authorize()).setApplicationName(APPLICATION_NAME).build();
     }
 
-    public static void retrieveData(RequestDataType type) {
+    public static void retrieveData(Extension extension) {
         List<File> notes = null;
         try {
             notes = driveService.files().list()
-                .setQ(type.q)
+                .setQ(extension.mimeType)
                 .setFields("files")
+                .setPageSize(1000)
                 .setOrderBy("modifiedTime desc")
                 .execute().getFiles();
         } catch (IOException e) {
@@ -81,11 +80,11 @@ public class GoogleUtils {
         for (int i = 0;i < notes.size();i++) {
             File note = notes.get(i);
             String noteName = note.getName();
-            int noExtEnd = noteName.length() - type.ext.length();
-            if (noteName.substring(noExtEnd).equals(type.ext)) {
-                if (type == RequestDataType.NOTE) {
-                    noteList.put(noteName.substring(0, noExtEnd), note);
-                } else {
+            int noExtEnd = noteName.length() - extension.name().length();
+            if (noteName.substring(noExtEnd).equals(extension.name())) {
+                if (extension == Extension.note) {
+                    noteList.put(noteName.substring(0, noExtEnd - 1), note);
+                } else if (extension == Extension.jpg){
                     imageList.put(note.getId(), note);
                 }
             }

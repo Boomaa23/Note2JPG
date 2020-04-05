@@ -59,7 +59,7 @@ public class DownloadDeps {
                 downloadCounter++;
             }
         }
-        if (Arrays.asList(args).contains("--gsdll64")) {
+        if (!Arrays.asList(args).contains("--nogsdll64")) {
             downloadFile("https://s3.amazonaws.com/s3.edu20.org/files/2796766/gsdll64.dll", "gsdll64.dll");
         }
         if (downloadCounter > 0) {
