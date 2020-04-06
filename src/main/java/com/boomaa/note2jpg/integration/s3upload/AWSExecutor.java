@@ -38,7 +38,7 @@ public class AWSExecutor {
     }
 
     public String[] uploadFile(String filename) {
-        return uploadFile(filename, false);
+        return uploadFile(filename, true);
     }
 
     public String[] uploadFile(String filename, boolean registerFilename) {
@@ -72,6 +72,9 @@ public class AWSExecutor {
 
     private String registerNeoFilename(String filename) {
         Map<String, String> data = new HashMap<>();
+        data.put("file_type", "image/jpg");
+        //TODO figure out if this is needed
+        data.put("file_size", "2050");
         data.put("file_name", filename);
 
         String neoFilename = filename;

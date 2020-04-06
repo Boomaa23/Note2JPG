@@ -2,10 +2,7 @@ package com.boomaa.note2jpg.convert;
 
 import com.boomaa.note2jpg.config.Args;
 import com.boomaa.note2jpg.config.Parameter;
-import com.boomaa.note2jpg.create.Circles;
-import com.boomaa.note2jpg.create.Corner;
-import com.boomaa.note2jpg.create.Curve;
-import com.boomaa.note2jpg.create.Point;
+import com.boomaa.note2jpg.create.*;
 import com.boomaa.note2jpg.integration.GoogleUtils;
 import com.boomaa.note2jpg.integration.s3upload.Connections;
 import com.boomaa.note2jpg.state.FilenameSource;
@@ -136,12 +133,29 @@ public class Main extends NFields {
                         bounds = Decode.getBounds(points);
                         setupCurves(curves);
                         ImageUtil.populateUnscaledAll(ImageUtil.getPdfCanvas(pdfs));
+                        if (hasImages && !Parameter.NoEmbedImages.inEither()) {
+                            ImageUtil.fillEmbedImageList(noExtFilename);
+                            if (imageList.size() > 0) {
+                                setupFrame(notename);
+                                displayFrame();
+                                frame.getContentPane().addMouseListener(new PointTrigger(Point.class));
+                                while (imageBounds.size() != imageList.size()) {
+                                    try {
+                                        Thread.sleep(100);
+                                    } catch (InterruptedException e) {
+                                        break;
+                                    }
+                                }
+                                frame.setVisible(false);
+                            }
+                            ImageUtil.populateEmbedImages();
+                        }
                         if (!Parameter.NoTextBoxes.inEither()) {
                             textBoxContents = Decode.getTextBoxes(sessionDict);
                             if (textBoxContents.size() > 0) {
                                 setupFrame(notename);
                                 displayFrame();
-                                frame.getContentPane().addMouseListener(new PointTrigger());
+                                frame.getContentPane().addMouseListener(new PointTrigger(Box.class));
                                 System.out.print("\rPositioning: " + textBoxContents.get(0) + " (1 / " + textBoxContents.size() + ") on " + PointTrigger.selectState);
                                 while (textBoxBounds.size() != textBoxContents.size()
                                     || textBoxBounds.get(textBoxBounds.size() - 1).getCorner(Corner.BOTTOM_RIGHT) == null) {
@@ -202,7 +216,7 @@ public class Main extends NFields {
                 if (Parameter.UseDriveUpload.inEither()) {
                     imageUrls.add(GoogleUtils.getEmbedUrl(GoogleUtils.uploadImage(noExtFilename + ".jpg").getId()));
                 }
-                //TODO test this with actual assignment
+
                 if (imageUrls.size() != 0) {
                     if (!Parameter.NEONoLink.inEither()) {
                         System.out.println("Select an image URL to use for the NEO assignment ");
@@ -217,7 +231,6 @@ public class Main extends NFields {
                             assignName = Args.filenameSelector(neoAssignmentList);
                         }
                         String assignmentUrl = neoExecutor.push(assignName, picked);
-//                        String assignmentUrl = "N/A";
                         System.out.println("Posted to the NEO assignment at " + assignmentUrl);
                     }
                 }
@@ -227,6 +240,7 @@ public class Main extends NFields {
             if (!notename.equals(notenames.get(notenames.size() - 1))) {
                 System.out.println();
             }
+            System.exit(0);
         }
     }
 
@@ -266,7 +280,7 @@ public class Main extends NFields {
     public static void saveToFile(String filename) {
         heightFinal = (int) (((double) iPadWidth / upscaledAll.getWidth()) * upscaledAll.getHeight());
         try {
-            ImageIO.write(ImageUtil.scaleImage(upscaledAll, iPadWidth, heightFinal), "jpg", new File(filename + ".jpg"));
+            ImageIO.write(ImageUtil.scaleBufferedImage(upscaledAll, iPadWidth, heightFinal), "jpg", new File(filename + ".jpg"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -298,6 +312,14 @@ public class Main extends NFields {
                             "/PDFs/" + actualFileName);
                     if (pdfState == PDFState.NONE) {
                         pdfState = PDFState.FILE_ONLY;
+                    }
+                }
+                if (file.getFileName().contains("Images")) {
+                    String actualFileName =  file.getFileName().substring(file.getFileName().lastIndexOf('/') + 1);
+                    zipFile.extractFile(innerFolder + "/Images/" + actualFileName, noExtNoteName,
+                            "/Images/" + actualFileName);
+                    if (!hasImages) {
+                        hasImages = true;
                     }
                 }
             }

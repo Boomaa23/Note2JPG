@@ -35,6 +35,7 @@ Download both JAR files listed below. Run the dependency puller JAR once (`java 
 | NoFileOutput                  | --nofile              | Note2JPG   | boolean | Do not write the image to file
 | RandomFile                    | --randomfile          | Note2JPG   | boolean | Select a file randomly if not specified
 | NoTextBoxes                   | --notextboxes         | Note2JPG   | boolean | Do not request positions for text boxes
+| NoEmbedImages                 | --noembedimages       | Note2JPG   | boolean | Do not request positions for images in notes
 | GenerateConfig                | --genconfig           | Note2JPG   | boolean | Generate a config file template
 | WriteConfig                   | --writeconfig         | Note2JPG   | boolean | Write out the current config to json
 | NEOUsername <br> NEOPassword  | --neo \<userId> \<pw> | NEO        | String  | Use NEO integration for unsubmitted assignments

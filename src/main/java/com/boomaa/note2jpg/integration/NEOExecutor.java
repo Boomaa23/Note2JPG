@@ -17,16 +17,21 @@ public class NEOExecutor extends NFields {
     }
 
     public final String push(String assignName, String imageUrl) {
-        //TODO test this with an open assignment
         Element img = new Element("img");
-        img.attr("src", imageUrl);
+        if (imageUrl.contains("neo.sbunified.org")) {
+            img.attr("src", imageUrl.substring(imageUrl.indexOf("/files")));
+        } else {
+            img.attr("src", imageUrl);
+        }
         img.attr("width", String.valueOf(NFields.iPadWidth));
         img.attr("height", String.valueOf(NFields.heightFinal));
         String assign = ufAssignments.get(assignName);
         if (assign != null) {
-            String url = "/student_freeform_assignment/create/" + assign;
-            Connections.getNeoSession().post(Collections.singletonMap("answer", img.outerHtml()), url);
-            return url;
+            // Only works over unsecured HTTP for some reason
+            String baseUrl = "http://neo.sbunified.org/student_freeform_assignment/";
+            Connections.getNeoSession().post(Collections.singletonMap("answer", img.outerHtml()), baseUrl + "create" + assign, false);
+            Connections.getNeoSession().get(baseUrl + "submit" + assign, false);
+            return baseUrl + "show" + assign;
         }
         return null;
     }

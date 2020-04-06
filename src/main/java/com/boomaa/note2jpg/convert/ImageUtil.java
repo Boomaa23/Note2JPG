@@ -2,6 +2,7 @@ package com.boomaa.note2jpg.convert;
 
 import com.boomaa.note2jpg.config.Parameter;
 import com.boomaa.note2jpg.create.Corner;
+import com.boomaa.note2jpg.create.Point;
 import com.boomaa.note2jpg.state.PDFState;
 import org.ghost4j.document.DocumentException;
 import org.ghost4j.document.PDFDocument;
@@ -50,7 +51,11 @@ public class ImageUtil extends NFields {
         return image.getScaledInstance((int) (width), (int) (height), Image.SCALE_SMOOTH);
     }
 
-    public static BufferedImage scaleImage(BufferedImage canvas, int width, int height) {
+    public static Image scaleImage(Image canvas, double scale) {
+        return canvas.getScaledInstance((int) (scale * canvas.getWidth(null)), (int) (scale * canvas.getHeight(null)), Image.SCALE_SMOOTH);
+    }
+
+    public static BufferedImage scaleBufferedImage(BufferedImage canvas, int width, int height) {
         Image scaled = canvas.getScaledInstance(width, height, Image.SCALE_SMOOTH);
         BufferedImage bufferScaled = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_RGB);
         Graphics2D g2f = (Graphics2D) bufferScaled.getGraphics();
@@ -156,13 +161,24 @@ public class ImageUtil extends NFields {
         return canvas;
     }
 
-    public static InputStream imageToInputStream(BufferedImage img) {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        try {
-            ImageIO.write(img, "jpg", os);
-        } catch (IOException e) {
-            e.printStackTrace();
+    public static void fillEmbedImageList(String foldername) {
+        File files = new File(foldername + "/Images/");
+        for (File f : files.listFiles()) {
+            try {
+                imageList.add(ImageIO.read(f));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        return new ByteArrayInputStream(os.toByteArray());
+    }
+
+    public static void populateEmbedImages() {
+        Graphics2D g2 = (Graphics2D) upscaledAll.getGraphics();
+        for (int i = 0;i < imageList.size();i++) {
+            Point pt = imageBounds.get(i);
+            BufferedImage img = imageList.get(i);
+            g2.drawImage(scaleImage(makeColorTransparent(img, Color.WHITE), (scaledWidth / displayedWidth) / Parameter.PDFScaleFactor.getValueInt()), pt.getX(), pt.getY(), null);
+        }
+        g2.dispose();
     }
 }

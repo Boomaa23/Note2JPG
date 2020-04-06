@@ -7,9 +7,12 @@ import com.boomaa.note2jpg.integration.NEOExecutor;
 import com.boomaa.note2jpg.state.PDFState;
 
 import javax.swing.JFrame;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class NFields {
     public static NEOExecutor neoExecutor;
@@ -21,6 +24,8 @@ public class NFields {
     public static BufferedImage upscaledAll;
     protected static List<Box> textBoxBounds = new ArrayList<>();
     protected static List<String> textBoxContents = new ArrayList<>();
+    protected static List<Point> imageBounds = new ArrayList<>();
+    protected static List<BufferedImage> imageList = new ArrayList<>();
     protected static int iPadWidth = 1536;
     protected static int leftOffset = 14;
     protected static int heightFinal;
@@ -32,4 +37,5 @@ public class NFields {
     protected static int pages;
     protected static PDFState pdfState = PDFState.NONE;
     protected static long startTime;
+    protected static boolean hasImages = false;
 }

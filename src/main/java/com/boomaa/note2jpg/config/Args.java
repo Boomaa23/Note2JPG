@@ -6,7 +6,10 @@ import com.boomaa.note2jpg.integration.NEOExecutor;
 import com.boomaa.note2jpg.integration.s3upload.Connections;
 import com.boomaa.note2jpg.state.FilenameSource;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -139,25 +142,17 @@ public class Args extends NFields {
 
     public static String filenameSelector(List<String> list) {
         displayListOptions(list);
-        Scanner sc = new Scanner(System.in);
-        System.out.print(">> ");
-        int selected = 0;
-        while (true) {
-            if (sc.hasNext() && (selected = Integer.parseInt(sc.next())) != 0 && selected <= list.size()) {
-                break;
-            }
-            if (selected > list.size()) {
-                System.err.println("Item not found for supplied index. Please try again");
-                System.out.println();
-                System.out.print(">> ");
-            }
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                break;
-            }
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int selected = -1;
+        try {
+            selected = Integer.parseInt(br.readLine().replaceAll("[^0-9]", ""));
+        } catch (IOException ignored) {
         }
-        sc.close();
+
+        if (selected > list.size() || selected == 0) {
+            System.err.println("Item not found for supplied index. Please try again");
+            displayListOptions(list);
+        }
         System.out.println();
         return list.get(selected - 1);
     }

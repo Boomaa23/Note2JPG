@@ -14,6 +14,7 @@ public enum Parameter {
     DisplayConverted("--display", Type.BOOLEAN),
     NoFileOutput("--nofile", Type.BOOLEAN),
     NoTextBoxes("--notextboxes", Type.BOOLEAN),
+    NoEmbedImages("--noembedimages", Type.BOOLEAN),
     GenerateConfig("--genconfig", Type.BOOLEAN),
     WriteConfig("--writeconfig", Type.BOOLEAN),
     NEOUsername("--neo", Type.NEO, "NEO_USR"),
