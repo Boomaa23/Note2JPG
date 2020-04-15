@@ -16,9 +16,9 @@ Converts Notability .note files into .jpg images
 github.com/Boomaa23/Note2JPG | Copyright © 2020. All Rights Reserved
 
 ## Installation
-Download both JAR files listed below. Run the dependency puller JAR once (`java -jar Note2JPGDeps.jar`), then run the application JAR as listed in "Usage" each time you'd like to use the program. The dependency puller requires an internet connection, but the application does not.
+Download both JAR files listed below. Run the updater JAR once to get the application JAR and dependencies, then run the application JAR as listed in "Usage" each time you'd like to use the program. The dependency puller requires an internet connection, but the application does not.
 
-[Depdendency Puller JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JPGDeps.jar?raw=true)
+[Updater JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JPGUpdater.jar?raw=true)
 
 [Application JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JPG.jar?raw=true)
 

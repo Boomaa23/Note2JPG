@@ -237,6 +237,7 @@ public class Main extends NFields {
             }
 
             cleanupFiles(new File(noExtFilename + "/"));
+            cleanupFiles(new File(noExtFilename));
             if (!notename.equals(notenames.get(notenames.size() - 1))) {
                 System.out.println();
             }

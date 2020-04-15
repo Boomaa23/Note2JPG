@@ -1,12 +1,13 @@
-out/
-.idea/
+out/*
+.idea/*
 *.iml
 *.note
 *.jpg
 *.plist
 *.txt
 *.pdf
-target/
-lib/
+target/*
+targetDeps/*
+lib/*
 GoogleSvcAcctPrivateKey.p12
 GoogleSvcAcctPrivateKey.json

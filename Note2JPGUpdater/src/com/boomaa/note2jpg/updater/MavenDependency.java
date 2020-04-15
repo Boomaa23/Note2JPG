@@ -1,4 +1,4 @@
-package com.boomaa.note2jpg.dependencies;
+package com.boomaa.note2jpg.updater;
 
 public class MavenDependency {
     private final String groupId;

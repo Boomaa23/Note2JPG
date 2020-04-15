@@ -1,4 +1,4 @@
-package com.boomaa.note2jpg.dependencies;
+package com.boomaa.note2jpg.updater;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class DownloadDeps {
+public class Updater {
     private static String DEPENDENCIES_URL = "https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/src/main/resources/dependencies.conf";
     private static String LIBRARY_FOLDER = "lib/";
     private static List<MavenDependency> dependencyList = new ArrayList<>();
@@ -59,8 +59,17 @@ public class DownloadDeps {
                 downloadCounter++;
             }
         }
-        if (!Arrays.asList(args).contains("--nogsdll64")) {
+
+        if (!Arrays.asList(args).contains("--nogsdll64")
+                && !new File(LIBRARY_FOLDER + "/gsdll64.dll").exists()) {
+            System.out.println("Downloading gsdll64.dll");
             downloadFile("https://s3.amazonaws.com/s3.edu20.org/files/2796766/gsdll64.dll", "gsdll64.dll");
+            downloadCounter++;
+        }
+        if (!Arrays.asList(args).contains("--noappjar")) {
+            System.out.println("Downloading Note2JPG.jar");
+            downloadFile("https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/Note2JPG.jar", "Note2JPG.jar", false);
+            downloadCounter++;
         }
         if (downloadCounter > 0) {
             System.out.println();
@@ -83,9 +92,17 @@ public class DownloadDeps {
     }
 
     private static void downloadFile(String url, String filename) {
+        downloadFile(url, filename, true);
+    }
+
+    private static void downloadFile(String url, String filename, boolean useBase) {
         try {
+            String location = filename;
+            if (useBase) {
+                location = LIBRARY_FOLDER + location;
+            }
             BufferedInputStream in = new BufferedInputStream(new URL(url).openStream());
-            FileOutputStream fileOutputStream = new FileOutputStream(LIBRARY_FOLDER + filename);
+            FileOutputStream fileOutputStream = new FileOutputStream(location);
             byte[] dataBuffer = new byte[1024];
             int bytesRead;
             while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
