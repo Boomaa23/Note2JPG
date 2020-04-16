@@ -1,11 +1,7 @@
 package com.boomaa.note2jpg.create;
 
-import javax.swing.JPanel;
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import javax.swing.*;
+import java.awt.*;
 
 public class Circles extends JPanel {
     private final Curve[] curves;

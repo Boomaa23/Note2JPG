@@ -13,7 +13,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Scanner;
 
 public class Args extends NFields {
     public static void parse() {
@@ -94,8 +93,9 @@ public class Args extends NFields {
                 determineRandomFilename();
                 break;
             case DRIVE:
-                notenames.add(filenameSelector(GoogleUtils.getNoteNameList()
-                        .subList(0, Parameter.LimitDriveNotes.getValueInt())));
+                List<String> tempNoteNames = GoogleUtils.getNoteNameList();
+                notenames.add(filenameSelector(tempNoteNames.subList(0,
+                        Math.min(Parameter.LimitDriveNotes.getValueInt(), tempNoteNames.size()))));
                 break;
             case USER_SELECT:
             default:

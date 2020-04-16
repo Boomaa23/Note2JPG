@@ -6,13 +6,10 @@ import com.boomaa.note2jpg.create.Point;
 import com.boomaa.note2jpg.integration.NEOExecutor;
 import com.boomaa.note2jpg.state.PDFState;
 
-import javax.swing.JFrame;
-import java.awt.*;
+import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class NFields {
     public static NEOExecutor neoExecutor;

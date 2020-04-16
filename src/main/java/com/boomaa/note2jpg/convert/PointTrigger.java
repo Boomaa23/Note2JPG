@@ -4,7 +4,7 @@ import com.boomaa.note2jpg.create.Box;
 import com.boomaa.note2jpg.create.Corner;
 import com.boomaa.note2jpg.create.Point;
 
-import javax.swing.JScrollPane;
+import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 

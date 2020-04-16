@@ -1,6 +1,6 @@
 package com.boomaa.note2jpg.create;
 
-import java.awt.Color;
+import java.awt.*;
 
 public class Curve {
     private final Point[] points;

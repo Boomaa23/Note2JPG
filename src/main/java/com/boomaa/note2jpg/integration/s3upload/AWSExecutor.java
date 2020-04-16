@@ -3,11 +3,7 @@ package com.boomaa.note2jpg.integration.s3upload;
 import com.google.gson.JsonParser;
 import org.jsoup.nodes.Document;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
