@@ -1,5 +1,6 @@
 package com.boomaa.note2jpg.integration;
 
+import com.boomaa.note2jpg.config.Parameter;
 import com.boomaa.note2jpg.convert.NFields;
 import com.boomaa.note2jpg.integration.s3upload.Connections;
 import org.jsoup.nodes.Document;
@@ -9,20 +10,17 @@ import org.jsoup.select.Elements;
 import java.util.Collections;
 
 public class NEOExecutor extends NFields {
-    private final String classId;
-    private Assignments ufAssignments;
+    private NameIDMap ufAssignments;
+    private NameIDMap classList;
 
-    public NEOExecutor(String classId) {
-        this.classId = classId;
+    public NEOExecutor() {
+        this.classList = parseClasses(Connections.getNeoSession().get("/enrolled_dashboard"));
     }
 
     public final String push(String assignName, String imageUrl) {
         Element img = new Element("img");
-        if (imageUrl.contains("neo.sbunified.org")) {
-            img.attr("src", imageUrl.substring(imageUrl.indexOf("/files")));
-        } else {
-            img.attr("src", imageUrl);
-        }
+        img.attr("src", imageUrl.contains("neo.sbunified.org") ?
+                imageUrl.substring(imageUrl.indexOf("/files")) : imageUrl);
         img.attr("width", String.valueOf(NFields.iPadWidth));
         img.attr("height", String.valueOf(NFields.heightFinal));
         String assign = ufAssignments.get(assignName);
@@ -37,16 +35,22 @@ public class NEOExecutor extends NFields {
     }
 
     public final NEOExecutor pull() {
-        ufAssignments = getUnfinished(parseAssignments(retrieveAssignDoc()));
+        ufAssignments = getUnfinished(
+                parseAssignments(
+                        retrieveAssignDoc()));
         return this;
     }
 
-    public final Assignments getAssignments() {
+    public final NameIDMap getAssignments() {
         return ufAssignments;
     }
 
+    public final NameIDMap getClassList() {
+        return classList;
+    }
+
     private Document retrieveAssignDoc() {
-        return Connections.getNeoSession().get("/student_assignments/list/" + classId);
+        return Connections.getNeoSession().get("/student_assignments/list/" + Parameter.NEOClassID.getValue());
     }
 
     private Elements parseAssignments(Document assignmentsDocument) {
@@ -55,8 +59,8 @@ public class NEOExecutor extends NFields {
         return table.first().getElementsByTag("tbody").first().getElementsByTag("tr");
     }
 
-    private Assignments getUnfinished(Elements table) {
-        Assignments ufAssignTemp = new Assignments();
+    private NameIDMap getUnfinished(Elements table) {
+        NameIDMap ufAssignTemp = new NameIDMap();
         for (Element e : table) {
             boolean isSubmitted = true;
             boolean isAssignment = false;
@@ -69,7 +73,7 @@ public class NEOExecutor extends NFields {
                 assignmentId = assignName.attr("href");
                 assignmentId = assignmentId.substring(assignmentId.lastIndexOf('/'));
                 Element innerTd = e.getElementsByTag("td").get(5);
-                isSubmitted = !innerTd.text().contains("-");
+                isSubmitted = !innerTd.text().contains("-") && !Parameter.AllowSubmitted.inEither();
                 isAssignment = !assignName.getElementsByAttributeValueStarting("title", "Online/essay").isEmpty();
             } catch (IndexOutOfBoundsException ignored) {
             }
@@ -78,5 +82,15 @@ public class NEOExecutor extends NFields {
             }
         }
         return ufAssignTemp;
+    }
+
+    private NameIDMap parseClasses(Document document) {
+        NameIDMap classesTemp = new NameIDMap();
+        Elements classListing = document.getElementsByClass("catalog_boxes").first().children();
+        for (Element tile : classListing) {
+            String name = tile.getElementsByClass("header").first().getElementsByTag("a").first().getElementsByTag("h2").text();
+            classesTemp.put(name, tile.attr("id"));
+        }
+        return classesTemp;
     }
 }

@@ -42,6 +42,7 @@ Download both JAR files listed below. Run the updater JAR once to get the applic
 | NEOClassID                    | --classid \<classid>  | NEO        | String  | Specify a class ID for NEO integration
 | NEOAssignment                 | -a \<assignment>      | NEO        | String  | Set a different assignment name for image
 | NEONoLink                     | --neonolink           | NEO        | boolean | Don't link image to NEO assignment
+| AllowSubmitted                | --allowsubmitted      | NEO        | boolean | Allow submission of done assignments
 | NewNEOFilename                | --newneofn            | NEO        | boolean | Register a new NEO filename (no overwriting)
 | WipeUploaded                  | --wipeup              | NEO/Amazon | boolean | Wipe uploaded images from specified sources
 | UseAWS                        | --aws                 | Amazon     | boolean | Upload images to AWS (via NEO)

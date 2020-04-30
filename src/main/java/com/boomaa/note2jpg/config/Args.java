@@ -3,6 +3,7 @@ package com.boomaa.note2jpg.config;
 import com.boomaa.note2jpg.convert.NFields;
 import com.boomaa.note2jpg.integration.GoogleUtils;
 import com.boomaa.note2jpg.integration.NEOExecutor;
+import com.boomaa.note2jpg.integration.NameIDMap;
 import com.boomaa.note2jpg.integration.s3upload.Connections;
 import com.boomaa.note2jpg.state.FilenameSource;
 
@@ -29,7 +30,7 @@ public class Args extends NFields {
                         }
                         break;
                     case INTEGER:
-                        p.setLinkedField(Integer.parseInt(p.getValue()));
+                        p.setLinkedField(p.getValueInt());
                         break;
                     case STRING:
                         p.setLinkedField(p.getValue());
@@ -39,6 +40,7 @@ public class Args extends NFields {
                 }
             }
         }
+
         if (neoFound) {
             if (Parameter.NEOUsername.inArgs() && Parameter.NEOPassword.inArgs()) {
                 String[] usrPw = Parameter.NEOUsername.argsValue(2);
@@ -52,7 +54,15 @@ public class Args extends NFields {
                 Parameter.ConfigVars.FILENAME_SOURCE = FilenameSource.NEO;
             }
             Connections.create(Parameter.NEOUsername.getValue(), Parameter.NEOPassword.getValue());
-            neoExecutor = new NEOExecutor(Parameter.NEOClassID.getValue()).pull();
+            neoExecutor = new NEOExecutor();
+
+            if (Parameter.NEOClassID.getValue().isBlank()) {
+                System.out.println("Select the NEO class to be used for assignment upload");
+                NameIDMap classList = neoExecutor.getClassList();
+                String selected = filenameSelector(classList.getNames());
+                Parameter.NEOClassID.setLinkedField(classList.get(selected));
+            }
+            neoExecutor.pull();
         }
 
         if (Parameter.UseDrive.inEither()) {
@@ -103,8 +113,8 @@ public class Args extends NFields {
                 break;
         }
 
-        Parameter.PDFScaleFactor.setLinkedField(Integer.parseInt(Parameter.PDFScaleFactor.getValue()));
-        Parameter.ImageScaleFactor.setLinkedField(Integer.parseInt(Parameter.ImageScaleFactor.getValue()));
+        Parameter.PDFScaleFactor.setLinkedField(Parameter.PDFScaleFactor.getValueInt());
+        Parameter.ImageScaleFactor.setLinkedField(Parameter.ImageScaleFactor.getValueInt());
     }
 
     public static void check() {

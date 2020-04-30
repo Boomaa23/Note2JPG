@@ -22,6 +22,7 @@ public enum Parameter {
     NEOClassID("--classid", Type.STRING, "NEO_CLASS_ID"),
     NEOAssignment("-a", Type.STRING, "ASSIGNMENT_NAME"),
     NEONoLink("--neonolink", Type.BOOLEAN),
+    AllowSubmitted("--allowsubmitted", Type.BOOLEAN),
     NewNEOFilename("--newneofn", Type.BOOLEAN),
     WipeUploaded("--wipeup", Type.BOOLEAN),
     UseAWS("--aws", Type.BOOLEAN),
@@ -166,7 +167,7 @@ public enum Parameter {
         public static int GDRIVE_LIMIT_NOTES = 20;
         public static String ASSIGNMENT_NAME = "";
         public static String GOOGLE_SVC_ACCT_ID = "102602978922283269345";
-        public static String NEO_CLASS_ID = "1543270";
+        public static String NEO_CLASS_ID = "";
         public static String NEO_USR = "";
         public static String NEO_PW = "";
     }
