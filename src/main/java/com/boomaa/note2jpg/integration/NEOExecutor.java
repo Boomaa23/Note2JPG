@@ -62,7 +62,7 @@ public class NEOExecutor extends NFields {
     private NameIDMap getUnfinished(Elements table) {
         NameIDMap ufAssignTemp = new NameIDMap();
         for (Element e : table) {
-            boolean isSubmitted = true;
+            boolean notSubmitted = true;
             boolean isAssignment = false;
             String assignment = null;
             String assignmentId = null;
@@ -73,11 +73,12 @@ public class NEOExecutor extends NFields {
                 assignmentId = assignName.attr("href");
                 assignmentId = assignmentId.substring(assignmentId.lastIndexOf('/'));
                 Element innerTd = e.getElementsByTag("td").get(5);
-                isSubmitted = !innerTd.text().contains("-") && !Parameter.AllowSubmitted.inEither();
+                Elements flagAlt = innerTd.getElementsByClass("textOffScreen");
+                notSubmitted = innerTd.text().contains("-") || (flagAlt.size() != 0 && flagAlt.first().text().contains("Almost due")) || Parameter.AllowSubmitted.inEither();
                 isAssignment = !assignName.getElementsByAttributeValueStarting("title", "Online/essay").isEmpty();
             } catch (IndexOutOfBoundsException ignored) {
             }
-            if (assignment != null && !isSubmitted && isAssignment) {
+            if (assignment != null && isAssignment && notSubmitted) {
                 ufAssignTemp.put(assignment, assignmentId);
             }
         }
