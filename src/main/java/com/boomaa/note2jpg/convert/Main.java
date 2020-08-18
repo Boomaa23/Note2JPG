@@ -208,7 +208,7 @@ public class Main extends NFields {
 
                 List<String> imageUrls = new ArrayList<>();
                 if (Parameter.UseAWS.inEither()) {
-                    imageUrls.addAll(Arrays.asList(Connections.getAwsExecutor().uploadFile(noExtFilename + ".jpg")));
+                    imageUrls.addAll(Arrays.asList(Connections.getAwsExecutor().uploadFile(noExtFilename + ".jpg", Parameter.NewNEOFilename.inEither())));
                 }
                 if (Parameter.UseDriveUpload.inEither()) {
                     imageUrls.add(GoogleUtils.getEmbedUrl(GoogleUtils.uploadImage(noExtFilename + ".jpg").getId()));
@@ -223,9 +223,8 @@ public class Main extends NFields {
                         if (Parameter.NEOAssignment.inEither()) {
                             assignName = Parameter.NEOAssignment.getValue();
                         } else {
-                            List<String> neoAssignmentList = neoExecutor.getAssignments().getNames();
                             System.out.println("Select the associated NEO assignment");
-                            assignName = Args.filenameSelector(neoAssignmentList);
+                            assignName = Args.filenameSelector(neoExecutor.getAssignments().getNames());
                         }
                         String assignmentUrl = neoExecutor.push(assignName, picked);
                         System.out.println("Posted to the NEO assignment at " + assignmentUrl);

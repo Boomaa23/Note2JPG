@@ -23,6 +23,7 @@ public enum Parameter {
     NEOAssignment("-a", Type.STRING, "ASSIGNMENT_NAME"),
     NEONoLink("--neonolink", Type.BOOLEAN),
     AllowSubmitted("--allowsubmitted", Type.BOOLEAN),
+    IncludeUnits("--inclunits", Type.BOOLEAN),
     NewNEOFilename("--newneofn", Type.BOOLEAN),
     WipeUploaded("--wipeup", Type.BOOLEAN),
     UseAWS("--aws", Type.BOOLEAN),

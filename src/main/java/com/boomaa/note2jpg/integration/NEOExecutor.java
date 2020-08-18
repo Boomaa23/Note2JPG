@@ -7,7 +7,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class NEOExecutor extends NFields {
     private NameIDMap ufAssignments;
@@ -15,6 +17,7 @@ public class NEOExecutor extends NFields {
 
     public NEOExecutor() {
         this.classList = parseClasses(Connections.getNeoSession().get("/enrolled_dashboard"));
+        this.ufAssignments = new NameIDMap();
     }
 
     public final String push(String assignName, String imageUrl) {
@@ -25,6 +28,12 @@ public class NEOExecutor extends NFields {
         img.attr("height", String.valueOf(NFields.heightFinal));
         String assign = ufAssignments.get(assignName);
         if (assign != null) {
+            if (assign.contains("&section_id=")) {
+                String realAssign = Connections.getNeoSession().get(assign)
+                        .getElementsByClass("optionsRibbon").first()
+                        .getElementsByAttribute("href").first().attr("href");
+                assign = realAssign.substring(assign.lastIndexOf('/'));
+            }
             // Only works over unsecured HTTP for some reason
             String baseUrl = "http://neo.sbunified.org/student_freeform_assignment/";
             Connections.getNeoSession().post(Collections.singletonMap("answer", img.outerHtml()), baseUrl + "create" + assign, false);
@@ -35,9 +44,10 @@ public class NEOExecutor extends NFields {
     }
 
     public final NEOExecutor pull() {
-        ufAssignments = getUnfinished(
-                parseAssignments(
-                        retrieveAssignDoc()));
+        getUnfinished(parseAssignments(retrieveAssignDoc(false)));
+        if (ufAssignments.size() == 0 || Parameter.IncludeUnits.inEither()) {
+            getUnitClasses(getUnitNums(retrieveAssignDoc(true)));
+        }
         return this;
     }
 
@@ -49,8 +59,8 @@ public class NEOExecutor extends NFields {
         return classList;
     }
 
-    private Document retrieveAssignDoc() {
-        return Connections.getNeoSession().get("/student_assignments/list/" + Parameter.NEOClassID.getValue());
+    private Document retrieveAssignDoc(boolean inUnits) {
+        return Connections.getNeoSession().get("/student_" + (inUnits ? "lessons" : "assignments") + "/list/" + Parameter.NEOClassID.getValue());
     }
 
     private Elements parseAssignments(Document assignmentsDocument) {
@@ -59,8 +69,38 @@ public class NEOExecutor extends NFields {
         return table.first().getElementsByTag("tbody").first().getElementsByTag("tr");
     }
 
-    private NameIDMap getUnfinished(Elements table) {
-        NameIDMap ufAssignTemp = new NameIDMap();
+    private List<Integer> getUnitNums(Document unitsDocument) {
+        List<Integer> unitNums = new ArrayList<>();
+        Elements sections = unitsDocument.getElementsByClass("lesson_boxes");
+        for (Element sec : sections) {
+            String href = sec.getElementsByAttribute("href").attr("href");
+            int lessonStart = href.indexOf("lesson_id=");
+            int lessonEnd = href.indexOf("&", lessonStart);
+            if (lessonStart != -1 && lessonEnd != -1) {
+                unitNums.add(Integer.parseInt(href.substring(lessonStart + 10, lessonEnd)));
+            }
+        }
+        return unitNums;
+    }
+
+    private void getUnitClasses(List<Integer> unitNums) {
+        for (int num : unitNums) {
+            Document unitPage = Connections.getNeoSession().get("/student_lesson/show/" + Parameter.NEOClassID.getValue() + "?lesson_id="  + num);
+            Elements modules = unitPage.getElementsByClass("module_sections");
+            for (Element module : modules) {
+                Elements hrefs = module.getElementsByAttribute("href");
+                for (Element href : hrefs) {
+                    String title = href.getElementsByTag("span").get(2).text();
+                    String url = href.attr("href");
+                    if (url != null && title != null) {
+                        ufAssignments.put(title, url); // Adds a URL instead of an assignment number to minimize HTTP requests
+                    }
+                }
+            }
+        }
+    }
+
+    private void getUnfinished(Elements table) {
         for (Element e : table) {
             boolean notSubmitted = true;
             boolean isAssignment = false;
@@ -68,7 +108,7 @@ public class NEOExecutor extends NFields {
             String assignmentId = null;
             try {
                 Element assignName = e.getElementsByClass("assignment").get(0)
-                    .getElementsByTag("a").first();
+                        .getElementsByTag("a").first();
                 assignment = assignName.text();
                 assignmentId = assignName.attr("href");
                 assignmentId = assignmentId.substring(assignmentId.lastIndexOf('/'));
@@ -79,10 +119,9 @@ public class NEOExecutor extends NFields {
             } catch (IndexOutOfBoundsException ignored) {
             }
             if (assignment != null && isAssignment && notSubmitted) {
-                ufAssignTemp.put(assignment, assignmentId);
+                ufAssignments.put(assignment, assignmentId);
             }
         }
-        return ufAssignTemp;
     }
 
     private NameIDMap parseClasses(Document document) {

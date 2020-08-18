@@ -33,10 +33,6 @@ public class AWSExecutor {
         return getMultiUrl(credVars, filename);
     }
 
-    public String[] uploadFile(String filename) {
-        return uploadFile(filename, true);
-    }
-
     public String[] uploadFile(String filename, boolean registerFilename) {
         return upload(filename, registerFilename, () -> {
             try {
