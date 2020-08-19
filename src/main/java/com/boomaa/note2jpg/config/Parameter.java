@@ -12,6 +12,7 @@ public enum Parameter {
     ImageScaleFactor("-s", Type.INTEGER, "IMAGE_SCALE_FACTOR"),
     PDFScaleFactor("-p", Type.INTEGER, "PDF_SCALE_FACTOR"),
     DisplayConverted("--display", Type.BOOLEAN),
+    PageCount("--pg", Type.INTEGER, "PAGE_COUNT"),
     NoFileOutput("--nofile", Type.BOOLEAN),
     NoTextBoxes("--notextboxes", Type.BOOLEAN),
     NoEmbedImages("--noembedimages", Type.BOOLEAN),
@@ -163,6 +164,7 @@ public enum Parameter {
 
     public static class ConfigVars {
         public static FilenameSource FILENAME_SOURCE = FilenameSource.USER_SELECT;
+        public static int PAGE_COUNT = 1;
         public static int IMAGE_SCALE_FACTOR = 8;
         public static int PDF_SCALE_FACTOR = 2;
         public static int GDRIVE_LIMIT_NOTES = 20;

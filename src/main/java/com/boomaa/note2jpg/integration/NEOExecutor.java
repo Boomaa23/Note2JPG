@@ -32,7 +32,7 @@ public class NEOExecutor extends NFields {
                 String realAssign = Connections.getNeoSession().get(assign)
                         .getElementsByClass("optionsRibbon").first()
                         .getElementsByAttribute("href").first().attr("href");
-                assign = realAssign.substring(assign.lastIndexOf('/'));
+                assign = realAssign.substring(realAssign.lastIndexOf('/'));
             }
             // Only works over unsecured HTTP for some reason
             String baseUrl = "http://neo.sbunified.org/student_freeform_assignment/";
@@ -45,7 +45,7 @@ public class NEOExecutor extends NFields {
 
     public final NEOExecutor pull() {
         getUnfinished(parseAssignments(retrieveAssignDoc(false)));
-        if (ufAssignments.size() == 0 || Parameter.IncludeUnits.inEither()) {
+        if (Parameter.IncludeUnits.inEither()) {
             getUnitClasses(getUnitNums(retrieveAssignDoc(true)));
         }
         return this;
@@ -114,7 +114,7 @@ public class NEOExecutor extends NFields {
                 assignmentId = assignmentId.substring(assignmentId.lastIndexOf('/'));
                 Element innerTd = e.getElementsByTag("td").get(5);
                 Elements flagAlt = innerTd.getElementsByClass("textOffScreen");
-                notSubmitted = innerTd.text().contains("-") || (flagAlt.size() != 0 && flagAlt.first().text().contains("Almost due")) || Parameter.AllowSubmitted.inEither();
+                notSubmitted = innerTd.text().contains("-") || innerTd.text().isBlank() || (flagAlt.size() != 0 && flagAlt.first().text().contains("Almost due")) || Parameter.AllowSubmitted.inEither();
                 isAssignment = !assignName.getElementsByAttributeValueStarting("title", "Online/essay").isEmpty();
             } catch (IndexOutOfBoundsException ignored) {
             }

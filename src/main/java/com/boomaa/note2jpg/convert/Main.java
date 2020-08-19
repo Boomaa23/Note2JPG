@@ -68,7 +68,7 @@ public class Main extends NFields {
         Args.check();
 
         for (String notename : notenames) {
-            String filename = validateFilename(notename + ".note");
+            String filename = validateFilename(notename) + ".note";
             String noExtFilename = filename.substring(0, filename.lastIndexOf('.'));
             if (!Parameter.WipeUploaded.inEither()) {
                 startTime = System.currentTimeMillis();
@@ -125,6 +125,9 @@ public class Main extends NFields {
                         } else {
                             //TODO actually calculate this for non-pdfs
                             pages = 1;
+                        }
+                        if (Parameter.PageCount.inEither()) {
+                            pages = Parameter.PageCount.getValueInt();
                         }
                         scaledHeight = (int) (scaledWidth * pages * 11 / 8.5);
                         bounds = Decode.getBounds(points);
@@ -337,6 +340,17 @@ public class Main extends NFields {
     }
 
     public static String validateFilename(String filename) {
-        return filename.replaceAll("[^a-zA-Z0-9-_\\.\\ ]", "_");
+        StringBuilder sb = new StringBuilder();
+        char[] fn = filename.toCharArray();
+        for (char c : fn) {
+            if (inRange(c, 48, 57) || inRange(c, 65, 90) || inRange(c, 97, 122) || c == 45) {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
+    private static boolean inRange(int value, int min, int max) {
+        return value >= min && value <= max;
     }
 }
