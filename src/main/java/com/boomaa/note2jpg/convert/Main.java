@@ -209,29 +209,27 @@ public class Main extends NFields {
                     }
                 }
 
-                List<String> imageUrls = new ArrayList<>();
+                List<String> imageUrls = null;
                 if (Parameter.UseAWS.inEither()) {
-                    imageUrls.addAll(Arrays.asList(Connections.getAwsExecutor().uploadFile(noExtFilename + ".jpg", Parameter.NewNEOFilename.inEither())));
-                }
-                if (Parameter.UseDriveUpload.inEither()) {
-                    imageUrls.add(GoogleUtils.getEmbedUrl(GoogleUtils.uploadImage(noExtFilename + ".jpg").getId()));
+                    imageUrls = Arrays.asList(Connections.getAwsExecutor().uploadFile(noExtFilename + ".jpg", Parameter.NewNEOFilename.inEither()));
+                    System.out.println("Image uploaded to: \n " + imageUrls.get(0) + "\n" + imageUrls.get(1));
                 }
 
-                if (imageUrls.size() != 0) {
+                if (imageUrls != null) {
                     if (!Parameter.NEONoLink.inEither()) {
-                        System.out.println("Select an image URL to use for the NEO assignment ");
-                        String picked = Args.filenameSelector(imageUrls);
-
-                        String assignName = notename;
+                        String assignName;
                         if (Parameter.NEOAssignment.inEither()) {
                             assignName = Parameter.NEOAssignment.getValue();
                         } else {
                             System.out.println("Select the associated NEO assignment");
                             assignName = Args.filenameSelector(neoExecutor.getAssignments().getNames());
                         }
-                        String assignmentUrl = neoExecutor.push(assignName, picked);
+                        //autoselect NEO-format link instead of AWS (b/c of lms_auth server auto-add to img link)
+                        String assignmentUrl = neoExecutor.push(assignName, imageUrls.get(1));
                         System.out.println("Posted to the NEO assignment at " + assignmentUrl);
                     }
+                } else {
+                    System.err.println("No AWS/NEO upload target specified");
                 }
             }
 
@@ -343,6 +341,7 @@ public class Main extends NFields {
         StringBuilder sb = new StringBuilder();
         char[] fn = filename.toCharArray();
         for (char c : fn) {
+            // eliminate all non-alphanumeric and non-ascii numbers
             if (inRange(c, 48, 57) || inRange(c, 65, 90) || inRange(c, 97, 122) || c == 45) {
                 sb.append(c);
             }

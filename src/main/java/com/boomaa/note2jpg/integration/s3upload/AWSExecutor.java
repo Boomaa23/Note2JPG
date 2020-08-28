@@ -6,8 +6,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.*;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +18,7 @@ public class AWSExecutor {
         "ull%2C%22auto%22%3Atrue%2C%22type%22%3A%22FileResource%22%2C%22new%22%3A%22true%22%7D";
     private final String AWS_BUCKET_URL = "https://s3.amazonaws.com/s3.edu20.org/";
     private final NEOSession session;
+    private Elements registeredFileRows;
 
     public AWSExecutor(NEOSession session) {
         this.session = session;
@@ -60,7 +59,7 @@ public class AWSExecutor {
     }
 
     public String[] getMultiUrl(Map<String, String> credVars, String filename) {
-        String addUrl = credVars.get("aws_location") + "/" + URLEncoder.encode(filename, StandardCharsets.UTF_8);
+        String addUrl = credVars.get("aws_location") + "/" + filename;
         return new String[] { AWS_BUCKET_URL + addUrl, session.getBaseUrl() + "/" + addUrl };
     }
 
@@ -130,7 +129,7 @@ public class AWSExecutor {
         awsFormData.put("key", credVarMap.get("aws_location") + "/" + neoFilename);
         awsFormData.put("policy", credVarMap.get("aws_policy"));
         awsFormData.put("signature", credVarMap.get("aws_signature"));
-//        TODO see if this brUReaks it
+//        TODO see if this breaks it
         awsFormData.put("Content-Type", mimeType);
         awsFormData.put("name", neoFilename);
         awsFormData.put("filename", neoFilename);
@@ -139,9 +138,10 @@ public class AWSExecutor {
     }
 
     private boolean isRegistered(String filename) {
-        Document files = session.get("/uploaded_files/list?ajax_request=true&count=519&limit=10000");
-        Elements rows = files.getElementsByTag("tr");
-        for (Element row : rows) {
+        if (registeredFileRows == null) {
+            registeredFileRows = session.get("/uploaded_files/list?ajax_request=true&limit=10000").getElementsByTag("tr");
+        }
+        for (Element row : registeredFileRows) {
             Elements hrefs = row.getElementsByAttribute("href");
             if (!row.hasClass("sort-icon") && hrefs.size() == 1
                     && hrefs.first().text().equals(filename)) {
