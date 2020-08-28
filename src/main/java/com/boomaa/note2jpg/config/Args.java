@@ -103,7 +103,7 @@ public class Args extends NFields {
                 determineRandomFilename();
                 break;
             case DRIVE:
-                List<String> tempNoteNames = GoogleUtils.getNoteNameList();
+                List<String> tempNoteNames = Connections.getGoogleUtils().getNoteNameList();
                 notenames.add(filenameSelector(tempNoteNames.subList(0,
                         Math.min(Parameter.LimitDriveNotes.getValueInt(), tempNoteNames.size()))));
                 break;

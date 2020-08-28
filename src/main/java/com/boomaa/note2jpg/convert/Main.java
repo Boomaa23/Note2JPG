@@ -78,8 +78,8 @@ public class Main extends NFields {
                     if (Parameter.ConfigVars.FILENAME_SOURCE == FilenameSource.NEO) {
                         System.err.println("Could not find local .note file for NEO assignment \"" + notename + "\"");
                     }
-                    if (Parameter.UseDriveDownload.inEither() && GoogleUtils.isNoteMatch(notename)) {
-                        GoogleUtils.downloadNote(notename, filename);
+                    if (Parameter.UseDriveDownload.inEither() && Connections.getGoogleUtils().isNoteMatch(notename)) {
+                        Connections.getGoogleUtils().downloadNote(notename, filename);
                         unzipNote(filename, noExtFilename);
                     } else {
                         System.err.println("Note file matching \"" + notename + "\" could not be found");
@@ -201,7 +201,7 @@ public class Main extends NFields {
                             Connections.getAwsExecutor().remove(notename + ".jpg");
                         }
                         if (Parameter.UseDriveUpload.inEither()) {
-                            GoogleUtils.deleteAllMatchingImages(notename);
+                            Connections.getGoogleUtils().deleteAllMatchingImages(notename);
                         }
                         System.exit(0);
                     } else {

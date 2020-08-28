@@ -8,11 +8,12 @@ import java.io.IOException;
 import java.util.Map;
 
 public final class NEOSession {
+    private static NEOSession INSTANCE;
     private String baseUrl = "https://neo.sbunified.org";
     private String authCookieName = "secure_lmssessionkey2";
     private String authCookieValue = null;
 
-    public NEOSession(String username, String password) {
+    private NEOSession(String username, String password) {
         try {
             authCookieValue = Jsoup.connect(getLoginUrl(username, password))
                 .ignoreContentType(true).execute().cookie(authCookieName);
@@ -56,12 +57,7 @@ public final class NEOSession {
     }
 
     private String getLoginUrl(String username, String password) {
-        StringBuilder sb = new StringBuilder(baseUrl + "/log_in/submit_from_portal");
-        sb.append("?userid=");
-        sb.append(username);
-        sb.append("&password=");
-        sb.append(password);
-        return sb.toString();
+        return baseUrl + "/log_in/submit_from_portal?userid=" + username + "&password=" + password;
     }
 
     public NEOSession setBaseUrl(String baseUrl) {
@@ -75,5 +71,16 @@ public final class NEOSession {
 
     public final String getAuth() {
         return authCookieValue;
+    }
+
+    public static NEOSession getInstance() {
+        return getInstance(null, null);
+    }
+
+    public static NEOSession getInstance(String username, String password) {
+        if (INSTANCE == null && username != null && password != null) {
+            INSTANCE = new NEOSession(username, password);
+        }
+        return INSTANCE;
     }
 }

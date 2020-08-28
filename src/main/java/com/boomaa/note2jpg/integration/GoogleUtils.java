@@ -21,15 +21,16 @@ import java.util.List;
 import java.util.Map;
 
 public class GoogleUtils {
+    private static final GoogleUtils INSTANCE = new GoogleUtils();
     private static final String APPLICATION_NAME = "Note2JPG";
     private static final String PRIVATE_KEY_NAME = "GoogleSvcAcctPrivateKey.json";
-    private static Drive driveService;
-    private static Map<String, File> noteList; //Keys are Google file names
-    private static Map<String, File> imageList; //Keys are Google file IDs
+    private Drive driveService;
+    private Map<String, File> noteList; //Keys are Google file names
+    private Map<String, File> imageList; //Keys are Google file IDs
 
-    static {
+    private GoogleUtils() {
         try {
-            driveService = GoogleUtils.getDriveService();
+            driveService = this.getDriveService();
             noteList = new HashMap<>();
             imageList = new HashMap<>();
             retrieveData(Extension.note);
@@ -39,7 +40,7 @@ public class GoogleUtils {
         }
     }
 
-    private static HttpRequestInitializer authorize() throws IOException {
+    private HttpRequestInitializer authorize() throws IOException {
         try {
             return new HttpCredentialsAdapter(
                 GoogleCredentials.fromStream(
@@ -55,12 +56,12 @@ public class GoogleUtils {
         return null;
     }
 
-    private static Drive getDriveService() throws IOException, GeneralSecurityException {
-        return new Drive.Builder(GoogleNetHttpTransport.newTrustedTransport(), JacksonFactory.getDefaultInstance(),
-            GoogleUtils.authorize()).setApplicationName(APPLICATION_NAME).build();
+    private Drive getDriveService() throws IOException, GeneralSecurityException {
+        return new Drive.Builder(GoogleNetHttpTransport.newTrustedTransport(), JacksonFactory.getDefaultInstance(), this.authorize())
+                .setApplicationName(APPLICATION_NAME).build();
     }
 
-    public static void retrieveData(Extension extension) {
+    public void retrieveData(Extension extension) {
         List<File> notes = null;
         try {
             notes = driveService.files().list()
@@ -87,7 +88,7 @@ public class GoogleUtils {
         }
     }
 
-    public static void deleteAllMatchingImages(String filename) {
+    public void deleteAllMatchingImages(String filename) {
         for (Map.Entry<String, File> entry : imageList.entrySet()) {
             File file = entry.getValue();
             if (file != null && file.getName().equals(filename + ".jpg")) {
@@ -100,15 +101,15 @@ public class GoogleUtils {
         }
     }
 
-    public static boolean isNoteMatch(String filename) {
+    public boolean isNoteMatch(String filename) {
         return noteList.containsKey(filename);
     }
 
-    public static String getEmbedUrl(String fileId) {
+    public String getEmbedUrl(String fileId) {
         return "https://drive.google.com/open?id=" + fileId;
     }
 
-    public static void downloadNote(String gdriveFilename, String outputFilename) {
+    public void downloadNote(String gdriveFilename, String outputFilename) {
         try {
             java.io.File outputFile = new java.io.File(outputFilename);
             if (!outputFile.exists()) {
@@ -124,7 +125,7 @@ public class GoogleUtils {
         }
     }
 
-    public static File uploadImage(String filename) {
+    public File uploadImage(String filename) {
         try {
             File imageMetadata = new File();
             imageMetadata.setName(filename);
@@ -140,7 +141,7 @@ public class GoogleUtils {
         return null;
     }
 
-    private static Permission insertPermissions(String fileId) {
+    private Permission insertPermissions(String fileId) {
         try {
             Permission newPermission = new Permission();
             newPermission.setType("anyone");
@@ -152,12 +153,15 @@ public class GoogleUtils {
         return null;
     }
 
-    public static List<String> getNoteNameList() {
+    public List<String> getNoteNameList() {
         return new ArrayList<>(noteList.keySet());
     }
 
-    public static List<String> getImageNameList() {
+    public List<String> getImageNameList() {
         return new ArrayList<>(imageList.keySet());
     }
 
+    public static GoogleUtils getInstance() {
+        return INSTANCE;
+    }
 }
