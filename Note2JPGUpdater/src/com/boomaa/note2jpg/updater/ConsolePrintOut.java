@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,11 +54,7 @@ public class ConsolePrintOut extends OutputStream {
     }
 
     private static String bytesToString(byte[] ba, int str, int len) {
-        try {
-            return new String(ba, str, len,"UTF-8");
-        } catch (UnsupportedEncodingException thr) {
-            return new String(ba, str, len);
-        }
+        return new String(ba, str, len, StandardCharsets.UTF_8);
     }
 
     public static class Appender implements Runnable {

@@ -13,6 +13,7 @@ public enum Parameter {
     PDFScaleFactor("-p", Type.INTEGER, "PDF_SCALE_FACTOR"),
     DisplayConverted("--display", Type.BOOLEAN),
     PageCount("--pg", Type.INTEGER, "PAGE_COUNT"),
+    OutputDirectory("--outdir", Type.STRING, "OUTPUT_DIRECTORY"),
     NoFileOutput("--nofile", Type.BOOLEAN),
     NoTextBoxes("--notextboxes", Type.BOOLEAN),
     NoEmbedImages("--noembedimages", Type.BOOLEAN),
@@ -173,6 +174,7 @@ public enum Parameter {
         public static String NEO_CLASS_ID = "";
         public static String NEO_USR = "";
         public static String NEO_PW = "";
+        public static String OUTPUT_DIRECTORY = "";
     }
 }
 
