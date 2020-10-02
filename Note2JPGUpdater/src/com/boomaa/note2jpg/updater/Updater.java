@@ -109,8 +109,7 @@ public class Updater {
             downloadFile("https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/Note2JPG.jar", "Note2JPG.jar", false);
             downloadCounter++;
         }
-        if (Arrays.asList(args).contains("--launcher")
-                && !new File("Note2JPG.cmd").exists()) {
+        if (Arrays.asList(args).contains("--launcher")) {
             System.out.println("Downloading Note2JPG.cmd");
             downloadFile("https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/Note2JPG.cmd", "Note2JPG.cmd", false);
             downloadCounter++;

@@ -72,6 +72,12 @@ public class Main extends NFields {
             String noExtFilename = filename.substring(0, filename.lastIndexOf('.'));
             if (!Parameter.WipeUploaded.inEither()) {
                 startTime = System.currentTimeMillis();
+                if (Parameter.OutputDirectory.inEither()) {
+                    try {
+                        unzipNote(Parameter.OutputDirectory.getValue() + filename, noExtFilename);
+                    } catch (ZipException ignored) {
+                    }
+                }
                 try {
                     unzipNote(filename, noExtFilename);
                 } catch (ZipException e) {
@@ -79,8 +85,8 @@ public class Main extends NFields {
                         System.err.println("Could not find local .note file for NEO assignment \"" + notename + "\"");
                     }
                     if (Parameter.UseDriveDownload.inEither() && Connections.getGoogleUtils().isNoteMatch(notename)) {
-                        Connections.getGoogleUtils().downloadNote(notename, filename);
-                        unzipNote(filename, noExtFilename);
+                        Connections.getGoogleUtils().downloadNote(notename, Parameter.OutputDirectory.getValue() + filename);
+                        unzipNote(Parameter.OutputDirectory.getValue() + filename, noExtFilename);
                     } else {
                         System.err.println("Note file matching \"" + notename + "\" could not be found");
                         continue;
@@ -187,7 +193,7 @@ public class Main extends NFields {
                 }
 
                 if (!Parameter.NoFileOutput.inEither()) {
-                    saveToFile(noExtFilename);
+                    saveToFile(Parameter.OutputDirectory.getValue() + noExtFilename);
                 }
             }
 
@@ -297,7 +303,8 @@ public class Main extends NFields {
         zipFile.extractFile(innerFolder + "/Session.plist", noExtNoteName, "/Session.plist");
         try {
             try {
-                zipFile.extractFile(innerFolder + "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist", noExtNoteName, "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist");
+                zipFile.extractFile(innerFolder + "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist", noExtNoteName,
+                        "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist");
                 pdfState = PDFState.PLIST;
             } catch (ZipException e) {
                 pdfState = PDFState.NONE;

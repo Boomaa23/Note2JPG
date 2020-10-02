@@ -41,6 +41,17 @@ public class Args extends NFields {
             }
         }
 
+        if (Parameter.OutputDirectory.inEither()) {
+            if (!Parameter.OutputDirectory.getValue().equals("")) {
+                Parameter.OutputDirectory.setLinkedField(Parameter.OutputDirectory.getValue() + "/");
+            }
+
+            File folder = new File(Parameter.OutputDirectory.getValue());
+            if (!folder.isDirectory()) {
+                folder.mkdir();
+            }
+        }
+
         if (neoFound) {
             if (Parameter.NEOUsername.inArgs() && Parameter.NEOPassword.inArgs()) {
                 String[] usrPw = Parameter.NEOUsername.argsValue(2);
@@ -56,13 +67,15 @@ public class Args extends NFields {
             Connections.create(Parameter.NEOUsername.getValue(), Parameter.NEOPassword.getValue());
             neoExecutor = new NEOExecutor();
 
-            if (Parameter.NEOClassID.getValue().isBlank()) {
-                System.out.println("Select the NEO class to be used for assignment upload");
-                NameIDMap classList = neoExecutor.getClassList();
-                String selected = filenameSelector(classList.getNames());
-                Parameter.NEOClassID.setLinkedField(classList.get(selected));
+            if (!Parameter.NEONoLink.inEither()) {
+                if (Parameter.NEOClassID.getValue().isBlank()) {
+                    System.out.println("Select the NEO class to be used for assignment upload");
+                    NameIDMap classList = neoExecutor.getClassList();
+                    String selected = filenameSelector(classList.getNames());
+                    Parameter.NEOClassID.setLinkedField(classList.get(selected));
+                }
+                neoExecutor.pull();
             }
-            neoExecutor.pull();
         }
 
         if (Parameter.UseDrive.inEither()) {
