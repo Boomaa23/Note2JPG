@@ -5,7 +5,6 @@ import com.boomaa.note2jpg.config.Parameter;
 import com.boomaa.note2jpg.create.Box;
 import com.boomaa.note2jpg.create.Point;
 import com.boomaa.note2jpg.create.*;
-import com.boomaa.note2jpg.integration.GoogleUtils;
 import com.boomaa.note2jpg.integration.s3upload.Connections;
 import com.boomaa.note2jpg.state.FilenameSource;
 import com.boomaa.note2jpg.state.NumberType;
@@ -26,11 +25,9 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -39,6 +36,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class Main extends NFields {
+    private static final String CURRENT_VERSION_TAG = "v0.5.5";
+
     static {
         @SuppressWarnings("unchecked") List<Logger> loggers =
             Collections.<Logger>list(LogManager.getCurrentLoggers());
@@ -62,6 +61,7 @@ public class Main extends NFields {
 
     public static void main(String[] args) throws IOException, PropertyListFormatException, ParseException, SAXException, ParserConfigurationException {
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+        checkForUpdates();
         argsList = Arrays.asList(args);
         Args.parse();
         Args.logic();
@@ -358,5 +358,26 @@ public class Main extends NFields {
 
     private static boolean inRange(int value, int min, int max) {
         return value >= min && value <= max;
+    }
+
+    private static void checkForUpdates() {
+        try {
+            String baseUrl = "https://github.com/Boomaa23/Note2JPG/releases/";
+            HttpURLConnection connection = (HttpURLConnection) new URL(baseUrl + "latest").openConnection();
+            connection.setConnectTimeout(1000);
+            connection.setInstanceFollowRedirects(false);
+            switch (connection.getResponseCode()) {
+                case HttpURLConnection.HTTP_MOVED_PERM:
+                case HttpURLConnection.HTTP_MOVED_TEMP:
+                case HttpURLConnection.HTTP_SEE_OTHER:
+                    String redirect = connection.getHeaderField("Location");
+                    String remoteVer = redirect.substring(redirect.lastIndexOf("/") + 1);
+                    if (!remoteVer.equals(CURRENT_VERSION_TAG)) {
+                        System.err.println("A new version " + remoteVer + " is available! Download via the updater or from " + baseUrl + remoteVer + "\n");
+                    }
+                    break;
+            }
+        } catch (IOException ignored) {
+        }
     }
 }
