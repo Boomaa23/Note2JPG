@@ -15,11 +15,11 @@ public class UserUpload {
             Scanner sc = new Scanner(System.in);
             System.out.println("Enter a filename (with extension) to upload");
             System.out.print(">> ");
-            System.out.println(Arrays.toString(Connections.getAwsExecutor().uploadFile(sc.nextLine(), false)));
+            System.out.println(Arrays.toString(Connections.getAwsExecutor().uploadFile(sc.nextLine(), "", false)));
             sc.close();
         } else {
             for (int i = 2;i < args.length;i++) {
-                System.out.println(Arrays.toString(Connections.getAwsExecutor().uploadFile(args[i], false)));
+                System.out.println(Arrays.toString(Connections.getAwsExecutor().uploadFile(args[i], "", false)));
             }
         }
     }
