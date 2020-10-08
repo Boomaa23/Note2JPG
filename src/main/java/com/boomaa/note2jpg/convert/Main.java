@@ -217,8 +217,8 @@ public class Main extends NFields {
 
                 List<String> imageUrls = null;
                 if (Parameter.UseAWS.inEither()) {
-                    imageUrls = Arrays.asList(Connections.getAwsExecutor().uploadFile(noExtFilename + ".jpg", Parameter.NewNEOFilename.inEither()));
-                    System.out.println("Image uploaded to: \n " + imageUrls.get(0) + "\n" + imageUrls.get(1));
+                    imageUrls = Arrays.asList(Connections.getAwsExecutor().uploadFile(noExtFilename + ".jpg", Parameter.OutputDirectory.getValue(), Parameter.NewNEOFilename.inEither()));
+                    System.out.println("\nImage uploaded to: \n " + imageUrls.get(0) + "\n" + imageUrls.get(1) + "\n");
                 }
 
                 if (imageUrls != null) {

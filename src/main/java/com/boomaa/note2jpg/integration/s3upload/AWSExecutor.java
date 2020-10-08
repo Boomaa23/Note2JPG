@@ -27,17 +27,15 @@ public class AWSExecutor {
     public String[] remove(String filename) {
         Extension ext = Extension.getFromFilename(filename);
         Map<String, String> credVars = getAWSCredentials();
-        MultipartFormData fileData = new MultipartFormData.DefaultBuilder(filename)
-                .setInputStream(new ByteArrayInputStream(new byte[0]))
-                .setExtension(ext).build();
+        MultipartFormData fileData = new MultipartFormData(filename, ext, new ByteArrayInputStream(new byte[0]));
         uploadImage(getAWSFormData(credVars, filename, ext.mimeType), fileData);
         return getMultiUrl(credVars, filename);
     }
 
-    public String[] uploadFile(String filename, boolean registerFilename) {
-        return upload(filename, registerFilename, () -> {
+    public String[] uploadFile(String uploadFilename, String localPath, boolean registerFilename) {
+        return upload(uploadFilename, registerFilename, () -> {
             try {
-                return new FileInputStream(filename);
+                return new FileInputStream(localPath + uploadFilename);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
                 System.exit(1);
@@ -52,8 +50,7 @@ public class AWSExecutor {
             filename = registerNeoFilename(filename);
         }
         Map<String, String> credVars = getAWSCredentials();
-        MultipartFormData fileData = new MultipartFormData.DefaultBuilder(filename)
-            .setInputStream(input.get()).setExtension(ext).build();
+        MultipartFormData fileData = new MultipartFormData(filename, ext, input.get());
         uploadImage(getAWSFormData(credVars, filename, ext.mimeType), fileData);
         return getMultiUrl(credVars, filename);
     }

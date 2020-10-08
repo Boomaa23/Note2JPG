@@ -33,6 +33,7 @@ Download both JAR files listed below. Run the updater JAR once to get the applic
 | ConvertAll                    | --all                 | Note2JPG   | boolean | Convert all available notes
 | DisplayConverted              | --display             | Note2JPG   | boolean | Show the image after processing
 | PageCount                     | --pg                  | Note2JPG   | int     | Force the number of output pages
+| OutputDirectory               | --outdir              | Note2JPG   | String  | Specify an output directory
 | NoFileOutput                  | --nofile              | Note2JPG   | boolean | Do not write the image to file
 | RandomFile                    | --randomfile          | Note2JPG   | boolean | Select a file randomly if not specified
 | NoTextBoxes                   | --notextboxes         | Note2JPG   | boolean | Do not request positions for text boxes
@@ -46,7 +47,7 @@ Download both JAR files listed below. Run the updater JAR once to get the applic
 | AllowSubmitted                | --allowsubmitted      | NEO        | boolean | Allow submission of done assignments
 | IncludeUnits                  | --inclunits           | NEO        | boolean | Include assignments from the units page
 | NewNEOFilename                | --newneofn            | NEO        | boolean | Register a new NEO filename (no overwriting)
-| WipeUploaded                  | --wipeup              | NEO/Amazon | boolean | Wipe uploaded images from specified sources
+| WipeUploaded                  | --wipeup              | NEO/AWS    | boolean | Wipe uploaded images from specified sources
 | UseAWS                        | --aws                 | Amazon     | boolean | Upload images to AWS (via NEO)
 | UseDrive                      | --gdrive              | Google     | boolean | Use Google Drive to download and upload
 | UseDriveDownload              | --gdrivedl            | Google     | boolean | Use Google Drive as a .note source
