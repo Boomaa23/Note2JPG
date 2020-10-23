@@ -122,7 +122,7 @@ public class Main extends NFields {
                                 }
                                 //TODO implement by-page setting for pdfs in the plist
                             } else if (pdfState == PDFState.FILE_ONLY) {
-                                File pdfDir = new File(notename + "/PDFs/");
+                                File pdfDir = new File(noExtFilename + "/PDFs/");
                                 for (File pdf : pdfDir.listFiles()) {
                                     pdfs.addAll(ImageUtil.getPdfImages(noExtFilename, pdf.getName()));
                                 }
