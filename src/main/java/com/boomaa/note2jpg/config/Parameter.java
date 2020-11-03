@@ -76,7 +76,7 @@ public enum Parameter {
     public String[] argsValue(int buffer) {
         String[] args = new String[buffer];
         int ioFlag = NFields.argsList.indexOf(flag);
-        for (int i = 0;i < args.length;i++) {
+        for (int i = 0; i < args.length; i++) {
             args[i] = NFields.argsList.get(ioFlag + i + 1);
         }
         return args;

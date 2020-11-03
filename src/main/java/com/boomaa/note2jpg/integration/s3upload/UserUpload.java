@@ -18,7 +18,7 @@ public class UserUpload {
             System.out.println(Arrays.toString(Connections.getAwsExecutor().uploadFile(sc.nextLine(), "", false)));
             sc.close();
         } else {
-            for (int i = 2;i < args.length;i++) {
+            for (int i = 2; i < args.length; i++) {
                 System.out.println(Arrays.toString(Connections.getAwsExecutor().uploadFile(args[i], "", false)));
             }
         }

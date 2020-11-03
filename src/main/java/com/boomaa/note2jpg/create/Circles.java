@@ -23,22 +23,22 @@ public class Circles extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
             RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-        for (int i = 0;i < curves.length;i++) {
+        for (int i = 0; i < curves.length; i++) {
             g2.setColor(curves[i].getColor());
             Point[] points = curves[i].getPoints();
             Point lastPoint = points[0];
 
             System.out.print("\r" + "Curve: " + (i + 1) + " / " + curves.length);
-            for (int j = 0;j < points.length;j++) {
+            for (Point point : points) {
                 g2.setStroke(new BasicStroke((float) curves[i].getWidth()));
-                g2.drawLine(lastPoint.getX(), lastPoint.getY(), points[j].getX(), points[j].getY());
-                g2.fillOval(points[j].getX(), points[j].getY(), (int) (curves[i].getWidth() / 2), (int) (curves[i].getWidth() / 2));
-                lastPoint = points[j];
+                g2.drawLine(lastPoint.getX(), lastPoint.getY(), point.getX(), point.getY());
+                g2.fillOval(point.getX(), point.getY(), (int) (curves[i].getWidth() / 2), (int) (curves[i].getWidth() / 2));
+                lastPoint = point;
             }
         }
         System.out.println(curves.length == 0 ? "Curve: None" : "");
 
-        for (int i = 0;i < shapes.length;i++) {
+        for (int i = 0; i < shapes.length; i++) {
             g2.setColor(shapes[i].getColor());
             g2.setStroke(new BasicStroke((float) shapes[i].getWidth()));
             Point start = shapes[i].getStartPoint();

@@ -70,7 +70,7 @@ public class Updater {
         String depsString = out.toString();
         List<String> depsPrelimList = new ArrayList<>();
         int lastIndex = 0;
-        for (int i = 0;i < depsString.length();i++) {
+        for (int i = 0; i < depsString.length(); i++) {
             if (depsString.charAt(i) == '\n') {
                 String depSingle = depsString.substring(lastIndex, i).replaceAll("[\\\\+\\ \\|\\n]", "");
                 if (depSingle.charAt(0) == '-') {

@@ -74,14 +74,13 @@ public class GoogleUtils {
             e.printStackTrace();
         }
 
-        for (int i = 0;i < notes.size();i++) {
-            File note = notes.get(i);
+        for (File note : notes) {
             String noteName = note.getName();
             int noExtEnd = noteName.length() - extension.name().length();
             if (noteName.substring(noExtEnd).equals(extension.name())) {
                 if (extension == Extension.note) {
                     noteList.put(noteName.substring(0, noExtEnd - 1), note);
-                } else if (extension == Extension.jpg){
+                } else if (extension == Extension.jpg) {
                     imageList.put(note.getId(), note);
                 }
             }

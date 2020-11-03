@@ -76,11 +76,11 @@ public class ImageUtil extends NFields {
         cg2.setColor(Color.WHITE);
         cg2.fillRect(0, 0, img.getWidth(), img.getHeight());
         cg2.setColor(Color.BLACK);
-        for (int i = 0;i < textBoxes.size();i++) {
+        for (int i = 0; i < textBoxes.size(); i++) {
             cg2.setFont(new Font("Arial", Font.PLAIN, 12 * Parameter.ImageScaleFactor.getValueInt()));
             int x = textBoxBounds.get(i).getCorner(Corner.UPPER_LEFT).getX();
             int lastOverflow = 0;
-            for (int j = 0;j < textBoxes.get(i).length();j++) {
+            for (int j = 0; j < textBoxes.get(i).length(); j++) {
                 int currChar = Math.min(255, textBoxes.get(i).charAt(j));
                 if (((j - lastOverflow + 2) * cg2.getFontMetrics().getWidths()[currChar]) > textBoxBounds.get(i).getCorner(Corner.BOTTOM_RIGHT).getX()) {
                     textBoxes.set(i, textBoxes.get(i).substring(0, j) + "\n" + textBoxes.get(i).substring(j));
@@ -163,7 +163,7 @@ public class ImageUtil extends NFields {
 
     public static void populateEmbedImages() {
         Graphics2D g2 = (Graphics2D) upscaledAll.getGraphics();
-        for (int i = 0;i < imageList.size();i++) {
+        for (int i = 0; i < imageList.size(); i++) {
             Point pt = imageBounds.get(i);
             BufferedImage img = imageList.get(i);
             g2.drawImage(scaleImage(makeColorTransparent(img, Color.WHITE), (scaledWidth / displayedWidth) / Parameter.PDFScaleFactor.getValueInt()), pt.getX(), pt.getY(), null);

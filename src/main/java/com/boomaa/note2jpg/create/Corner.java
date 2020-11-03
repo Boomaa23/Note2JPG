@@ -16,7 +16,7 @@ public enum Corner {
         if (name.length() > 0) {
             name.replace(0, 1, String.valueOf(name.charAt(0)).toUpperCase());
         }
-        for (int i = 0;i < name.length();i++) {
+        for (int i = 0; i < name.length(); i++) {
             if (name.charAt(i) == '_') {
                 name.replace(i, i + 1, " ");
             }

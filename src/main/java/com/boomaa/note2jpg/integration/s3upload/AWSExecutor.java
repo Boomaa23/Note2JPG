@@ -94,8 +94,7 @@ public class AWSExecutor {
         }
 
         Map<String, String> awsCredMap = new HashMap<>();
-        for (int i = 0;i < lineSortedVars.size();i++) {
-            String currVar = lineSortedVars.get(i);
+        for (String currVar : lineSortedVars) {
             int ioEquals = currVar.indexOf("=");
             int ioEnd = currVar.lastIndexOf("\";");
             if (ioEnd == -1 || ioEquals == -1) {
@@ -126,7 +125,7 @@ public class AWSExecutor {
         awsFormData.put("key", credVarMap.get("aws_location") + "/" + neoFilename);
         awsFormData.put("policy", credVarMap.get("aws_policy"));
         awsFormData.put("signature", credVarMap.get("aws_signature"));
-//        TODO see if this breaks it
+        // TODO see if this breaks it
         awsFormData.put("Content-Type", mimeType);
         awsFormData.put("name", neoFilename);
         awsFormData.put("filename", neoFilename);

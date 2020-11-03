@@ -227,7 +227,7 @@ public class Args extends NFields {
     }
 
     public static void displayListOptions(List<String> options) {
-        for (int i = 0;i < options.size();i++) {
+        for (int i = 0; i < options.size(); i++) {
             System.out.println((i + 1) + ") " + options.get(i));
         }
     }
