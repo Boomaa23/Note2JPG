@@ -1,8 +1,8 @@
 package com.boomaa.note2jpg.create;
 
 public class Point {
-    private final int x;
-    private final int y;
+    private int x;
+    private int y;
 
     public Point(float x, float y) {
         this.x = (int) x;
@@ -15,6 +15,14 @@ public class Point {
 
     public Point(java.awt.Point point) {
         this(point.getX(), point.getY());
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public void setY(int y) {
+        this.y = y;
     }
 
     public int getX() {

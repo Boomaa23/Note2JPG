@@ -5,9 +5,11 @@ import java.awt.*;
 
 public class Circles extends JPanel {
     private final Curve[] curves;
+    private final Shape[] shapes;
 
-    public Circles(Curve[] curves) {
+    public Circles(Curve[] curves, Shape[] shapes) {
         this.curves = curves;
+        this.shapes = shapes;
         this.setBackground(Color.WHITE);
     }
 
@@ -34,11 +36,17 @@ public class Circles extends JPanel {
                 lastPoint = points[j];
             }
         }
-        if (curves.length == 0) {
-            System.out.println("Curve: None");
-        } else {
-            System.out.println();
+        System.out.println(curves.length == 0 ? "Curve: None" : "");
+
+        for (int i = 0;i < shapes.length;i++) {
+            g2.setColor(shapes[i].getColor());
+            g2.setStroke(new BasicStroke((float) shapes[i].getWidth()));
+            Point start = shapes[i].getStartPoint();
+            Point end = shapes[i].getEndPoint();
+            g2.drawLine(start.getX(), start.getY(), end.getX(), end.getY());
+            System.out.print("\r" + "Shape: " + (i + 1) + " / " + shapes.length);
         }
+        System.out.println(shapes.length == 0 ? "Shape: None" : "");
         g2.dispose();
     }
 }

@@ -66,6 +66,21 @@ public class Decode extends NFields {
         return intColors;
     }
 
+    public static Point parseShapePoint(NSObject[] objects) {
+        return new Point(nsObjFloatVal(objects[0]), nsObjFloatVal(objects[1]));
+    }
+
+    public static Color getShapeStrokeColor(NSObject[] objects) {
+        return new Color(nsObjFloatVal(objects[0]),
+                nsObjFloatVal(objects[1]),
+                nsObjFloatVal(objects[2]),
+                nsObjFloatVal(objects[3]));
+    }
+
+    private static float nsObjFloatVal(NSObject obj) {
+        return ((NSNumber) obj).floatValue();
+    }
+
     public static Color[] getColorsFromInts(int[] raw) {
         Color[] colors = new Color[raw.length];
         for (int i = 0;i < raw.length;i++) {

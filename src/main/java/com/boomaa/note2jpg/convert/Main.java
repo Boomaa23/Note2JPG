@@ -5,12 +5,16 @@ import com.boomaa.note2jpg.config.Parameter;
 import com.boomaa.note2jpg.create.Box;
 import com.boomaa.note2jpg.create.Point;
 import com.boomaa.note2jpg.create.*;
+import com.boomaa.note2jpg.create.Shape;
 import com.boomaa.note2jpg.integration.s3upload.Connections;
 import com.boomaa.note2jpg.state.FilenameSource;
 import com.boomaa.note2jpg.state.NumberType;
 import com.boomaa.note2jpg.state.PDFState;
 import com.dd.plist.NSArray;
+import com.dd.plist.NSData;
 import com.dd.plist.NSDictionary;
+import com.dd.plist.NSNumber;
+import com.dd.plist.NSObject;
 import com.dd.plist.PropertyListFormatException;
 import com.dd.plist.PropertyListParser;
 import net.lingala.zip4j.ZipFile;
@@ -95,7 +99,8 @@ public class Main extends NFields {
 
                 System.out.println("Args: name=\"" + notename + "\" scale=" + Parameter.ImageScaleFactor.getValue() + " pdfScale=" + Parameter.PDFScaleFactor.getValueInt());
                 NSDictionary sessionMain = (NSDictionary) PropertyListParser.parse(new File(noExtFilename + "/Session.plist"));
-                NSDictionary[] sessionDict = Decode.isolateDictionary(((NSArray) (sessionMain.getHashMap().get("$objects"))).getArray());
+                NSObject[] sessionObjects = ((NSArray) (sessionMain.getHashMap().get("$objects"))).getArray();
+                NSDictionary[] sessionDict = Decode.isolateDictionary(sessionObjects);
                 List<Image> pdfs = new ArrayList<>();
 
                 float[] curvespoints = Decode.parseB64Numbers(NumberType.FLOAT, Decode.getDataFromDict(sessionDict, "curvespoints"));
@@ -103,6 +108,27 @@ public class Main extends NFields {
                 float[] curveswidth = Decode.parseB64Numbers(NumberType.FLOAT, Decode.getDataFromDict(sessionDict, "curveswidth"));
                 int[] curvescolors = Decode.parseB64Colors(Decode.getDataFromDict(sessionDict, "curvescolors"));
                 Color[] colors = Decode.getColorsFromInts(curvescolors);
+
+                NSObject[] shapesMain = ((NSArray) ((NSDictionary) PropertyListParser.parse(((NSData) sessionObjects[14]).bytes())).get("shapes")).getArray();
+                List<Shape> shapes = new ArrayList<>();
+                for (NSObject obj : shapesMain) {
+                    NSDictionary dict = (NSDictionary) obj;
+                    NSDictionary appearance = (NSDictionary) dict.get("appearance");
+                    NSObject[] shapeColorRGBA = ((NSArray) ((NSDictionary) appearance.get("strokeColor")).get("rgba")).getArray();
+                    Color strokeColor = Decode.getShapeStrokeColor(shapeColorRGBA);
+                    double strokeWidth = ((NSNumber) appearance.get("strokeWidth")).doubleValue();
+
+                    Point startPt = Decode.parseShapePoint(((NSArray) dict.get("startPt")).getArray());
+                    Point endPt = Decode.parseShapePoint(((NSArray) dict.get("endPt")).getArray());
+                    int scale = Parameter.ImageScaleFactor.getValueInt();
+                    startPt.setX((startPt.getX() + leftOffset) * scale);
+                    startPt.setY(startPt.getY() * scale);
+                    endPt.setX((endPt.getX() + leftOffset) * scale);
+                    endPt.setY(endPt.getY() * scale);
+                    strokeWidth *= scale;
+
+                    shapes.add(new Shape(startPt, endPt, strokeColor, strokeWidth));
+                }
 
                 System.gc();
                 while (true) {
@@ -137,7 +163,7 @@ public class Main extends NFields {
                         }
                         scaledHeight = (int) (scaledWidth * pages * 11 / 8.5);
                         bounds = Decode.getBounds(points);
-                        setupCurves(curves);
+                        setupCurves(curves, shapes.toArray(new Shape[0]));
                         ImageUtil.populateUnscaledAll(ImageUtil.getPdfCanvas(pdfs));
                         if (hasImages && !Parameter.NoEmbedImages.inEither()) {
                             ImageUtil.fillEmbedImageList(noExtFilename);
@@ -248,8 +274,8 @@ public class Main extends NFields {
         }
     }
 
-    public static void setupCurves(Curve[] curves) {
-        circles = new Circles(curves);
+    public static void setupCurves(Curve[] curves, Shape[] shapes) {
+        circles = new Circles(curves, shapes);
         circles.setSize(new Dimension(scaledWidth, scaledHeight));
     }
 
