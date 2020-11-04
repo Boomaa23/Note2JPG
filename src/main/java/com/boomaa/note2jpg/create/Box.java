@@ -60,7 +60,7 @@ public class Box {
                 throw new IllegalArgumentException("Invalid box corner");
         }
         return ulTemp != null && brTemp != null
-            && brTemp.getY() > ulTemp.getY() && brTemp.getX() > ulTemp.getX()
+            && brTemp.getYDbl() > ulTemp.getYDbl() && brTemp.getXDbl() > ulTemp.getXDbl()
             && ulTemp.distance(brTemp) > 0;
     }
 }

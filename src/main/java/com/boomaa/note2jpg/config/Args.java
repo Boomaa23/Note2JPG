@@ -60,9 +60,6 @@ public class Args extends NFields {
                 Parameter.NEOUsername.setLinkedField(JSONHelper.getJsonValue(Parameter.NEOUsername.name()));
                 Parameter.NEOPassword.setLinkedField(JSONHelper.getJsonValue(Parameter.NEOPassword.name()));
             }
-            if (found == 0) {
-                Parameter.ConfigVars.FILENAME_SOURCE = FilenameSource.NEO;
-            }
             Connections.create(Parameter.NEOUsername.getValue(), Parameter.NEOPassword.getValue());
             neoExecutor = new NEOExecutor();
 
@@ -81,11 +78,16 @@ public class Args extends NFields {
             Parameter.UseDriveUpload.setLinkedField(true);
             Parameter.UseDriveDownload.setLinkedField(true);
         }
-        if (Parameter.UseDriveDownload.inEither() && Parameter.Filename.inEither() && neoFound) {
-            Parameter.ConfigVars.FILENAME_SOURCE = FilenameSource.PARAMETER;
-        }
-        if (Parameter.UseDriveDownload.inEither() && found == 0) {
+        if (Parameter.UseDriveDownload.inEither() && ((Parameter.Filename.inEither() && neoFound) || found == 0)) {
             Parameter.ConfigVars.FILENAME_SOURCE = FilenameSource.DRIVE;
+        }
+
+        if (Parameter.Filename.inEither()) {
+            if (Parameter.NoteFilter.inEither()) {
+                throw new IllegalArgumentException("Cannot have a filter and filename");
+            } else {
+                Parameter.NoteFilter.setLinkedField(Parameter.Filename.getValue());
+            }
         }
     }
 
@@ -141,6 +143,10 @@ public class Args extends NFields {
         if (notenames.isEmpty()) {
             System.err.println("No .note files selected to convert");
         }
+
+        if (Parameter.ImageScaleFactor.getValueInt() <= 0) {
+            throw new ArithmeticException("Cannot have a scale factor of zero");
+        }
     }
 
     public static List<String> getAllLocalNotes() {
@@ -163,7 +169,14 @@ public class Args extends NFields {
     }
 
     public static String filenameSelector(List<String> list) {
-        displayListOptions(list);
+        return filenameSelector(list, Parameter.NoteFilter.getValue());
+    }
+
+    public static String filenameSelector(List<String> list, String filter) {
+        if (!displayListOptions(list, filter)) {
+            System.err.println("No note files matching filter " + filter);
+            System.exit(1);
+        }
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         int selected = -1;
         try {
@@ -173,7 +186,7 @@ public class Args extends NFields {
 
         if (selected > list.size() || selected == 0) {
             System.err.println("Item not found for supplied index. Please try again");
-            displayListOptions(list);
+            displayListOptions(list, filter);
         }
         System.out.println();
         return list.get(selected - 1);
@@ -226,9 +239,14 @@ public class Args extends NFields {
         return out;
     }
 
-    public static void displayListOptions(List<String> options) {
+    public static boolean displayListOptions(List<String> options, String filter) {
+        boolean hasDisplay = false;
         for (int i = 0; i < options.size(); i++) {
-            System.out.println((i + 1) + ") " + options.get(i));
+            if (options.get(i).contains(filter)) {
+                hasDisplay = true;
+                System.out.println((i + 1) + ") " + options.get(i));
+            }
         }
+        return hasDisplay;
     }
 }

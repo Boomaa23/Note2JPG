@@ -27,12 +27,13 @@ public class Circles extends JPanel {
             g2.setColor(curves[i].getColor());
             Point[] points = curves[i].getPoints();
             Point lastPoint = points[0];
+            g2.setStroke(new BasicStroke((float) curves[i].getWidth()));
+            int curveRadius = (int) (curves[i].getWidth() / 2);
 
             System.out.print("\r" + "Curve: " + (i + 1) + " / " + curves.length);
             for (Point point : points) {
-                g2.setStroke(new BasicStroke((float) curves[i].getWidth()));
-                g2.drawLine(lastPoint.getX(), lastPoint.getY(), point.getX(), point.getY());
-                g2.fillOval(point.getX(), point.getY(), (int) (curves[i].getWidth() / 2), (int) (curves[i].getWidth() / 2));
+                g2.drawLine(lastPoint.getXInt(), lastPoint.getYInt(), point.getXInt(), point.getYInt());
+                g2.fillOval(point.getXInt(), point.getYInt(), curveRadius, curveRadius);
                 lastPoint = point;
             }
         }
@@ -41,9 +42,27 @@ public class Circles extends JPanel {
         for (int i = 0; i < shapes.length; i++) {
             g2.setColor(shapes[i].getColor());
             g2.setStroke(new BasicStroke((float) shapes[i].getWidth()));
-            Point start = shapes[i].getStartPoint();
+            Point begin = shapes[i].getBeginPoint();
             Point end = shapes[i].getEndPoint();
-            g2.drawLine(start.getX(), start.getY(), end.getX(), end.getY());
+            Shape.Type type = shapes[i].getType();
+            if (type == Shape.Type.LINE) {
+                g2.drawLine(begin.getXInt(), begin.getYInt(), end.getXInt(), end.getYInt());
+            } else if (type == Shape.Type.CIRCLE) {
+                g2.drawOval(begin.getXInt(), begin.getYInt(), end.getXInt() - begin.getXInt(), end.getYInt() - begin.getYInt());
+            } else if (type == Shape.Type.NPOLYGON && shapes[i] instanceof Shape.NPolygon) {
+                Shape.NPolygon poly = (Shape.NPolygon) shapes[i];
+                Point[] polyPoints = poly.getPoints();
+                Point lastPoint = polyPoints[0];
+                int curveRadius = (int) (poly.getWidth() / 2);
+                for (Point drawPoint : polyPoints) {
+                    g2.drawLine(lastPoint.getXInt(), lastPoint.getYInt(), drawPoint.getXInt(), drawPoint.getYInt());
+                    g2.fillOval(drawPoint.getXInt(), drawPoint.getYInt(), curveRadius, curveRadius);
+                    lastPoint = drawPoint;
+                }
+                if (poly.isClosed()) {
+                    g2.drawLine(polyPoints[0].getXInt(), polyPoints[0].getYInt(), lastPoint.getXInt(), lastPoint.getYInt());
+                }
+            }
             System.out.print("\r" + "Shape: " + (i + 1) + " / " + shapes.length);
         }
         System.out.println(shapes.length == 0 ? "Shape: None" : "");

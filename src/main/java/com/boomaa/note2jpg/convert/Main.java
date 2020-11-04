@@ -60,7 +60,7 @@ public class Main extends NFields {
             "github.com/Boomaa23/Note2JPG\n" +
             "Copyright 2020. All Rights Reserved.\n" +
             "---------------------------------------\n" +
-            "NOTE: Note2JPG cannot parse shapes or positions of text boxes\n");
+            "NOTE: Note2JPG cannot parse positions of text boxes\n");
     }
 
     public static void main(String[] args) throws IOException, PropertyListFormatException, ParseException, SAXException, ParserConfigurationException {
@@ -116,25 +116,54 @@ public class Main extends NFields {
                     NSDictionary appearance = (NSDictionary) dict.get("appearance");
                     NSObject[] shapeColorRGBA = ((NSArray) ((NSDictionary) appearance.get("strokeColor")).get("rgba")).getArray();
                     Color strokeColor = Decode.getShapeStrokeColor(shapeColorRGBA);
-                    double strokeWidth = ((NSNumber) appearance.get("strokeWidth")).doubleValue();
-
-                    Point startPt = Decode.parseShapePoint(((NSArray) dict.get("startPt")).getArray());
-                    Point endPt = Decode.parseShapePoint(((NSArray) dict.get("endPt")).getArray());
                     int scale = Parameter.ImageScaleFactor.getValueInt();
-                    startPt.setX((startPt.getX() + leftOffset) * scale);
-                    startPt.setY(startPt.getY() * scale);
-                    endPt.setX((endPt.getX() + leftOffset) * scale);
-                    endPt.setY(endPt.getY() * scale);
-                    strokeWidth *= scale;
+                    double strokeWidth = ((NSNumber) appearance.get("strokeWidth")).doubleValue() * scale;
 
-                    shapes.add(new Shape(startPt, endPt, strokeColor, strokeWidth));
+                    if (dict.containsKey("points")) {
+                        NSObject[] parsePoints = ((NSArray) dict.get("points")).getArray();
+                        Point[] polyPoints = new Point[parsePoints.length];
+                        for (int i = 0; i < parsePoints.length; i++) {
+                            Point tempPt = Decode.parseShapePoint(((NSArray) parsePoints[i]).getArray());
+                            tempPt.setX((tempPt.getXDbl() + leftOffset) * scale);
+                            tempPt.setY(tempPt.getYDbl() * scale);
+                            polyPoints[i] = tempPt;
+                        }
+                        shapes.add(new Shape.NPolygon(strokeColor, strokeWidth, ((NSNumber) dict.get("isClosed")).boolValue(), polyPoints));
+                    } else {
+                        Point firstPoint;
+                        Point secondPoint;
+                        Shape.Type shapeType;
+                        if (dict.containsKey("startPt")) {
+                            shapeType = Shape.Type.LINE;
+                            firstPoint = Decode.parseShapePoint(((NSArray) dict.get("startPt")).getArray());
+                            secondPoint = Decode.parseShapePoint(((NSArray) dict.get("endPt")).getArray());
+                        } else if (dict.containsKey("rotatedRect")) {
+                            shapeType = Shape.Type.CIRCLE;
+                            NSObject[] points = ((NSArray) ((NSDictionary) dict.get("rotatedRect")).get("corners")).getArray();
+                            firstPoint = new Point(Integer.MAX_VALUE, Integer.MAX_VALUE);
+                            secondPoint = new Point(Integer.MIN_VALUE, Integer.MIN_VALUE);
+                            for (NSObject loopPoint : points) {
+                                Point currPoint = Decode.parseShapePoint(((NSArray) loopPoint).getArray());
+                                if (currPoint.getXInt() >= secondPoint.getXInt() && currPoint.getYInt() >= secondPoint.getYInt()) {
+                                    secondPoint = currPoint;
+                                }
+                                if (currPoint.getXInt() <= firstPoint.getXInt() && currPoint.getYInt() <= firstPoint.getYInt()) {
+                                    firstPoint = currPoint;
+                                }
+                            }
+                        } else {
+                            continue;
+                        }
+                        firstPoint.setX((firstPoint.getXDbl() + leftOffset) * scale);
+                        firstPoint.setY(firstPoint.getYDbl() * scale);
+                        secondPoint.setX((secondPoint.getXDbl() + leftOffset) * scale);
+                        secondPoint.setY(secondPoint.getYDbl() * scale);
+                        shapes.add(new Shape(shapeType, strokeColor, strokeWidth, firstPoint, secondPoint));
+                    }
                 }
 
                 System.gc();
                 while (true) {
-                    if (Parameter.ImageScaleFactor.getValueInt() <= 0) {
-                        throw new ArithmeticException("Cannot have a scale factor of zero");
-                    }
                     try {
                         Point[] points = Decode.getPoints(curvespoints);
                         Curve[] curves = Decode.pointsToCurves(points, colors, curvesnumpoints, curveswidth);

@@ -13,6 +13,7 @@ public enum Parameter {
     PDFScaleFactor("-p", Type.INTEGER, "PDF_SCALE_FACTOR"),
     DisplayConverted("--display", Type.BOOLEAN),
     PageCount("--pg", Type.INTEGER, "PAGE_COUNT"),
+    NoteFilter("--filter", Type.STRING, "NOTE_FILTER"),
     OutputDirectory("--outdir", Type.STRING, "OUTPUT_DIRECTORY"),
     NoFileOutput("--nofile", Type.BOOLEAN),
     NoTextBoxes("--notextboxes", Type.BOOLEAN),
@@ -169,6 +170,7 @@ public enum Parameter {
         public static int IMAGE_SCALE_FACTOR = 8;
         public static int PDF_SCALE_FACTOR = 2;
         public static int GDRIVE_LIMIT_NOTES = 20;
+        public static String NOTE_FILTER = "";
         public static String ASSIGNMENT_NAME = "";
         public static String GOOGLE_SVC_ACCT_ID = "102602978922283269345";
         public static String NEO_CLASS_ID = "";

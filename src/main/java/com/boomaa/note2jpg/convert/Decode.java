@@ -92,8 +92,9 @@ public class Decode extends NFields {
     public static Point[] getPoints(float[] coords) {
         Point[] points = new Point[coords.length / 2];
         int reps = 0;
+        int scale = Parameter.ImageScaleFactor.getValueInt();
         for (int i = 0; i < coords.length - 1; i += 2) {
-            points[i - reps] = new Point((coords[i] + leftOffset) * Parameter.ImageScaleFactor.getValueInt(), coords[i + 1] * Parameter.ImageScaleFactor.getValueInt());
+            points[i - reps] = new Point((coords[i] + leftOffset) * scale, coords[i + 1] * scale);
             reps++;
         }
         return points;
@@ -102,8 +103,8 @@ public class Decode extends NFields {
     public static Point getBounds(Point[] points) {
         int maxY = 0;
         for (Point point : points) {
-            if (point.getY() > maxY) {
-                maxY = point.getY();
+            if (point.getYInt() > maxY) {
+                maxY = point.getYInt();
             }
         }
         return new Point(scaledWidth, maxY);

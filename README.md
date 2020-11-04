@@ -16,11 +16,14 @@ Converts Notability .note files into .jpg images
 github.com/Boomaa23/Note2JPG | Copyright © 2020. All Rights Reserved
 
 ## Installation
-Download both JAR files listed below. Run the updater JAR once to get the application JAR and dependencies, then run the application JAR as listed in "Usage" each time you'd like to use the program. The dependency puller requires an internet connection, but the application does not.
+Download the updater JAR file listed below. Run the updater JAR once to get the application JAR and dependencies, then run the application JAR as listed in "Usage" each time you'd like to use the program. 
+The dependency puller requires an internet connection, but the application does not. If you'd like a clickable launcher, download the launcher CMD file below.
 
 [Updater JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JPGUpdater.jar?raw=true)
 
 [Application JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JPG.jar?raw=true)
+
+[Launcher CMD](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JPG.cmd?raw=true)
 
 ## Usage
 `java -jar Note2JPG.jar`
@@ -33,7 +36,8 @@ Download both JAR files listed below. Run the updater JAR once to get the applic
 | ConvertAll                    | --all                 | Note2JPG   | boolean | Convert all available notes
 | DisplayConverted              | --display             | Note2JPG   | boolean | Show the image after processing
 | PageCount                     | --pg                  | Note2JPG   | int     | Force the number of output pages
-| OutputDirectory               | --outdir              | Note2JPG   | String  | Specify an output directory
+| NoteFilter                    | --filter \<toMatch>   | Note2JPG   | String  | Specify a filter for note listing
+| OutputDirectory               | --outdir \<path>      | Note2JPG   | String  | Specify an output directory
 | NoFileOutput                  | --nofile              | Note2JPG   | boolean | Do not write the image to file
 | RandomFile                    | --randomfile          | Note2JPG   | boolean | Select a file randomly if not specified
 | NoTextBoxes                   | --notextboxes         | Note2JPG   | boolean | Do not request positions for text boxes

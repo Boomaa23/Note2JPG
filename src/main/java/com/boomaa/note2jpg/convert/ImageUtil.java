@@ -78,16 +78,16 @@ public class ImageUtil extends NFields {
         cg2.setColor(Color.BLACK);
         for (int i = 0; i < textBoxes.size(); i++) {
             cg2.setFont(new Font("Arial", Font.PLAIN, 12 * Parameter.ImageScaleFactor.getValueInt()));
-            int x = textBoxBounds.get(i).getCorner(Corner.UPPER_LEFT).getX();
+            int x = textBoxBounds.get(i).getCorner(Corner.UPPER_LEFT).getXInt();
             int lastOverflow = 0;
             for (int j = 0; j < textBoxes.get(i).length(); j++) {
                 int currChar = Math.min(255, textBoxes.get(i).charAt(j));
-                if (((j - lastOverflow + 2) * cg2.getFontMetrics().getWidths()[currChar]) > textBoxBounds.get(i).getCorner(Corner.BOTTOM_RIGHT).getX()) {
+                if (((j - lastOverflow + 2) * cg2.getFontMetrics().getWidths()[currChar]) > textBoxBounds.get(i).getCorner(Corner.BOTTOM_RIGHT).getXInt()) {
                     textBoxes.set(i, textBoxes.get(i).substring(0, j) + "\n" + textBoxes.get(i).substring(j));
                     lastOverflow = j - 2;
                 }
             }
-            int y = textBoxBounds.get(i).getCorner(Corner.UPPER_LEFT).getY() - cg2.getFontMetrics().getHeight();
+            int y = textBoxBounds.get(i).getCorner(Corner.UPPER_LEFT).getYInt() - cg2.getFontMetrics().getHeight();
             for (String line : textBoxes.get(i).split("\n")) {
                 cg2.drawString(line, x, y += cg2.getFontMetrics().getHeight());
             }
@@ -166,7 +166,7 @@ public class ImageUtil extends NFields {
         for (int i = 0; i < imageList.size(); i++) {
             Point pt = imageBounds.get(i);
             BufferedImage img = imageList.get(i);
-            g2.drawImage(scaleImage(makeColorTransparent(img, Color.WHITE), (scaledWidth / displayedWidth) / Parameter.PDFScaleFactor.getValueInt()), pt.getX(), pt.getY(), null);
+            g2.drawImage(scaleImage(makeColorTransparent(img, Color.WHITE), (scaledWidth / displayedWidth) / Parameter.PDFScaleFactor.getValueInt()), pt.getXInt(), pt.getYInt(), null);
         }
         g2.dispose();
     }
