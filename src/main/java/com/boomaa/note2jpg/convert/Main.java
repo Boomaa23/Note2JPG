@@ -29,6 +29,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -193,8 +194,7 @@ public class Main extends NFields {
                         }
                         scaledHeight = (int) (scaledWidth * pages * 11 / 8.5);
                         bounds = Decode.getBounds(points);
-                        setupCurves(curves, shapes.toArray(new Shape[0]));
-                        ImageUtil.populateUnscaledAll(ImageUtil.getPdfCanvas(pdfs));
+                        setupDrawRenderer(curves, shapes.toArray(new Shape[0]), ImageUtil.getPdfCanvas(pdfs));
                         if (hasImages && !Parameter.NoEmbedImages.inEither()) {
                             ImageUtil.fillEmbedImageList(noExtFilename);
                             if (imageList.size() > 0) {
@@ -233,7 +233,7 @@ public class Main extends NFields {
                         }
                         break;
                     } catch (OutOfMemoryError | NegativeArraySizeException e) {
-                        circles = null;
+                        drawRenderer = null;
                         pdfs = new ArrayList<>();
                         Parameter.ImageScaleFactor.setLinkedField(Parameter.ImageScaleFactor.getValueInt() - 2);
                         System.gc();
@@ -304,9 +304,12 @@ public class Main extends NFields {
         }
     }
 
-    public static void setupCurves(Curve[] curves, Shape[] shapes) {
-        circles = new Circles(curves, shapes);
-        circles.setSize(new Dimension(scaledWidth, scaledHeight));
+    public static void setupDrawRenderer(Curve[] curves, Shape[] shapes, BufferedImage pdfs) {
+        drawRenderer = new DrawRenderer(curves, shapes, pdfs);
+        drawRenderer.setSize(new Dimension(scaledWidth, scaledHeight));
+        BufferedImage img = new BufferedImage(scaledWidth, (int) (scaledWidth * pages * 11 / 8.5), BufferedImage.TYPE_INT_ARGB);
+        drawRenderer.print(img.getGraphics());
+        upscaledAll = img;
     }
 
     public static void setupFrame(String filename) {
@@ -340,7 +343,7 @@ public class Main extends NFields {
     public static void saveToFile(String filename) {
         heightFinal = (int) (((double) iPadWidth / upscaledAll.getWidth()) * upscaledAll.getHeight());
         try {
-            ImageIO.write(ImageUtil.scaleBufferedImage(upscaledAll, iPadWidth, heightFinal), "jpg", new File(filename + ".jpg"));
+            ImageIO.write(ImageUtil.convertColorspace(ImageUtil.scaleBufferedImage(upscaledAll, iPadWidth, heightFinal), BufferedImage.TYPE_INT_RGB), "jpg", new File(filename + ".jpg"));
         } catch (IOException e) {
             e.printStackTrace();
         }

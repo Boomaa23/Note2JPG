@@ -2,15 +2,18 @@ package com.boomaa.note2jpg.create;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
-public class Circles extends JPanel {
+public class DrawRenderer extends JPanel {
     private final Curve[] curves;
-    private final Shape[] shapes;
+    private final com.boomaa.note2jpg.create.Shape[] shapes;
+    private final BufferedImage pdfs;
 
-    public Circles(Curve[] curves, Shape[] shapes) {
+    public DrawRenderer(Curve[] curves, com.boomaa.note2jpg.create.Shape[] shapes, BufferedImage pdfs) {
         this.curves = curves;
         this.shapes = shapes;
-        this.setBackground(Color.WHITE);
+        this.pdfs = pdfs;
+        this.setBackground(new Color(255, 255, 255, 0));
     }
 
     @Override
@@ -21,21 +24,27 @@ public class Circles extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
             RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-            RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+
+        g2.drawImage(pdfs, 0, 0, null);
 
         for (int i = 0; i < curves.length; i++) {
             g2.setColor(curves[i].getColor());
             Point[] points = curves[i].getPoints();
-            Point lastPoint = points[0];
-            g2.setStroke(new BasicStroke((float) curves[i].getWidth()));
+            g2.setStroke(new BasicStroke((float) curves[i].getWidth(), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             int curveRadius = (int) (curves[i].getWidth() / 2);
 
             System.out.print("\r" + "Curve: " + (i + 1) + " / " + curves.length);
-            for (Point point : points) {
-                g2.drawLine(lastPoint.getXInt(), lastPoint.getYInt(), point.getXInt(), point.getYInt());
-                g2.fillOval(point.getXInt(), point.getYInt(), curveRadius, curveRadius);
-                lastPoint = point;
+            int[] xPts = new int[points.length];
+            int[] yPts = new int[points.length];
+            for (int j = 0; j < points.length; j++) {
+                xPts[j] = points[j].getXInt();
+                yPts[j] = points[j].getYInt();
+                if (curves[i].getColor().getAlpha() == 255) {
+                    g2.fillOval(points[j].getXInt(), points[j].getYInt(), curveRadius, curveRadius);
+                }
             }
+            g2.drawPolyline(xPts, yPts, points.length);
         }
         System.out.println(curves.length == 0 ? "Curve: None" : "");
 

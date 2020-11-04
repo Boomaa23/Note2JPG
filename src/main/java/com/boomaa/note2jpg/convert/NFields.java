@@ -1,7 +1,7 @@
 package com.boomaa.note2jpg.convert;
 
 import com.boomaa.note2jpg.create.Box;
-import com.boomaa.note2jpg.create.Circles;
+import com.boomaa.note2jpg.create.DrawRenderer;
 import com.boomaa.note2jpg.create.Point;
 import com.boomaa.note2jpg.integration.NEOExecutor;
 import com.boomaa.note2jpg.state.PDFState;
@@ -16,7 +16,7 @@ public class NFields {
     public static List<String> argsList;
     protected static List<String> notenames = new ArrayList<>();
     protected static JFrame frame;
-    protected static Circles circles;
+    protected static DrawRenderer drawRenderer;
     protected static Point bounds;
     public static BufferedImage upscaledAll;
     protected static List<Box> textBoxBounds = new ArrayList<>();

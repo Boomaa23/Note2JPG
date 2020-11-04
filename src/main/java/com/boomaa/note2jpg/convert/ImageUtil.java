@@ -46,31 +46,15 @@ public class ImageUtil extends NFields {
 
     public static BufferedImage scaleBufferedImage(BufferedImage canvas, int width, int height) {
         Image scaled = canvas.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-        BufferedImage bufferScaled = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_RGB);
+        BufferedImage bufferScaled = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2f = (Graphics2D) bufferScaled.getGraphics();
         g2f.drawImage(scaled, 0, 0, null);
         g2f.dispose();
         return bufferScaled;
     }
 
-    public static void populateUnscaledAll(BufferedImage pdfs) {
-        Graphics2D g2 = (Graphics2D) pdfs.getGraphics();
-        if (pdfState == PDFState.NONE) {
-            circles.print(g2);
-        } else {
-            System.out.println();
-            BufferedImage img = new BufferedImage(scaledWidth, (int) (scaledWidth * pages * 11 / 8.5), BufferedImage.TYPE_INT_RGB);
-            Graphics2D cg2 = img.createGraphics();
-            circles.print(cg2);
-            cg2.dispose();
-            g2.drawImage(ImageUtil.makeColorTransparent(img, Color.WHITE), 0, 0, null);
-        }
-        g2.dispose();
-        upscaledAll = pdfs;
-    }
-
     public static void populateTextBoxes(List<String> textBoxes) {
-        BufferedImage img = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_RGB);
+        BufferedImage img = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D cg2 = img.createGraphics();
         cg2.setBackground(Color.WHITE);
         cg2.setColor(Color.WHITE);
@@ -97,7 +81,7 @@ public class ImageUtil extends NFields {
         g2.drawImage(makeColorTransparent(img, Color.WHITE), 0, 0, null);
     }
 
-    public static Image makeColorTransparent(Image im, final Color color) {
+    public static Image makeColorTransparent(Image im, Color color) {
         ImageFilter filter = new RGBImageFilter() {
             public int markerRGB = color.getRGB() | 0xFF000000;
 
@@ -112,6 +96,14 @@ public class ImageUtil extends NFields {
 
         ImageProducer ip = new FilteredImageSource(im.getSource(), filter);
         return Toolkit.getDefaultToolkit().createImage(ip);
+    }
+
+    public static BufferedImage convertColorspace(BufferedImage image, int newType) {
+        BufferedImage rawImage = image;
+        image = new BufferedImage(rawImage.getWidth(), rawImage.getHeight(), newType);
+        ColorConvertOp convForm = new ColorConvertOp(null);
+        convForm.filter(rawImage, image);
+        return image;
     }
 
     public static List<Image> getPdfImages(String filename, String pdf) throws OutOfMemoryError {
@@ -134,7 +126,7 @@ public class ImageUtil extends NFields {
     }
 
     public static BufferedImage getPdfCanvas(List<Image> pdfs) throws OutOfMemoryError, NegativeArraySizeException {
-        BufferedImage canvas = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_RGB);
+        BufferedImage canvas = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_ARGB);
         if (pdfState != PDFState.NONE) {
             Graphics2D g2 = (Graphics2D) canvas.getGraphics();
             int lastBottom = 0;
