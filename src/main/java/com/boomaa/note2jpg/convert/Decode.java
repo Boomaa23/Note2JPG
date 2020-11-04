@@ -54,16 +54,18 @@ public class Decode extends NFields {
         return output;
     }
 
-    public static int[] parseB64Colors(String b64) {
+    public static Color[] parseB64Colors(String b64) {
         byte[] decoded = Base64.getDecoder().decode(b64.getBytes());
         String hexFull = String.format("%040x", new BigInteger(1, decoded));
-        int[] intColors = new int[(hexFull.length() / 8)];
+        Color[] colors = new Color[(hexFull.length() / 8)];
         int parsed = 0;
-        for (int i = 0; i < intColors.length; i++) {
-            intColors[i] = Integer.parseInt(hexFull.substring(parsed, parsed + 6), 16);
+        for (int i = 0; i < colors.length; i++) {
+            int rgb = Integer.parseInt(hexFull.substring(parsed, parsed + 6), 16);
+            int alpha = Integer.parseInt(hexFull.substring(parsed + 6, parsed + 8), 16);
+            colors[i] = new Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, alpha);
             parsed += 8;
         }
-        return intColors;
+        return colors;
     }
 
     public static Point parseShapePoint(NSObject[] objects) {
@@ -79,14 +81,6 @@ public class Decode extends NFields {
 
     private static float nsObjFloatVal(NSObject obj) {
         return ((NSNumber) obj).floatValue();
-    }
-
-    public static Color[] getColorsFromInts(int[] raw) {
-        Color[] colors = new Color[raw.length];
-        for (int i = 0; i < raw.length; i++) {
-            colors[i] = new Color(raw[i], false);
-        }
-        return colors;
     }
 
     public static Point[] getPoints(float[] coords) {

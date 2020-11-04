@@ -106,59 +106,60 @@ public class Main extends NFields {
                 float[] curvespoints = Decode.parseB64Numbers(NumberType.FLOAT, Decode.getDataFromDict(sessionDict, "curvespoints"));
                 float[] curvesnumpoints = Decode.parseB64Numbers(NumberType.INTEGER, Decode.getDataFromDict(sessionDict, "curvesnumpoints"));
                 float[] curveswidth = Decode.parseB64Numbers(NumberType.FLOAT, Decode.getDataFromDict(sessionDict, "curveswidth"));
-                int[] curvescolors = Decode.parseB64Colors(Decode.getDataFromDict(sessionDict, "curvescolors"));
-                Color[] colors = Decode.getColorsFromInts(curvescolors);
+                Color[] colors = Decode.parseB64Colors(Decode.getDataFromDict(sessionDict, "curvescolors"));
 
-                NSObject[] shapesMain = ((NSArray) ((NSDictionary) PropertyListParser.parse(((NSData) sessionObjects[14]).bytes())).get("shapes")).getArray();
                 List<Shape> shapes = new ArrayList<>();
-                for (NSObject obj : shapesMain) {
-                    NSDictionary dict = (NSDictionary) obj;
-                    NSDictionary appearance = (NSDictionary) dict.get("appearance");
-                    NSObject[] shapeColorRGBA = ((NSArray) ((NSDictionary) appearance.get("strokeColor")).get("rgba")).getArray();
-                    Color strokeColor = Decode.getShapeStrokeColor(shapeColorRGBA);
-                    int scale = Parameter.ImageScaleFactor.getValueInt();
-                    double strokeWidth = ((NSNumber) appearance.get("strokeWidth")).doubleValue() * scale;
+                if (sessionObjects.length >= 14 && sessionObjects[14] instanceof NSData) {
+                    NSObject[] shapesMain = ((NSArray) ((NSDictionary) PropertyListParser.parse(((NSData) sessionObjects[14]).bytes())).get("shapes")).getArray();
+                    for (NSObject obj : shapesMain) {
+                        NSDictionary dict = (NSDictionary) obj;
+                        NSDictionary appearance = (NSDictionary) dict.get("appearance");
+                        NSObject[] shapeColorRGBA = ((NSArray) ((NSDictionary) appearance.get("strokeColor")).get("rgba")).getArray();
+                        Color strokeColor = Decode.getShapeStrokeColor(shapeColorRGBA);
+                        int scale = Parameter.ImageScaleFactor.getValueInt();
+                        double strokeWidth = ((NSNumber) appearance.get("strokeWidth")).doubleValue() * scale;
 
-                    if (dict.containsKey("points")) {
-                        NSObject[] parsePoints = ((NSArray) dict.get("points")).getArray();
-                        Point[] polyPoints = new Point[parsePoints.length];
-                        for (int i = 0; i < parsePoints.length; i++) {
-                            Point tempPt = Decode.parseShapePoint(((NSArray) parsePoints[i]).getArray());
-                            tempPt.setX((tempPt.getXDbl() + leftOffset) * scale);
-                            tempPt.setY(tempPt.getYDbl() * scale);
-                            polyPoints[i] = tempPt;
-                        }
-                        shapes.add(new Shape.NPolygon(strokeColor, strokeWidth, ((NSNumber) dict.get("isClosed")).boolValue(), polyPoints));
-                    } else {
-                        Point firstPoint;
-                        Point secondPoint;
-                        Shape.Type shapeType;
-                        if (dict.containsKey("startPt")) {
-                            shapeType = Shape.Type.LINE;
-                            firstPoint = Decode.parseShapePoint(((NSArray) dict.get("startPt")).getArray());
-                            secondPoint = Decode.parseShapePoint(((NSArray) dict.get("endPt")).getArray());
-                        } else if (dict.containsKey("rotatedRect")) {
-                            shapeType = Shape.Type.CIRCLE;
-                            NSObject[] points = ((NSArray) ((NSDictionary) dict.get("rotatedRect")).get("corners")).getArray();
-                            firstPoint = new Point(Integer.MAX_VALUE, Integer.MAX_VALUE);
-                            secondPoint = new Point(Integer.MIN_VALUE, Integer.MIN_VALUE);
-                            for (NSObject loopPoint : points) {
-                                Point currPoint = Decode.parseShapePoint(((NSArray) loopPoint).getArray());
-                                if (currPoint.getXInt() >= secondPoint.getXInt() && currPoint.getYInt() >= secondPoint.getYInt()) {
-                                    secondPoint = currPoint;
-                                }
-                                if (currPoint.getXInt() <= firstPoint.getXInt() && currPoint.getYInt() <= firstPoint.getYInt()) {
-                                    firstPoint = currPoint;
-                                }
+                        if (dict.containsKey("points")) {
+                            NSObject[] parsePoints = ((NSArray) dict.get("points")).getArray();
+                            Point[] polyPoints = new Point[parsePoints.length];
+                            for (int i = 0; i < parsePoints.length; i++) {
+                                Point tempPt = Decode.parseShapePoint(((NSArray) parsePoints[i]).getArray());
+                                tempPt.setX((tempPt.getXDbl() + leftOffset) * scale);
+                                tempPt.setY(tempPt.getYDbl() * scale);
+                                polyPoints[i] = tempPt;
                             }
+                            shapes.add(new Shape.NPolygon(strokeColor, strokeWidth, ((NSNumber) dict.get("isClosed")).boolValue(), polyPoints));
                         } else {
-                            continue;
+                            Point firstPoint;
+                            Point secondPoint;
+                            Shape.Type shapeType;
+                            if (dict.containsKey("startPt")) {
+                                shapeType = Shape.Type.LINE;
+                                firstPoint = Decode.parseShapePoint(((NSArray) dict.get("startPt")).getArray());
+                                secondPoint = Decode.parseShapePoint(((NSArray) dict.get("endPt")).getArray());
+                            } else if (dict.containsKey("rotatedRect")) {
+                                shapeType = Shape.Type.CIRCLE;
+                                NSObject[] points = ((NSArray) ((NSDictionary) dict.get("rotatedRect")).get("corners")).getArray();
+                                firstPoint = new Point(Integer.MAX_VALUE, Integer.MAX_VALUE);
+                                secondPoint = new Point(Integer.MIN_VALUE, Integer.MIN_VALUE);
+                                for (NSObject loopPoint : points) {
+                                    Point currPoint = Decode.parseShapePoint(((NSArray) loopPoint).getArray());
+                                    if (currPoint.getXInt() >= secondPoint.getXInt() && currPoint.getYInt() >= secondPoint.getYInt()) {
+                                        secondPoint = currPoint;
+                                    }
+                                    if (currPoint.getXInt() <= firstPoint.getXInt() && currPoint.getYInt() <= firstPoint.getYInt()) {
+                                        firstPoint = currPoint;
+                                    }
+                                }
+                            } else {
+                                continue;
+                            }
+                            firstPoint.setX((firstPoint.getXDbl() + leftOffset) * scale);
+                            firstPoint.setY(firstPoint.getYDbl() * scale);
+                            secondPoint.setX((secondPoint.getXDbl() + leftOffset) * scale);
+                            secondPoint.setY(secondPoint.getYDbl() * scale);
+                            shapes.add(new Shape(shapeType, strokeColor, strokeWidth, firstPoint, secondPoint));
                         }
-                        firstPoint.setX((firstPoint.getXDbl() + leftOffset) * scale);
-                        firstPoint.setY(firstPoint.getYDbl() * scale);
-                        secondPoint.setX((secondPoint.getXDbl() + leftOffset) * scale);
-                        secondPoint.setY(secondPoint.getYDbl() * scale);
-                        shapes.add(new Shape(shapeType, strokeColor, strokeWidth, firstPoint, secondPoint));
                     }
                 }
 
