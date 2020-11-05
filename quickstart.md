@@ -28,7 +28,7 @@ These changes are applied to the Notability app so that it exports files in the 
 2. Click the gear (settings) in the bottom left
 3. Tap "Auto-Backup" in the left menubar
 4. Select "Google Drive" on the right hand side
-5. Sign in to your **school** Google account. The school gives you unlimited storage whereas a personal account is 15GB limited. If you use a personal Google account, SOMETHING HERE.
+5. Sign in to your **school** Google account. The school gives you unlimited storage whereas a personal account is 15GB limited.
 6. (optional) Change the destination to wherever you want. It doesn't matter.
 
 ### Google

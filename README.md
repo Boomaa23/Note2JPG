@@ -16,17 +16,12 @@ Converts Notability .note files into .jpg images
 github.com/Boomaa23/Note2JPG | Copyright © 2020. All Rights Reserved
 
 ## Quickstart
-A comprehensive quickstart guide can be found [here](https://github.com/Boomaa23/Note2JPG/quickstart.md) for a standard and easier setup.
+A comprehensive quickstart guide can be found [here](https://github.com/Boomaa23/Note2JPG/blob/master/quickstart.md) for a standard and easier setup.
 
 ## Installation
-Download the updater JAR file listed below. Run the updater JAR once to get the application JAR and dependencies, then run the application JAR as listed in "Usage" each time you'd like to use the program. 
-The dependency puller requires an internet connection, but the application does not. If you'd like a clickable launcher, download the launcher CMD file below.
+Download the updater JAR file listed below. Run the updater JAR once to get the launcher, application JAR, and dependencies, then run the launcher or application JAR as listed in "Usage" each time you'd like to use the program.
 
-[Updater JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JPGUpdater.jar?raw=true)
-
-[Application JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JPG.jar?raw=true)
-
-[Launcher CMD](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JPG.cmd?raw=true)
+Download: [Updater JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JPGUpdater.jar?raw=true)
 
 ## Usage
 `java -jar Note2JPG.jar`
@@ -64,11 +59,11 @@ The dependency puller requires an internet connection, but the application does 
 More information on all parameters can be found [here](https://github.com/Boomaa23/Note2JPG/blob/master/src/main/java/com/boomaa/note2jpg/config/Parameter.java)
 
 ## Config JSON
-If you want to store configs without passing them through each time, create a JSON called `config.json` in your root directory. Use keys as listed in the table above. If you would like a template generated, pass `--genconfig`. The application will stop after generating the config file.
+If you want to store configs without passing them through each time, modify the `config.json` file in your root directory. Use keys as listed in the table above. 
 
 ## Integration
 ### Google
-You will need to provide your own `.json` private key and service account ID for Google integration. The private key should be renamed to `GoogleSvcAcctPrivateKey.json`. The account ID can either be provided through `--gacctid` or through the config JSON.
+You will need to provide your own `.json` private key and service account ID for Google integration. The private key should be renamed to `GoogleSvcAcctPrivateKey.json`.
 
 ### NEO
-NEO integration requires that you set a NEO username and password each time through `--neo` or through the NEO keys in the config JSON. The default class ID can be overridden by `--classid` or through the config JSON.
+NEO integration requires that you set a NEO username and password each time through `--neo` or through the NEO keys in the config JSON.

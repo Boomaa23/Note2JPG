@@ -117,7 +117,7 @@ public class Updater {
         }
         if (!Arrays.asList(args).contains("--config")
                 && !new File("config.json").exists()) {
-            System.out.println("Downloading Note2JPG.cmd");
+            System.out.println("Downloading config.json");
             downloadFile("https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/config.json", "config.json", false);
             downloadCounter++;
         }
