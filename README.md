@@ -15,6 +15,9 @@ Converts Notability .note files into .jpg images
 
 github.com/Boomaa23/Note2JPG | Copyright © 2020. All Rights Reserved
 
+## Quickstart
+A comprehensive quickstart guide can be found [here](https://github.com/Boomaa23/Note2JPG/quickstart.md) for a standard and easier setup.
+
 ## Installation
 Download the updater JAR file listed below. Run the updater JAR once to get the application JAR and dependencies, then run the application JAR as listed in "Usage" each time you'd like to use the program. 
 The dependency puller requires an internet connection, but the application does not. If you'd like a clickable launcher, download the launcher CMD file below.
@@ -57,7 +60,6 @@ The dependency puller requires an internet connection, but the application does 
 | UseDriveDownload              | --gdrivedl            | Google     | boolean | Use Google Drive as a .note source
 | UseDriveUpload                | --gdriveup            | Google     | boolean | Upload images to Google Drive
 | LimitDriveNotes               | --gdrivelim \<limit>  | Google     | int     | Define a limit for Drive-retrieved notes
-| GoogleSvcAcctID               | --gacctid \<acctid>   | Google     | String  | The Google service account ID to use
 
 More information on all parameters can be found [here](https://github.com/Boomaa23/Note2JPG/blob/master/src/main/java/com/boomaa/note2jpg/config/Parameter.java)
 

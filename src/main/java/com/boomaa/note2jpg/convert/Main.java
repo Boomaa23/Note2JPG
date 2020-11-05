@@ -310,6 +310,7 @@ public class Main extends NFields {
         BufferedImage img = new BufferedImage(scaledWidth, (int) (scaledWidth * pages * 11 / 8.5), BufferedImage.TYPE_INT_ARGB);
         drawRenderer.print(img.getGraphics());
         upscaledAll = img;
+        System.out.println();
     }
 
     public static void setupFrame(String filename) {

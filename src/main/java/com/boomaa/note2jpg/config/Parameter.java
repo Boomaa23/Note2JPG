@@ -33,8 +33,7 @@ public enum Parameter {
     UseDrive("--gdrive", Type.BOOLEAN),
     UseDriveDownload("--gdrivedl", Type.BOOLEAN),
     UseDriveUpload("--gdriveup", Type.BOOLEAN),
-    LimitDriveNotes("--gdrivelim", Type.INTEGER, "GDRIVE_LIMIT_NOTES"),
-    GoogleSvcAcctID("--gacctid", Type.STRING, "GOOGLE_SVC_ACCT_ID");
+    LimitDriveNotes("--gdrivelim", Type.INTEGER, "GDRIVE_LIMIT_NOTES");
 
     private final String flag;
     private final Type type;
@@ -169,10 +168,9 @@ public enum Parameter {
         public static int PAGE_COUNT = 1;
         public static int IMAGE_SCALE_FACTOR = 8;
         public static int PDF_SCALE_FACTOR = 2;
-        public static int GDRIVE_LIMIT_NOTES = 20;
+        public static int GDRIVE_LIMIT_NOTES = 100;
         public static String NOTE_FILTER = "";
         public static String ASSIGNMENT_NAME = "";
-        public static String GOOGLE_SVC_ACCT_ID = "102602978922283269345";
         public static String NEO_CLASS_ID = "";
         public static String NEO_USR = "";
         public static String NEO_PW = "";

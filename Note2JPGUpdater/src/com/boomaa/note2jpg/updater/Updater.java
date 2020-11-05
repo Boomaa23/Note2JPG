@@ -109,9 +109,16 @@ public class Updater {
             downloadFile("https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/Note2JPG.jar", "Note2JPG.jar", false);
             downloadCounter++;
         }
-        if (Arrays.asList(args).contains("--launcher")) {
+        if (!Arrays.asList(args).contains("--launcher")
+                && !new File("Note2JPG.cmd").exists()) {
             System.out.println("Downloading Note2JPG.cmd");
             downloadFile("https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/Note2JPG.cmd", "Note2JPG.cmd", false);
+            downloadCounter++;
+        }
+        if (!Arrays.asList(args).contains("--config")
+                && !new File("config.json").exists()) {
+            System.out.println("Downloading Note2JPG.cmd");
+            downloadFile("https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/config.json", "config.json", false);
             downloadCounter++;
         }
         if (downloadCounter > 0) {
