@@ -20,6 +20,7 @@ public enum Parameter {
     NoEmbedImages("--noembedimages", Type.BOOLEAN),
     GenerateConfig("--genconfig", Type.BOOLEAN),
     WriteConfig("--writeconfig", Type.BOOLEAN),
+    ConsoleOnly("--console", Type.BOOLEAN),
     NEOUsername("--neo", Type.NEO, "NEO_USR"),
     NEOPassword("--neo", Type.NEO, "NEO_PW"),
     NEOClassID("--classid", Type.STRING, "NEO_CLASS_ID"),

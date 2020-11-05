@@ -2,10 +2,12 @@ package com.boomaa.note2jpg.convert;
 
 import com.boomaa.note2jpg.config.Args;
 import com.boomaa.note2jpg.config.Parameter;
+import com.boomaa.note2jpg.uxutil.SwingConsole;
 import com.boomaa.note2jpg.create.Box;
 import com.boomaa.note2jpg.create.Point;
 import com.boomaa.note2jpg.create.*;
 import com.boomaa.note2jpg.create.Shape;
+import com.boomaa.note2jpg.uxutil.SwingInputField;
 import com.boomaa.note2jpg.integration.s3upload.Connections;
 import com.boomaa.note2jpg.state.FilenameSource;
 import com.boomaa.note2jpg.state.NumberType;
@@ -29,9 +31,12 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
@@ -45,11 +50,14 @@ public class Main extends NFields {
 
     static {
         @SuppressWarnings("unchecked") List<Logger> loggers =
-            Collections.<Logger>list(LogManager.getCurrentLoggers());
+                Collections.<Logger>list(LogManager.getCurrentLoggers());
         loggers.add(LogManager.getRootLogger());
         for (Logger logger : loggers) {
             logger.setLevel(Level.OFF);
         }
+    }
+
+    private static void printWelcome() {
         System.out.println(
             "    _   __      __      ___       ______  ______\n" +
             "   / | / /___  / /____ |__ \\     / / __ \\/ ____/\n" +
@@ -66,8 +74,10 @@ public class Main extends NFields {
 
     public static void main(String[] args) throws IOException, PropertyListFormatException, ParseException, SAXException, ParserConfigurationException {
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-        checkForUpdates();
         argsList = Arrays.asList(args);
+        setupConsoleGUI();
+        printWelcome();
+        checkForUpdates();
         Args.parse();
         Args.logic();
         Args.check();
@@ -300,11 +310,17 @@ public class Main extends NFields {
             if (!notename.equals(notenames.get(notenames.size() - 1))) {
                 System.out.println();
             }
-            System.exit(0);
+            if (!Parameter.ConsoleOnly.inEither()) {
+                System.out.println("Press any key to quit...");
+                outputDone = true;
+            } else {
+                System.exit(0);
+            }
         }
     }
 
     public static void setupDrawRenderer(Curve[] curves, Shape[] shapes, BufferedImage pdfs) {
+        System.out.println();
         drawRenderer = new DrawRenderer(curves, shapes, pdfs);
         drawRenderer.setSize(new Dimension(scaledWidth, scaledHeight));
         BufferedImage img = new BufferedImage(scaledWidth, (int) (scaledWidth * pages * 11 / 8.5), BufferedImage.TYPE_INT_ARGB);
@@ -438,6 +454,57 @@ public class Main extends NFields {
                     break;
             }
         } catch (IOException ignored) {
+        }
+    }
+
+    private static void setupConsoleGUI() {
+        if (!Parameter.ConsoleOnly.inEither()) {
+            consoleFrame = new JFrame("Note2JPG");
+            try {
+                consoleFrame.setIconImage(ImageIO.read(new URL("https://www.gingerlabs.com/images/notability-logo.png"))
+                        .getSubimage(0, 0, 104, 104).getScaledInstance(32, 32, Image.SCALE_SMOOTH));
+            } catch (IOException ignored) {
+            }
+            consoleFrame.setSize(640, 480);
+            consoleFrame.setResizable(false);
+            consoleFrame.setLocationRelativeTo(null);
+            consoleFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+            KeyAdapter keyCloser = new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (outputDone) {
+                        consoleFrame.dispose();
+                        System.exit(0);
+                    }
+                }
+            };
+
+            JTextArea outArea = new JTextArea();
+            outArea.setEditable(false);
+            outArea.setAutoscrolls(true);
+            outArea.addKeyListener(keyCloser);
+            outArea.setRows(24);
+            outArea.setFont(new Font("monospaced", Font.PLAIN, 12));
+            JScrollPane scr = new JScrollPane(outArea);
+            scr.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+            scr.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+            JTextField inField = new JTextField();
+            inField.addKeyListener(keyCloser);
+            SwingInputField userIn = new SwingInputField(inField);
+            inField.addActionListener(userIn);
+            System.setIn(userIn);
+
+            PrintStream pos = new PrintStream(new SwingConsole(outArea));
+            System.setOut(pos);
+            System.setErr(pos);
+            JPanel content = (JPanel) consoleFrame.getContentPane();
+            content.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+            content.setLayout(new BorderLayout());
+            content.add(scr, BorderLayout.NORTH);
+            content.add(inField, BorderLayout.SOUTH);
+            consoleFrame.setVisible(true);
         }
     }
 }

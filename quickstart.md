@@ -52,8 +52,7 @@ If you used a school account for the backup, share the Notability backup folder 
 Ensure the account has editing access. If you used a personal account for both, disregard this.
 
 ## Usage
-If everything is set up correctly, the application should work after just double-clicking `Note2JPG.cmd`. 
-Note that there will be no display if you launch the `Note2JPG.jar` file directly.
+If everything is set up correctly, the application should work after just double-clicking `Note2JPG.jar`.
 
 Do not type into the terminal that appears unless you are prompted. Answer with the numbers only, not names associated with them. Prompts should be:
 - Which class are you uploading to?

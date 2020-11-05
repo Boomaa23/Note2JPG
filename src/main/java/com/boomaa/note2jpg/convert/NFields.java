@@ -15,6 +15,7 @@ public class NFields {
     public static NEOExecutor neoExecutor;
     public static List<String> argsList;
     protected static List<String> notenames = new ArrayList<>();
+    protected static JFrame consoleFrame;
     protected static JFrame frame;
     protected static DrawRenderer drawRenderer;
     protected static Point bounds;
@@ -35,4 +36,5 @@ public class NFields {
     protected static PDFState pdfState = PDFState.NONE;
     protected static long startTime;
     protected static boolean hasImages = false;
+    protected static boolean outputDone = false;
 }

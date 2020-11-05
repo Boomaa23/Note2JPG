@@ -19,7 +19,7 @@ github.com/Boomaa23/Note2JPG | Copyright © 2020. All Rights Reserved
 A comprehensive quickstart guide can be found [here](https://github.com/Boomaa23/Note2JPG/blob/master/quickstart.md) for a standard and easier setup.
 
 ## Installation
-Download the updater JAR file listed below. Run the updater JAR once to get the launcher, application JAR, and dependencies, then run the launcher or application JAR as listed in "Usage" each time you'd like to use the program.
+Download the updater JAR file listed below. Run the updater JAR once to get the application JAR and dependencies, then run the application JAR as listed in "Usage" each time you'd like to use the program.
 
 Download: [Updater JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JPGUpdater.jar?raw=true)
 
@@ -42,6 +42,7 @@ Download: [Updater JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JP
 | NoEmbedImages                 | --noembedimages       | Note2JPG   | boolean | Do not request positions for images in notes
 | GenerateConfig                | --genconfig           | Note2JPG   | boolean | Generate a config file template
 | WriteConfig                   | --writeconfig         | Note2JPG   | boolean | Write out the current config to json
+| ConsoleOnly                   | --console             | Note2JPG   | boolean | Use the system console instead of the GUI
 | NEOUsername <br> NEOPassword  | --neo \<userId> \<pw> | NEO        | String  | Use NEO integration for unsubmitted assignments
 | NEOClassID                    | --classid \<classid>  | NEO        | String  | Specify a class ID for NEO integration
 | NEOAssignment                 | -a \<assignment>      | NEO        | String  | Set a different assignment name for image
