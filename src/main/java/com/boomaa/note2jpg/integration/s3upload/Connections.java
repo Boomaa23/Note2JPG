@@ -5,7 +5,7 @@ import com.boomaa.note2jpg.integration.GoogleUtils;
 public class Connections {
     private static NEOSession NEO_SESSION;
     private static AWSExecutor AWS_EXECUTOR;
-    private static GoogleUtils GOOGLE_UTILS = GoogleUtils.getInstance();
+    private static GoogleUtils GOOGLE_UTILS = null;
 
     public static void create(String username, String password) {
         NEO_SESSION = NEOSession.getInstance(username, password);
@@ -21,6 +21,9 @@ public class Connections {
     }
 
     public static GoogleUtils getGoogleUtils() {
+        if (GOOGLE_UTILS == null) {
+            GOOGLE_UTILS = GoogleUtils.getInstance();
+        }
         return GOOGLE_UTILS;
     }
 }
