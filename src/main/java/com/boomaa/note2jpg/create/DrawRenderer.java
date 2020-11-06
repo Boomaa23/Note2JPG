@@ -13,7 +13,7 @@ public class DrawRenderer extends JPanel {
         this.curves = curves;
         this.shapes = shapes;
         this.pdfs = pdfs;
-        this.setBackground(new Color(255, 255, 255, 0));
+        this.setBackground(Color.WHITE);
     }
 
     @Override
