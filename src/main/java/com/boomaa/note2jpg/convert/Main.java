@@ -46,7 +46,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class Main extends NFields {
-    private static final String CURRENT_VERSION_TAG = "v0.5.5";
+    private static final String CURRENT_VERSION_TAG = "v0.6.0";
 
     static {
         @SuppressWarnings("unchecked") List<Logger> loggers =

@@ -103,11 +103,19 @@ public class Decode extends NFields {
             }
         }
         for (Shape shape : shapes) {
-            if (shape.getEndPoint().getYInt() > maxY) {
-                maxY = shape.getEndPoint().getYInt();
-            }
-            if (shape.getBeginPoint().getYInt() > maxY) {
-                maxY = shape.getBeginPoint().getYInt();
+            if (shape instanceof Shape.NPolygon) {
+                for (Point point : ((Shape.NPolygon) shape).getPoints()) {
+                    if (point.getYInt() > maxY) {
+                        maxY = point.getYInt();
+                    }
+                }
+            } else {
+                if (shape.getEndPoint().getYInt() > maxY) {
+                    maxY = shape.getEndPoint().getYInt();
+                }
+                if (shape.getBeginPoint().getYInt() > maxY) {
+                    maxY = shape.getBeginPoint().getYInt();
+                }
             }
         }
         return new Point(scaledWidth, maxY);
