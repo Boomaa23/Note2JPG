@@ -131,13 +131,13 @@ public class ImageUtil extends NFields {
             Graphics2D g2 = (Graphics2D) canvas.getGraphics();
             int lastBottom = 0;
             for (int i = 0; i < pdfs.size(); i++) {
-                Image pdf = pdfs.get(i).getScaledInstance(canvas.getWidth(), canvas.getHeight() / pages, Image.SCALE_SMOOTH);
+                Image pdf = pdfs.get(i).getScaledInstance(canvas.getWidth(), (int) (canvas.getHeight() / pages), Image.SCALE_SMOOTH);
                 g2.drawImage(pdf, 0, lastBottom, null);
                 System.out.print("\r" + "PDF: " + (i + 1) + " / " + pdfs.size());
                 lastBottom += pdf.getHeight(null);
             }
         } else {
-            System.out.println("PDF: None");
+            System.out.print("PDF: None");
         }
         return canvas;
     }

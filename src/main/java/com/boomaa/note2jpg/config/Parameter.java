@@ -14,6 +14,7 @@ public enum Parameter {
     DisplayConverted("--display", Type.BOOLEAN),
     PageCount("--pg", Type.INTEGER, "PAGE_COUNT"),
     NoteFilter("--filter", Type.STRING, "NOTE_FILTER"),
+    FitExactHeight("--hfit", Type.BOOLEAN),
     OutputDirectory("--outdir", Type.STRING, "OUTPUT_DIRECTORY"),
     NoFileOutput("--nofile", Type.BOOLEAN),
     NoTextBoxes("--notextboxes", Type.BOOLEAN),

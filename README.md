@@ -35,6 +35,7 @@ Download: [Updater JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JP
 | DisplayConverted              | --display             | Note2JPG   | boolean | Show the image after processing
 | PageCount                     | --pg                  | Note2JPG   | int     | Force the number of output pages
 | NoteFilter                    | --filter \<toMatch>   | Note2JPG   | String  | Specify a filter for note listing
+| FitExactHeight                | --hfit                | Note2JPG   | boolean | Cut the image directly after writing/PDFs
 | OutputDirectory               | --outdir \<path>      | Note2JPG   | String  | Specify an output directory
 | NoFileOutput                  | --nofile              | Note2JPG   | boolean | Do not write the image to file
 | RandomFile                    | --randomfile          | Note2JPG   | boolean | Select a file randomly if not specified

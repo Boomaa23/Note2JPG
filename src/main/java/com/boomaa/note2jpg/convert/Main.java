@@ -150,10 +150,10 @@ public class Main extends NFields {
                                 secondPoint = Decode.parseShapePoint(((NSArray) dict.get("endPt")).getArray());
                             } else if (dict.containsKey("rotatedRect")) {
                                 shapeType = Shape.Type.CIRCLE;
-                                NSObject[] points = ((NSArray) ((NSDictionary) dict.get("rotatedRect")).get("corners")).getArray();
+                                NSObject[] dictPoints = ((NSArray) ((NSDictionary) dict.get("rotatedRect")).get("corners")).getArray();
                                 firstPoint = new Point(Integer.MAX_VALUE, Integer.MAX_VALUE);
                                 secondPoint = new Point(Integer.MIN_VALUE, Integer.MIN_VALUE);
-                                for (NSObject loopPoint : points) {
+                                for (NSObject loopPoint : dictPoints) {
                                     Point currPoint = Decode.parseShapePoint(((NSArray) loopPoint).getArray());
                                     if (currPoint.getXInt() >= secondPoint.getXInt() && currPoint.getYInt() >= secondPoint.getYInt()) {
                                         secondPoint = currPoint;
@@ -177,9 +177,10 @@ public class Main extends NFields {
                 System.gc();
                 while (true) {
                     try {
-                        Point[] points = Decode.getPoints(curvespoints);
+                        Point[] points = Decode.getScaledPoints(curvespoints);
                         Curve[] curves = Decode.pointsToCurves(points, colors, curvesnumpoints, curveswidth);
                         scaledWidth = Decode.getNumberFromDict(sessionDict, "pageWidthInDocumentCoordsKey") * Parameter.ImageScaleFactor.getValueInt();
+                        bounds = Decode.getBounds(points, shapes.toArray(new Shape[0]));
                         if (pdfState != PDFState.NONE) {
                             if (pdfState == PDFState.PLIST) {
                                 NSDictionary pdfMain = (NSDictionary) PropertyListParser.parse(new File(noExtFilename + "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist"));
@@ -196,14 +197,13 @@ public class Main extends NFields {
                             }
                             pages = pdfs.size();
                         } else {
-                            //TODO actually calculate this for non-pdfs
-                            pages = 1;
+                            double tempPages = bounds.getYDbl() / (scaledWidth * 11 / 8.5);
+                            pages = Parameter.FitExactHeight.inEither() ? tempPages + 0.1 : (int) Math.ceil(tempPages);
                         }
                         if (Parameter.PageCount.inEither()) {
                             pages = Parameter.PageCount.getValueInt();
                         }
                         scaledHeight = (int) (scaledWidth * pages * 11 / 8.5);
-                        bounds = Decode.getBounds(points);
                         setupDrawRenderer(curves, shapes.toArray(new Shape[0]), ImageUtil.getPdfCanvas(pdfs));
                         if (hasImages && !Parameter.NoEmbedImages.inEither()) {
                             ImageUtil.fillEmbedImageList(noExtFilename);

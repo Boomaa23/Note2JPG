@@ -32,7 +32,7 @@ public class NFields {
     protected static double originalHeight;
     protected static double displayedHeight;
     protected static double displayedWidth;
-    protected static int pages;
+    protected static double pages;
     protected static PDFState pdfState = PDFState.NONE;
     protected static long startTime;
     protected static boolean hasImages = false;

@@ -3,13 +3,14 @@ package com.boomaa.note2jpg.convert;
 import com.boomaa.note2jpg.config.Parameter;
 import com.boomaa.note2jpg.create.Curve;
 import com.boomaa.note2jpg.create.Point;
+import com.boomaa.note2jpg.create.Shape;
 import com.boomaa.note2jpg.state.NumberType;
 import com.dd.plist.NSData;
 import com.dd.plist.NSDictionary;
 import com.dd.plist.NSNumber;
 import com.dd.plist.NSObject;
 
-import java.awt.*;
+import java.awt.Color;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -83,7 +84,7 @@ public class Decode extends NFields {
         return ((NSNumber) obj).floatValue();
     }
 
-    public static Point[] getPoints(float[] coords) {
+    public static Point[] getScaledPoints(float[] coords) {
         Point[] points = new Point[coords.length / 2];
         int reps = 0;
         int scale = Parameter.ImageScaleFactor.getValueInt();
@@ -94,11 +95,19 @@ public class Decode extends NFields {
         return points;
     }
 
-    public static Point getBounds(Point[] points) {
+    public static Point getBounds(Point[] points, Shape[] shapes) {
         int maxY = 0;
         for (Point point : points) {
             if (point.getYInt() > maxY) {
                 maxY = point.getYInt();
+            }
+        }
+        for (Shape shape : shapes) {
+            if (shape.getEndPoint().getYInt() > maxY) {
+                maxY = shape.getEndPoint().getYInt();
+            }
+            if (shape.getBeginPoint().getYInt() > maxY) {
+                maxY = shape.getBeginPoint().getYInt();
             }
         }
         return new Point(scaledWidth, maxY);
