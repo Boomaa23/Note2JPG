@@ -66,7 +66,8 @@ If you want to store configs without passing them through each time, modify the 
 
 ## Integration
 ### Google
-You will need to provide your own `.json` private key and service account ID for Google integration. The private key should be renamed to `GoogleSvcAcctPrivateKey.json`.
+Most users can use the per-login Google OAuth. However, if don't want to login every time you will need to provide your own `.json` private key and service account ID.
+The private key should be renamed to `GoogleSvcAcctPrivateKey.json`.
 
 ### NEO
 NEO integration requires that you set a NEO username and password each time through `--neo` or through the NEO keys in the config JSON.
