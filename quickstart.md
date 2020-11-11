@@ -31,6 +31,7 @@ These changes are applied to the Notability app so that it exports files in the 
 5. Sign in to your **school** Google account. The school gives you unlimited storage whereas a personal account is 15GB limited.
 6. (optional) Change the destination to wherever you want. It doesn't matter.
 
+<!--
 ### Google
 This allows notes to automatically be read by Note2JPG and should be done on the same computer you're installing the software onto. 
 If you used a school account, this must be done on another account because of district restrictions. 
@@ -47,6 +48,7 @@ If you used a school account, this must be done on another account because of di
 11. Once the service account has been created, click on it.
 12. Click "Add Key" then "Create New Key". Stay with JSON then click "Create".
 13. Rename the downloaded file to `GoogleSvcAcctPrivateKey.json` and put it in the same folder as the application.
+-->
 
 If you used a school account for the backup, share the Notability backup folder in Google Drive with the other personal account that has the service account tied to it.
 Ensure the account has editing access. If you used a personal account for both, disregard this.

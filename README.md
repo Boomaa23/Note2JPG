@@ -56,6 +56,7 @@ Download: [Updater JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JP
 | UseDrive                      | --gdrive              | Google     | boolean | Use Google Drive to download and upload
 | UseDriveDownload              | --gdrivedl            | Google     | boolean | Use Google Drive as a .note source
 | UseDriveUpload                | --gdriveup            | Google     | boolean | Upload images to Google Drive
+| GoogleSvcAcct                 | --gsvc                | Google     | boolean | Use a Google Service Account over OAuth
 | LimitDriveNotes               | --gdrivelim \<limit>  | Google     | int     | Define a limit for Drive-retrieved notes
 
 More information on all parameters can be found [here](https://github.com/Boomaa23/Note2JPG/blob/master/src/main/java/com/boomaa/note2jpg/config/Parameter.java)

@@ -1,10 +1,20 @@
 package com.boomaa.note2jpg.integration;
 
+import com.boomaa.note2jpg.config.Parameter;
 import com.boomaa.note2jpg.integration.s3upload.Extension;
+import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
+import com.google.api.client.auth.oauth2.BearerToken;
+import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
+import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
+import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
+import com.google.api.client.googleapis.auth.oauth2.GoogleOAuthConstants;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.FileContent;
+import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequestInitializer;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
@@ -16,6 +26,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import java.io.*;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,12 +35,20 @@ public class GoogleUtils {
     private static final GoogleUtils INSTANCE = new GoogleUtils();
     private static final String APPLICATION_NAME = "Note2JPG";
     private static final String PRIVATE_KEY_NAME = "GoogleSvcAcctPrivateKey.json";
+    private static final String CONFIG_FILE_NAME = "googleclient.conf";
+    private String clientId;
+    private String clientSecret;
+    private HttpTransport httpTransport;
+    private JsonFactory jsonFactory;
     private Drive driveService;
     private Map<String, File> noteList; //Keys are Google file names
     private Map<String, File> imageList; //Keys are Google file IDs
 
     private GoogleUtils() {
         try {
+            readClientConfig();
+            httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+            jsonFactory = JacksonFactory.getDefaultInstance();
             driveService = this.getDriveService();
             noteList = new HashMap<>();
             imageList = new HashMap<>();
@@ -40,12 +59,33 @@ public class GoogleUtils {
         }
     }
 
+    private void readClientConfig() {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/" + CONFIG_FILE_NAME)));
+        try {
+            clientId = reader.readLine();
+            clientSecret = reader.readLine();
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private HttpRequestInitializer authorize() throws IOException {
         try {
-            return new HttpCredentialsAdapter(
-                GoogleCredentials.fromStream(
-                    new FileInputStream(PRIVATE_KEY_NAME))
-                    .createScoped(DriveScopes.DRIVE));
+            if (Parameter.GoogleSvcAcct.inEither()) {
+                return new HttpCredentialsAdapter(
+                        GoogleCredentials.fromStream(new FileInputStream(PRIVATE_KEY_NAME))
+                                .createScoped(DriveScopes.DRIVE));
+            } else {
+                AuthorizationCodeFlow flow = new AuthorizationCodeFlow.Builder(
+                        BearerToken.authorizationHeaderAccessMethod(), httpTransport, jsonFactory,
+                        new GenericUrl(GoogleOAuthConstants.TOKEN_SERVER_URL),
+                        new ClientParametersAuthentication(clientId, clientSecret),
+                        clientId, GoogleOAuthConstants.AUTHORIZATION_SERVER_URL)
+                    .setScopes(Collections.singleton(DriveScopes.DRIVE_READONLY)).build();
+                LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(5818).build();
+                return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+            }
         } catch (FileNotFoundException e) {
             System.err.println("Cannot find Google private key. Add a key or do not specify Google integration parameters.");
             e.printStackTrace();
@@ -56,8 +96,8 @@ public class GoogleUtils {
         return null;
     }
 
-    private Drive getDriveService() throws IOException, GeneralSecurityException {
-        return new Drive.Builder(GoogleNetHttpTransport.newTrustedTransport(), JacksonFactory.getDefaultInstance(), this.authorize())
+    private Drive getDriveService() throws IOException {
+        return new Drive.Builder(httpTransport, jsonFactory, this.authorize())
                 .setApplicationName(APPLICATION_NAME).build();
     }
 

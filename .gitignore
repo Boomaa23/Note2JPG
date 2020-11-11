@@ -11,3 +11,4 @@ targetDeps/*
 lib/*
 GoogleSvcAcctPrivateKey.p12
 GoogleSvcAcctPrivateKey.json
+**/googleclient.conf

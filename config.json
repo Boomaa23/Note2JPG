@@ -7,6 +7,7 @@
   "DisplayConverted": "",
   "PageCount": "",
   "NoteFilter": "",
+  "FitExactHeight": "",
   "OutputDirectory": "",
   "NoFileOutput": "",
   "NoTextBoxes": "",
@@ -27,5 +28,6 @@
   "UseDrive": "",
   "UseDriveDownload": "",
   "UseDriveUpload": "",
+  "GoogleSvcAcct": "",
   "LimitDriveNotes": ""
 }
