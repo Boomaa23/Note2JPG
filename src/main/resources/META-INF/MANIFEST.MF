@@ -1,23 +1,19 @@
 Manifest-Version: 1.0
 Main-Class: com.boomaa.note2jpg.convert.Main
-Class-Path: lib/jna-4.1.0.jar lib/error_prone_annotations-2.3.4.jar lib/auto-value-a
- nnotations-1.7.jar lib/opencensus-contrib-http-util-0.24.0.jar lib/checker-comp
- at-qual-2.5.5.jar lib/zip4j-2.6.4.jar lib/opencensus-api-0.24.0.jar lib/failureacce
- ss-1.0.1.jar lib/jsoup-1.13.1.jar lib/log4j-1.2.17.jar lib/google-api-client-1.30.10
- .jar lib/google-http-client-jackson2-1.37.0.jar lib/jsr305-3.0.2.jar lib/commons-co
- dec-1.11.jar lib/ghost4j-1.0.1.jar lib/itext-2.1.7.jar lib/jna-4.1.0.jar lib/ghost4j-1.
- 0.1.jar lib/google-auth-library-credentials-0.22.0.jar lib/dd-plist-1.23.jar lib/gr
- pc-context-1.22.1.jar lib/guava-29.0-android.jar lib/xmlgraphic
- s-commons-1.4.jar lib/google-auth-library-oauth2-http-0.22.0.jar lib/commons-lo
- gging-1.1.1.jar lib/commons-io-1.3.1.jar lib/httpcore-4.4.13.jar lib/google-http-cl
- ient-1.34.0.jar lib/commons-collections-3.2.1.jar lib/commons-logging-1.1.1.jar 
- lib/j2objc-annotations-1.3.jar lib/google-oauth-client-1.31.0.jar lib/log4j-1.2.17
- .jar lib/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar lib/goo
- gle-api-services-drive-v3-rev20201101-1.30.10.jar lib/jackson-core-2.11.3.ja
- r lib/commons-beanutils-1.9.2.jar lib/commons-io-1.3.1.jar lib/commons-beanutils-1.
- 9.2.jar lib/xmlgraphics-commons-1.4.jar lib/itext-2.1.7.jar lib/httpclient-4.5.13.j
- ar lib/gson-2.8.6.jar lib/commons-collections-3.2.1.jar lib/dd-plist-1.23.jar
- lib/jetty-6.1.26.jar lib/jetty-util-6.1.26.jar lib/google-oauth-client-jetty-1.31.2.jar
- lib/servlet-api-2.5-20081211.jar lib/google-oauth-client-java6-1.31.2.jar
- lib/auto-value-annotations-1.7.4 lib/google-http-client-1.37.0
+Class-Path: lib/google-http-client-1.37.0.jar lib/jsr305-3.0.2.jar lib/google-oauth-
+ client-1.31.0.jar lib/servlet-api-2.5-20081211.jar lib/httpclient-4.5.13.jar lib/je
+ tty-util-6.1.26.jar lib/google-auth-library-oauth2-http-0.22.0.jar lib/jna-4.1.
+ 0.jar lib/failureaccess-1.0.1.jar lib/httpcore-4.4.13.jar lib/dd-plist-1.23.jar lib/gho
+ st4j-1.0.1.jar lib/google-http-client-jackson2-1.37.0.jar lib/listenablefuture-
+ 9999.0-empty-to-avoid-conflict-with-guava.jar lib/commons-collections-3.2.1
+ .jar lib/jetty-6.1.26.jar lib/google-api-services-drive-v3-rev20201101-1.30.10.
+ jar lib/google-auth-library-credentials-0.22.0.jar lib/j2objc-annotations-1.3.j
+ ar lib/guava-29.0-android.jar lib/opencensus-api-0.24.0.jar lib/grpc-context-1.22.1
+ .jar lib/commons-codec-1.11.jar lib/auto-value-annotations-1.7.4.jar lib/zip4j-2.5.
+ 0.jar lib/jackson-core-2.11.3.jar lib/google-api-client-1.30.10.jar lib/log4j-1.2.1
+ 7.jar lib/itext-2.1.7.jar lib/checker-compat-qual-2.5.5.jar lib/error_prone_annotat
+ ions-2.3.4.jar lib/gson-2.8.6.jar lib/google-oauth-client-java6-1.31.0.jar lib/jsou
+ p-1.13.1.jar lib/commons-io-1.3.1.jar lib/opencensus-contrib-http-util-0.24.0.j
+ ar lib/commons-logging-1.1.1.jar lib/google-oauth-client-jetty-1.31.0.jar lib/commo
+ ns-beanutils-1.9.2.jar lib/xmlgraphics-commons-1.4.jar
 
