@@ -184,16 +184,25 @@ public class Args extends NFields {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         int selected = -1;
         try {
-            selected = Integer.parseInt(br.readLine().replaceAll("[^0-9]", ""));
+            selected = Integer.parseInt(ensureSelection(br, list.size()));
         } catch (IOException ignored) {
-        }
-
-        if (selected > list.size() || selected == 0) {
-            System.err.println("Item not found for supplied index. Please try again");
-            displayListOptions(list, filter);
         }
         System.out.println();
         return list.get(selected - 1);
+    }
+
+    private static String ensureSelection(BufferedReader br, int max) throws IOException {
+        String raw = br.readLine();
+        String out = raw.replaceAll("[^0-9]", "");
+        int io = Integer.parseInt(out);
+        if (out.isBlank()) {
+            System.err.println("Selection index is not a number. Please try again.");
+            return ensureSelection(br, max);
+        } else if (io <= 0 || io > max || raw.contains("-")) {
+            System.err.println("Supplied index out of bounds. Please try again.");
+            return ensureSelection(br, max);
+        }
+        return out;
     }
 
     public static void determineRandomFilename() {

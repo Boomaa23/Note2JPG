@@ -115,6 +115,11 @@ public class Updater {
             downloadFile("https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/config.json", "config.json", false);
             downloadCounter++;
         }
+        if (!Arrays.asList(args).contains("--noappicon")) {
+            System.out.println("Downloading note2jpg-icon.png");
+            downloadFile("https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/note2jpg-icon.png", "note2jpg-icon.png", false);
+            downloadCounter++;
+        }
         if (downloadCounter > 0) {
             System.out.println();
         }

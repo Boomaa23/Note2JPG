@@ -44,7 +44,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class Main extends NFields {
-    private static final String CURRENT_VERSION_TAG = "v0.6.0";
+    private static final String CURRENT_RELEASE_TAG = "v0.6.0";
 
     static {
         @SuppressWarnings("unchecked") List<Logger> loggers =
@@ -67,7 +67,7 @@ public class Main extends NFields {
             "github.com/Boomaa23/Note2JPG\n" +
             "Copyright 2020. All Rights Reserved.\n" +
             "---------------------------------------\n" +
-            "NOTE: Note2JPG cannot parse some text styles\n");
+            "NOTE: Note2JPG cannot parse inline text\n");
     }
 
     public static void main(String[] args) throws IOException, PropertyListFormatException, ParseException, SAXException, ParserConfigurationException {
@@ -154,14 +154,17 @@ public class Main extends NFields {
                                 }
                             }
                             pages = pdfs.size();
-                        } else {
-                            double tempPages = bounds.getYDbl() / (scaledWidth * 11 / 8.5);
-                            int ceilPages = (int) Math.ceil(tempPages);
-                            pages = Math.max(1, Parameter.FitExactHeight.inEither() ?
-                                    (ceilPages != 1 ? (tempPages + 0.1) : tempPages) : ceilPages);
                         }
                         if (Parameter.PageCount.inEither()) {
                             pages = Parameter.PageCount.getValueInt();
+                        } else {
+                            double tempPages = bounds.getYDbl() / (scaledWidth * 11 / 8.5);
+                            int ceilPages = (int) Math.ceil(tempPages);
+                            tempPages = Math.max(1, Parameter.FitExactHeight.inEither() ?
+                                    (ceilPages != 1 ? (tempPages + 0.1) : tempPages) : ceilPages);
+                            if (tempPages > pages || pdfState == PDFState.NONE) {
+                                pages = tempPages;
+                            }
                         }
                         scaledHeight = (int) (scaledWidth * pages * 11 / 8.5);
                         setupDrawRenderer(curves, shapes.toArray(new Shape[0]), ImageUtil.getPdfCanvas(pdfs));
@@ -228,7 +231,7 @@ public class Main extends NFields {
                 List<String> imageUrls = null;
                 if (Parameter.UseAWS.inEither()) {
                     imageUrls = Arrays.asList(Connections.getAwsExecutor().uploadFile(noExtFilename + ".jpg", Parameter.OutputDirectory.getValue(), Parameter.NewNEOFilename.inEither()));
-                    System.out.println("\nImage uploaded to: \n " + imageUrls.get(0) + "\n" + imageUrls.get(1) + "\n");
+                    System.out.println("\nImage uploaded to: \n" + imageUrls.get(0) + "\n" + imageUrls.get(1) + "\n");
                 }
 
                 if (imageUrls != null) {
@@ -369,6 +372,7 @@ public class Main extends NFields {
         char[] fn = filename.toCharArray();
         for (char c : fn) {
             // eliminate all non-alphanumeric and non-ascii numbers
+            // not technically required, but known to always be the same as the NEO registration
             if (inRange(c, 48, 57) || inRange(c, 65, 90) || inRange(c, 97, 122) || c == 45) {
                 sb.append(c);
             }
@@ -392,12 +396,13 @@ public class Main extends NFields {
                 case HttpURLConnection.HTTP_SEE_OTHER:
                     String redirect = connection.getHeaderField("Location");
                     String remoteVer = redirect.substring(redirect.lastIndexOf("/") + 1);
-                    if (!remoteVer.equals(CURRENT_VERSION_TAG)) {
+                    if (!remoteVer.equals(CURRENT_RELEASE_TAG)) {
                         System.err.println("A new version " + remoteVer + " is available! Download via the updater or from " + baseUrl + remoteVer + "\n");
                     }
                     break;
             }
         } catch (IOException ignored) {
+            // This is a non-critical error, ignore
         }
     }
 
@@ -405,9 +410,9 @@ public class Main extends NFields {
         if (!Parameter.ConsoleOnly.inEither()) {
             consoleFrame = new JFrame("Note2JPG");
             try {
-                consoleFrame.setIconImage(ImageIO.read(new URL("https://www.gingerlabs.com/images/notability-logo.png"))
-                        .getSubimage(0, 0, 104, 104).getScaledInstance(32, 32, Image.SCALE_SMOOTH));
+                consoleFrame.setIconImage(ImageIO.read(new File("lib/note2jpg-icon.png")));
             } catch (IOException ignored) {
+                // This is a non-critical error, ignore
             }
             consoleFrame.setSize(640, 480);
             consoleFrame.setResizable(false);

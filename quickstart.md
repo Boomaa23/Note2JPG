@@ -12,12 +12,14 @@ This is the basic setup and is required to get the application working in any fa
 ### Config
 This allows you to set custom configuration options per the parameters [here](https://github.com/Boomaa23/Note2JPG#usage). 
 The below listed options are important and should be set for a working application, but are overall suggestions.
-- ImageScaleFactor = "12": Set to something between 8 and 16, setting to below 4 will cause images to appear blurry.
+- ImageScaleFactor = "10": Set to something between 6 and 16, setting to below 4 will cause images to appear blurry.
 - PDFScaleFactor = "2": Same as above, image will be blurry with 1. Diminishing returns after 4.
 - NEOUsername: Set to your NEO username so assignments can be auto-uploaded.
 - NEOPassword: Same as above. Set to your NEO password. Obviously don't share your configuration file.
 - UseAWS = "true": Allows images to be uploaded to NEO automatically.
 - UseDriveDownload = "true": Allows .note files to be downloaded from Google Drive automatically.
+
+Note that the ScaleFactor options take exponentially more RAM. If your computer isn't great keep these settings low otherwise issues will occur.
 
 To change these options, modify the `config.json` file in that was downloaded with the updater. 
 It is a standard JSON format, and can be modified by changing the text in between the quotation marks before the commas.
@@ -28,7 +30,7 @@ These changes are applied to the Notability app so that it exports files in the 
 2. Click the gear (settings) in the bottom left
 3. Tap "Auto-Backup" in the left menubar
 4. Select "Google Drive" on the right hand side
-5. Sign in to your **school** Google account. The school gives you unlimited storage whereas a personal account is 15GB limited.
+5. Sign in to your school Google account. The school gives you unlimited storage whereas a personal account is 15GB limited.
 6. (optional) Change the destination to wherever you want. It doesn't matter.
 
 <!--
@@ -48,15 +50,15 @@ If you used a school account, this must be done on another account because of di
 11. Once the service account has been created, click on it.
 12. Click "Add Key" then "Create New Key". Stay with JSON then click "Create".
 13. Rename the downloaded file to `GoogleSvcAcctPrivateKey.json` and put it in the same folder as the application.
--->
 
 If you used a school account for the backup, share the Notability backup folder in Google Drive with the other personal account that has the service account tied to it.
 Ensure the account has editing access. If you used a personal account for both, disregard this.
+-->
 
 ## Usage
 If everything is set up correctly, the application should work after just double-clicking `Note2JPG.jar`.
 
-Do not type into the terminal that appears unless you are prompted. Answer with the numbers only, not names associated with them. Prompts should be:
+Do not type into the GUI that appears unless you are prompted. Answer with the numbers only, not names associated with them. Prompts should be:
 - Which class are you uploading to?
 - What Google Drive file do you want to parse?
 - What assignment in the class should this be uploaded to?
@@ -64,6 +66,5 @@ Do not type into the terminal that appears unless you are prompted. Answer with 
 If everything goes correctly, it should display the location of the submitted NEO assignment.
 
 If you want to resubmit something again, change `AllowSubmitted` to `"true"` in the config.
-For Notability files with writing only (no PDF files), you must specify the number of pages in `PageCount` or only the first page will be submitted.
 
 If there are any issues to report, please write a GitHub issues about it [here](https://github.com/Boomaa23/Note2JPG/issues). This is still a work in progress, and may have some bugs.

@@ -21,51 +21,10 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 public class Decode extends NFields {
-    private static class RefTag extends LinkedList<Byte> {
-    }
-
-    public static void followRefs(NSObject[] objs) {
-        Map<RefTag, String> keys = new HashMap<>();
-        Map<RefTag, String> values = new HashMap<>();
-        for (NSObject obj : objs) {
-            if (obj instanceof NSDictionary) {
-                NSDictionary dict = (NSDictionary) obj;
-                if (dict.containsKey("NS.keys") && dict.containsKey("NS.objects") && ((NSArray) dict.get("NS.keys")).getArray().length != 0) {
-                    addRef(objs, dict, keys, new RefTag(), "NS.keys");
-                    addRef(objs, dict, values, new RefTag(), "NS.objects");
-                }
-            }
-        }
-    }
-
-    private static void addRef(NSObject[] objs, NSDictionary dict, Map<RefTag, String> toAddMap, RefTag prevRefs, String search) {
-        NSObject[] nsSelected = ((NSArray) dict.get(search)).getArray();
-        for (NSObject loop : nsSelected) {
-            if (loop instanceof UID) {
-                byte ref = ((UID) loop).getBytes()[0];
-                prevRefs.add(ref);
-                NSObject innerObj = objs[ref];
-                if (innerObj instanceof NSString) {
-                    toAddMap.put(prevRefs, ((NSString) innerObj).getContent());
-                } else if (innerObj instanceof NSDictionary) {
-                    NSDictionary innerDict = (NSDictionary) innerObj;
-                    if (innerDict.containsKey("NS.bytes")) {
-                        toAddMap.put(prevRefs, new String(Base64.getDecoder().decode(((NSData) innerDict.get("NS.bytes")).getBase64EncodedData())));
-                    } else if (innerDict.containsKey("NS.objects")) {
-                        addRef(objs, innerDict, toAddMap, prevRefs, "NS.objects");
-                    }
-                    System.out.println("whelp");
-                }
-            }
-        }
-    }
-
     public static Curve[] pointsToCurves(Point[] points, Color[] colors, float[] numPoints, float[] widths) {
         Curve[] curves = new Curve[numPoints.length];
         int done = 0;
@@ -237,7 +196,6 @@ public class Decode extends NFields {
 
     public static List<TextBox> getTextBoxes(NSObject[] sessionObjects) {
         List<TextBox> boxes = new ArrayList<>();
-        int scale = Parameter.ImageScaleFactor.getValueInt();
         for (NSObject obj : sessionObjects) {
             if (obj instanceof NSDictionary) {
                 NSDictionary dict = (NSDictionary) obj;
