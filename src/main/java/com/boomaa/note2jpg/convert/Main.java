@@ -3,7 +3,6 @@ package com.boomaa.note2jpg.convert;
 import com.boomaa.note2jpg.config.Args;
 import com.boomaa.note2jpg.config.Parameter;
 import com.boomaa.note2jpg.uxutil.SwingConsole;
-import com.boomaa.note2jpg.create.Box;
 import com.boomaa.note2jpg.create.Point;
 import com.boomaa.note2jpg.create.*;
 import com.boomaa.note2jpg.create.Shape;
@@ -15,7 +14,6 @@ import com.boomaa.note2jpg.state.PDFState;
 import com.dd.plist.NSArray;
 import com.dd.plist.NSData;
 import com.dd.plist.NSDictionary;
-import com.dd.plist.NSNumber;
 import com.dd.plist.NSObject;
 import com.dd.plist.PropertyListFormatException;
 import com.dd.plist.PropertyListParser;
@@ -69,7 +67,7 @@ public class Main extends NFields {
             "github.com/Boomaa23/Note2JPG\n" +
             "Copyright 2020. All Rights Reserved.\n" +
             "---------------------------------------\n" +
-            "NOTE: Note2JPG cannot parse positions of text boxes\n");
+            "NOTE: Note2JPG cannot parse some text styles\n");
     }
 
     public static void main(String[] args) throws IOException, PropertyListFormatException, ParseException, SAXException, ParserConfigurationException {
@@ -95,6 +93,9 @@ public class Main extends NFields {
                 }
                 try {
                     unzipNote(filename, noExtFilename);
+                    if (Parameter.ForceDriveDownload.inEither()) {
+                        throw new ZipException("Thrown forcefully to download from remote.");
+                    }
                 } catch (ZipException e) {
                     if (Parameter.ConfigVars.FILENAME_SOURCE == FilenameSource.NEO) {
                         System.err.println("Could not find local .note file for NEO assignment \"" + notename + "\"");
@@ -119,57 +120,14 @@ public class Main extends NFields {
                 float[] curveswidth = Decode.parseB64Numbers(NumberType.FLOAT, Decode.getDataFromDict(sessionDict, "curveswidth"));
                 Color[] colors = Decode.parseB64Colors(Decode.getDataFromDict(sessionDict, "curvescolors"));
 
+                List<TextBox> textBoxes = Decode.getTextBoxes(sessionObjects);
                 List<Shape> shapes = new ArrayList<>();
-                if (sessionObjects.length >= 14 && sessionObjects[14] instanceof NSData) {
-                    NSObject[] shapesMain = ((NSArray) ((NSDictionary) PropertyListParser.parse(((NSData) sessionObjects[14]).bytes())).get("shapes")).getArray();
-                    for (NSObject obj : shapesMain) {
-                        NSDictionary dict = (NSDictionary) obj;
-                        NSDictionary appearance = (NSDictionary) dict.get("appearance");
-                        NSObject[] shapeColorRGBA = ((NSArray) ((NSDictionary) appearance.get("strokeColor")).get("rgba")).getArray();
-                        Color strokeColor = Decode.getShapeStrokeColor(shapeColorRGBA);
-                        int scale = Parameter.ImageScaleFactor.getValueInt();
-                        double strokeWidth = ((NSNumber) appearance.get("strokeWidth")).doubleValue() * scale;
-
-                        if (dict.containsKey("points")) {
-                            NSObject[] parsePoints = ((NSArray) dict.get("points")).getArray();
-                            Point[] polyPoints = new Point[parsePoints.length];
-                            for (int i = 0; i < parsePoints.length; i++) {
-                                Point tempPt = Decode.parseShapePoint(((NSArray) parsePoints[i]).getArray());
-                                tempPt.setX((tempPt.getXDbl() + leftOffset) * scale);
-                                tempPt.setY(tempPt.getYDbl() * scale);
-                                polyPoints[i] = tempPt;
-                            }
-                            shapes.add(new Shape.NPolygon(strokeColor, strokeWidth, ((NSNumber) dict.get("isClosed")).boolValue(), polyPoints));
-                        } else {
-                            Point firstPoint;
-                            Point secondPoint;
-                            Shape.Type shapeType;
-                            if (dict.containsKey("startPt")) {
-                                shapeType = Shape.Type.LINE;
-                                firstPoint = Decode.parseShapePoint(((NSArray) dict.get("startPt")).getArray());
-                                secondPoint = Decode.parseShapePoint(((NSArray) dict.get("endPt")).getArray());
-                            } else if (dict.containsKey("rotatedRect")) {
-                                shapeType = Shape.Type.CIRCLE;
-                                NSObject[] dictPoints = ((NSArray) ((NSDictionary) dict.get("rotatedRect")).get("corners")).getArray();
-                                firstPoint = new Point(Integer.MAX_VALUE, Integer.MAX_VALUE);
-                                secondPoint = new Point(Integer.MIN_VALUE, Integer.MIN_VALUE);
-                                for (NSObject loopPoint : dictPoints) {
-                                    Point currPoint = Decode.parseShapePoint(((NSArray) loopPoint).getArray());
-                                    if (currPoint.getXInt() >= secondPoint.getXInt() && currPoint.getYInt() >= secondPoint.getYInt()) {
-                                        secondPoint = currPoint;
-                                    }
-                                    if (currPoint.getXInt() <= firstPoint.getXInt() && currPoint.getYInt() <= firstPoint.getYInt()) {
-                                        firstPoint = currPoint;
-                                    }
-                                }
-                            } else {
-                                continue;
-                            }
-                            firstPoint.setX((firstPoint.getXDbl() + leftOffset) * scale);
-                            firstPoint.setY(firstPoint.getYDbl() * scale);
-                            secondPoint.setX((secondPoint.getXDbl() + leftOffset) * scale);
-                            secondPoint.setY(secondPoint.getYDbl() * scale);
-                            shapes.add(new Shape(shapeType, strokeColor, strokeWidth, firstPoint, secondPoint));
+                for (NSObject sessionObj : sessionObjects) {
+                    if (sessionObj instanceof NSData) {
+                        NSObject shapesPrimary = ((NSDictionary) PropertyListParser.parse(((NSData) sessionObj).bytes())).get("shapes");
+                        if (shapesPrimary != null) {
+                            shapes = Decode.getShapes(((NSArray) shapesPrimary).getArray());
+                            break;
                         }
                     }
                 }
@@ -179,7 +137,7 @@ public class Main extends NFields {
                     try {
                         Point[] points = Decode.getScaledPoints(curvespoints);
                         Curve[] curves = Decode.pointsToCurves(points, colors, curvesnumpoints, curveswidth);
-                        scaledWidth = Decode.getNumberFromDict(sessionDict, "pageWidthInDocumentCoordsKey") * Parameter.ImageScaleFactor.getValueInt();
+                        scaledWidth = Math.max(1, Decode.getNumberFromDict(sessionDict, "pageWidthInDocumentCoordsKey") * Parameter.ImageScaleFactor.getValueInt());
                         bounds = Decode.getBounds(points, shapes.toArray(new Shape[0]));
                         if (pdfState != PDFState.NONE) {
                             if (pdfState == PDFState.PLIST) {
@@ -198,7 +156,9 @@ public class Main extends NFields {
                             pages = pdfs.size();
                         } else {
                             double tempPages = bounds.getYDbl() / (scaledWidth * 11 / 8.5);
-                            pages = Parameter.FitExactHeight.inEither() ? tempPages + 0.1 : (int) Math.ceil(tempPages);
+                            int ceilPages = (int) Math.ceil(tempPages);
+                            pages = Math.max(1, Parameter.FitExactHeight.inEither() ?
+                                    (ceilPages != 1 ? (tempPages + 0.1) : tempPages) : ceilPages);
                         }
                         if (Parameter.PageCount.inEither()) {
                             pages = Parameter.PageCount.getValueInt();
@@ -210,7 +170,7 @@ public class Main extends NFields {
                             if (imageList.size() > 0) {
                                 setupFrame(notename);
                                 displayFrame();
-                                frame.getContentPane().addMouseListener(new PointTrigger(Point.class));
+                                frame.getContentPane().addMouseListener(new PointTrigger());
                                 while (imageBounds.size() != imageList.size()) {
                                     try {
                                         Thread.sleep(100);
@@ -223,23 +183,7 @@ public class Main extends NFields {
                             ImageUtil.populateEmbedImages();
                         }
                         if (!Parameter.NoTextBoxes.inEither()) {
-                            textBoxContents = Decode.getTextBoxes(sessionDict);
-                            if (textBoxContents.size() > 0) {
-                                setupFrame(notename);
-                                displayFrame();
-                                frame.getContentPane().addMouseListener(new PointTrigger(Box.class));
-                                System.out.print("\rPositioning: " + textBoxContents.get(0) + " (1 / " + textBoxContents.size() + ") on " + PointTrigger.selectState);
-                                while (textBoxBounds.size() != textBoxContents.size()
-                                    || textBoxBounds.get(textBoxBounds.size() - 1).getCorner(Corner.BOTTOM_RIGHT) == null) {
-                                    try {
-                                        Thread.sleep(100);
-                                    } catch (InterruptedException e) {
-                                        break;
-                                    }
-                                }
-                                frame.setVisible(false);
-                                ImageUtil.populateTextBoxes(textBoxContents);
-                            }
+                            ImageUtil.populateTextBoxes(textBoxes);
                         }
                         break;
                     } catch (OutOfMemoryError | NegativeArraySizeException e) {

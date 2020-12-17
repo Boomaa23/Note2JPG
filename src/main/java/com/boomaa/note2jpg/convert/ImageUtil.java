@@ -1,8 +1,8 @@
 package com.boomaa.note2jpg.convert;
 
 import com.boomaa.note2jpg.config.Parameter;
-import com.boomaa.note2jpg.create.Corner;
 import com.boomaa.note2jpg.create.Point;
+import com.boomaa.note2jpg.create.TextBox;
 import com.boomaa.note2jpg.state.PDFState;
 import org.ghost4j.document.DocumentException;
 import org.ghost4j.document.PDFDocument;
@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ImageUtil extends NFields {
     static {
@@ -53,27 +54,45 @@ public class ImageUtil extends NFields {
         return bufferScaled;
     }
 
-    public static void populateTextBoxes(List<String> textBoxes) {
+    public static void populateTextBoxes(List<TextBox> textBoxes) {
         BufferedImage img = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D cg2 = img.createGraphics();
         cg2.setBackground(Color.WHITE);
         cg2.setColor(Color.WHITE);
         cg2.fillRect(0, 0, img.getWidth(), img.getHeight());
         cg2.setColor(Color.BLACK);
-        for (int i = 0; i < textBoxes.size(); i++) {
-            cg2.setFont(new Font("Arial", Font.PLAIN, 12 * Parameter.ImageScaleFactor.getValueInt()));
-            int x = textBoxBounds.get(i).getCorner(Corner.UPPER_LEFT).getXInt();
+        for (TextBox textBox : textBoxes) {
+            int x = textBox.getUpperLeft().getXInt();
             int lastOverflow = 0;
-            for (int j = 0; j < textBoxes.get(i).length(); j++) {
-                int currChar = Math.min(255, textBoxes.get(i).charAt(j));
-                if (((j - lastOverflow + 2) * cg2.getFontMetrics().getWidths()[currChar]) > textBoxBounds.get(i).getCorner(Corner.BOTTOM_RIGHT).getXInt()) {
-                    textBoxes.set(i, textBoxes.get(i).substring(0, j) + "\n" + textBoxes.get(i).substring(j));
+            for (int j = 0; j < textBox.getText().length(); j++) {
+                int currChar = Math.min(255, textBox.getText().charAt(j));
+                cg2.setFont(new Font("Arial", Font.PLAIN, (int) (textBox.rangeOfIndex(j).getFontSize() * Parameter.ImageScaleFactor.getValueInt())));
+                if (((j - lastOverflow + 2) * cg2.getFontMetrics().getWidths()[currChar]) > textBox.getBottomRight().getXInt()) {
+                    textBox.setText(textBox.getText().substring(0, j) + "\n" + textBox.getText().substring(j));
                     lastOverflow = j - 2;
                 }
             }
-            int y = textBoxBounds.get(i).getCorner(Corner.UPPER_LEFT).getYInt() - cg2.getFontMetrics().getHeight();
-            for (String line : textBoxes.get(i).split("\n")) {
-                cg2.drawString(line, x, y += cg2.getFontMetrics().getHeight());
+            int y = textBox.getUpperLeft().getYInt() - cg2.getFontMetrics().getHeight();
+            String[] splitTextBoxes = textBox.getText().split("\n");
+            int ctr = 0;
+            for (String box : splitTextBoxes) {
+                TextBox.SubRange cRange = textBox.rangeOfIndex(ctr);
+                cg2.setFont(new Font("Arial", Font.PLAIN, (int) (cRange.getFontSize() * Parameter.ImageScaleFactor.getValueInt())));
+                cg2.setColor(cRange.getColor());
+                if (!cRange.equals(textBox.rangeOfIndex(ctr + box.length() - 1))) {
+                    Map<Integer, TextBox.SubRange> subRanges = textBox.getSubRanges();
+                    int normX = x;
+                    for (Map.Entry<Integer, TextBox.SubRange> entry : subRanges.entrySet()) {
+                        int endIdx = Math.min(box.length(), ctr + entry.getKey());
+                        String partialStr = box.substring(ctr, endIdx);
+                        int strWidth = (cg2.getFontMetrics().getWidths()[partialStr.charAt(0)]) * partialStr.length();
+                        cg2.drawString(partialStr, x += strWidth, y);
+                    }
+                    x = normX;
+                } else {
+                    cg2.drawString(box, x, y += cg2.getFontMetrics().getHeight());
+                    ctr += box.length();
+                }
             }
         }
         cg2.dispose();

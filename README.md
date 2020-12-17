@@ -56,6 +56,7 @@ Download: [Updater JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JP
 | UseDrive                      | --gdrive              | Google     | boolean | Use Google Drive to download and upload
 | UseDriveDownload              | --gdrivedl            | Google     | boolean | Use Google Drive as a .note source
 | UseDriveUpload                | --gdriveup            | Google     | boolean | Upload images to Google Drive
+| ForceDriveDownload            | --fgdl                | Google     | boolean | Force the .note to download from Google
 | GoogleSvcAcct                 | --gsvc                | Google     | boolean | Use a Google Service Account over OAuth
 | LimitDriveNotes               | --gdrivelim \<limit>  | Google     | int     | Define a limit for Drive-retrieved notes
 

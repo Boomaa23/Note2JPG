@@ -37,12 +37,19 @@ public class Point {
         return y;
     }
 
-    // Using multiply operation instead of Math.pow
-    // because it's faster with powers of two
+    public Point add(Point other) {
+        return new Point(this.x + other.x,
+                this.y + other.y);
+    }
+
     public double distance(Point end) {
         double x = end.getXDbl() - this.getXDbl();
         double y = end.getYDbl() - this.getYDbl();
         return Math.sqrt((x * x) + (y * y));
+    }
+
+    public double magnitude() {
+        return Math.sqrt(x * x + y * y);
     }
 
     @Override

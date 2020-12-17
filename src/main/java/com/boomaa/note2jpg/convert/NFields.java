@@ -1,6 +1,5 @@
 package com.boomaa.note2jpg.convert;
 
-import com.boomaa.note2jpg.create.Box;
 import com.boomaa.note2jpg.create.DrawRenderer;
 import com.boomaa.note2jpg.create.Point;
 import com.boomaa.note2jpg.integration.NEOExecutor;
@@ -20,8 +19,7 @@ public class NFields {
     protected static DrawRenderer drawRenderer;
     protected static Point bounds;
     public static BufferedImage upscaledAll;
-    protected static List<Box> textBoxBounds = new ArrayList<>();
-    protected static List<String> textBoxContents = new ArrayList<>();
+    public static List<String> textBoxContents = new ArrayList<>();
     protected static List<Point> imageBounds = new ArrayList<>();
     protected static List<BufferedImage> imageList = new ArrayList<>();
     protected static int iPadWidth = 1536;

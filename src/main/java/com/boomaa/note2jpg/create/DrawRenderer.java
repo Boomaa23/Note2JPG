@@ -6,10 +6,10 @@ import java.awt.image.BufferedImage;
 
 public class DrawRenderer extends JPanel {
     private final Curve[] curves;
-    private final com.boomaa.note2jpg.create.Shape[] shapes;
+    private final Shape[] shapes;
     private final BufferedImage pdfs;
 
-    public DrawRenderer(Curve[] curves, com.boomaa.note2jpg.create.Shape[] shapes, BufferedImage pdfs) {
+    public DrawRenderer(Curve[] curves, Shape[] shapes, BufferedImage pdfs) {
         this.curves = curves;
         this.shapes = shapes;
         this.pdfs = pdfs;

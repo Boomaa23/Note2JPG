@@ -28,6 +28,7 @@
   "UseDrive": "",
   "UseDriveDownload": "",
   "UseDriveUpload": "",
+  "ForceDriveDownload": "",
   "GoogleSvcAcct": "",
   "LimitDriveNotes": ""
 }

@@ -136,6 +136,10 @@ public class Args extends NFields {
             throw new IllegalArgumentException("Cannot specify an assignment name for multiple notes");
         }
 
+        if (Parameter.ForceDriveDownload.inEither() && !Parameter.UseDriveDownload.inEither()) {
+            throw new IllegalArgumentException("Must be downloading from Google Drive to force download from it");
+        }
+
         if (!(Parameter.NEOUsername.inEither() || Parameter.NEOPassword.inEither()) && Parameter.UseAWS.inEither()) {
             System.err.println("Not uploading to AWS as no NEO credentials were specified");
         }
