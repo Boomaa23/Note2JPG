@@ -2,46 +2,54 @@ package com.boomaa.note2jpg.updater;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Updater {
-    private static JFrame FRAME;
+    private static JFrame MAIN_FRAME;
+    private static JFrame CONFIG_FRAME;
+    private static DefaultTableModel TABLE_MODEL;
     private static boolean OUTPUT_DONE = false;
     private static String DEPENDENCIES_URL = "https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/src/main/resources/dependencies.conf";
     private static String LIBRARY_FOLDER = "lib/";
     private static List<MavenDependency> dependencyList = new ArrayList<>();
 
     static {
-        FRAME = new JFrame("Note2JPG Updater");
+        MAIN_FRAME = new JFrame("Note2JPG Updater");
         try {
-            FRAME.setIconImage(ImageIO.read(new URL("https://www.gingerlabs.com/images/notability-logo.png"))
-                    .getSubimage(0, 0, 104, 104).getScaledInstance(32, 32, Image.SCALE_SMOOTH));
+            MAIN_FRAME.setIconImage(ImageIO.read(new URL("https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/note2jpg-icon.png")));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        FRAME.setSize(400, 300);
-        FRAME.setResizable(false);
-        FRAME.setLocationRelativeTo(null);
-        FRAME.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        MAIN_FRAME.setSize(400, 300);
+        MAIN_FRAME.setResizable(false);
+        MAIN_FRAME.setLocationRelativeTo(null);
+        MAIN_FRAME.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         var jt = new JTextArea();
         jt.setEditable(false);
         jt.setAutoscrolls(true);
-        jt.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (OUTPUT_DONE) {
-                    FRAME.dispose();
-                }
-            }
-        });
         var scr = new JScrollPane(jt);
         scr.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scr.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -49,8 +57,90 @@ public class Updater {
         var taos = new PrintStream(new ConsolePrintOut(jt));
         System.setOut(taos);
         System.setErr(taos);
-        FRAME.getContentPane().add(scr);
-        FRAME.setVisible(true);
+        MAIN_FRAME.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        MAIN_FRAME.getContentPane().add(scr);
+        MAIN_FRAME.setVisible(true);
+
+        CONFIG_FRAME = new JFrame("Note2JPG Config Options");
+        TABLE_MODEL = new DefaultTableModel(new String[0][], new String[] { "Option", "Info", "Value" });
+        String url = "https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/README.md";
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new URL(url)
+                .openConnection().getInputStream(), StandardCharsets.UTF_8))) {
+            int skipCtr = 0;
+            String line = "";
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("|")) {
+                    if (skipCtr < 2) {
+                        skipCtr++;
+                    } else {
+                        int ioMidBar = line.indexOf('|', 1);
+                        int ioLastBar = line.lastIndexOf('|');
+                        String name = line.substring(2, ioMidBar).trim();
+                        String msg = line.substring(ioLastBar + 1).trim();
+                        if (name.contains("NEOUsername")) {
+                            TABLE_MODEL.addRow(new Object[]{"NEOUsername", msg.substring(0, 19) + " (username)", ""});
+                            TABLE_MODEL.addRow(new Object[]{"NEOPassword", msg.substring(0, 19) + " (password)", ""});
+                        } else {
+                            //TODO load in previous config values
+                            TABLE_MODEL.addRow(new Object[]{name, msg, ""});
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        JTable table = new JTable(TABLE_MODEL);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        setWidths(table, 0, 50, -1, 160);
+        setWidths(table, 1, 50, -1, 285);
+        setWidths(table, 2, 50, -1, 135);
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        JButton stopBtn = new JButton("Finish");
+        stopBtn.addActionListener((e) -> {
+            writeConfig();
+            CONFIG_FRAME.dispose();
+            MAIN_FRAME.dispose();
+        });
+        CONFIG_FRAME.setSize(new Dimension(600, 500));
+        CONFIG_FRAME.setLocationRelativeTo(null);
+        CONFIG_FRAME.getContentPane().setLayout(new BorderLayout());
+        CONFIG_FRAME.getContentPane().add(scroll, BorderLayout.NORTH);
+        CONFIG_FRAME.getContentPane().add(stopBtn, BorderLayout.SOUTH);
+        CONFIG_FRAME.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+    private static void setWidths(JTable table, int index, int min, int max, int preferred) {
+        TableColumn col = table.getColumnModel().getColumn(index);
+        if (min != -1) {
+            col.setMinWidth(min);
+        }
+        if (max != -1) {
+            col.setMaxWidth(max);
+        }
+        if (preferred != -1) {
+            col.setPreferredWidth(preferred);
+        }
+    }
+
+    private static void writeConfig() {
+        try {
+            Path configPath = Paths.get(".", "config.json");
+            StringBuilder sb = new StringBuilder(Files.readString(configPath));
+            for (int r = 0; r < TABLE_MODEL.getRowCount(); r++) {
+                //TODO add previous value checking (or a better overwriting system)
+                String name = String.valueOf(TABLE_MODEL.getValueAt(r, 0));
+                String value = String.valueOf(TABLE_MODEL.getValueAt(r, 2));
+                sb.insert(sb.indexOf(": \"", sb.indexOf(name) + 1) + 3, value);
+            }
+            Files.writeString(configPath, sb.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) throws IOException {
@@ -98,7 +188,7 @@ public class Updater {
         }
 
         if (!Arrays.asList(args).contains("--nogsdll64")
-                && !new File(LIBRARY_FOLDER + "/gsdll64.dll").exists()) {
+                && !new File("lib/gsdll64.dll").exists()) {
             System.out.println("Downloading gsdll64.dll");
             downloadFile("https://s3.amazonaws.com/s3.edu20.org/files/2796766/gsdll64.dll", "gsdll64.dll");
             downloadCounter++;
@@ -109,15 +199,16 @@ public class Updater {
             downloadFile("https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/Note2JPG.jar", "Note2JPG.jar", false);
             downloadCounter++;
         }
-        if (!Arrays.asList(args).contains("--config")
+        if (!Arrays.asList(args).contains("--noconfig")
                 && !new File("config.json").exists()) {
             System.out.println("Downloading config.json");
             downloadFile("https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/config.json", "config.json", false);
             downloadCounter++;
         }
-        if (!Arrays.asList(args).contains("--noappicon")) {
+        if (!Arrays.asList(args).contains("--noappicon")
+                && !new File("lib/note2jpg-icon.png").exists()) {
             System.out.println("Downloading note2jpg-icon.png");
-            downloadFile("https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/note2jpg-icon.png", "note2jpg-icon.png", false);
+            downloadFile("https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/note2jpg-icon.png", "note2jpg-icon.png");
             downloadCounter++;
         }
         if (downloadCounter > 0) {
@@ -127,8 +218,12 @@ public class Updater {
         String folderSize = FileUtil.humanReadable(FileUtil.folderSize(new File(LIBRARY_FOLDER)) - originalFolderSize);
         System.out.println("Downloaded " + downloadCounter + " dependencies to " +
             "/" + LIBRARY_FOLDER + " (" + folderSize + ")");
-        System.out.println("Press any key to quit...");
-        OUTPUT_DONE = true;
+        MAIN_FRAME.setVisible(false);
+        CONFIG_FRAME.setIconImage(ImageIO.read(new File("lib/note2jpg-icon.png")));
+        CONFIG_FRAME.setVisible(true);
+        JOptionPane.showMessageDialog(null,
+                "Quickstart users should set NEOUsername and NEOPassword to their NEO credentials. \n" +
+                "UseAWS and UseDriveDownload should be set to \"true\"", "Quickstart Config", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private static String getMavenCentralUrl(MavenDependency dependency) {

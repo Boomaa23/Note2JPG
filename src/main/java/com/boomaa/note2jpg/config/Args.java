@@ -179,7 +179,12 @@ public class Args extends NFields {
     public static String filenameSelector(List<String> list, String filter) {
         if (!displayListOptions(list, filter)) {
             System.err.println("No note files matching filter " + filter);
-            System.exit(1);
+            if (!Parameter.ConsoleOnly.inEither()) {
+                System.out.println("Press any key to quit...");
+                outputDone = true;
+            } else {
+                System.exit(1);
+            }
         }
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         int selected = -1;

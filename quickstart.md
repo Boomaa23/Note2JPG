@@ -7,21 +7,23 @@ It is a basic installation and includes suggested features.
 This is the basic setup and is required to get the application working in any fashion on a computer.
 1. Install Java JDK 11 or newer [here](https://www.oracle.com/java/technologies/javase-downloads.html).
 2. Download the updater [here](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JPGUpdater.jar?raw=true) and place in the folder you intend to run the application out of.
-3. Run the updater by double-clicking it. Close the window by clicking any key when prompted.
+3. Run the updater by double-clicking it. Close the window by clicking "Finish" after configuring the options.
 
 ### Config
 This allows you to set custom configuration options per the parameters [here](https://github.com/Boomaa23/Note2JPG#usage). 
-The below listed options are important and should be set for a working application, but are overall suggestions.
-- ImageScaleFactor = "10": Set to something between 6 and 16, setting to below 4 will cause images to appear blurry.
-- PDFScaleFactor = "2": Same as above, image will be blurry with 1. Diminishing returns after 4.
+The below listed options are important and should be set for a working quickstart application.
 - NEOUsername: Set to your NEO username so assignments can be auto-uploaded.
 - NEOPassword: Same as above. Set to your NEO password. Obviously don't share your configuration file.
 - UseAWS = "true": Allows images to be uploaded to NEO automatically.
 - UseDriveDownload = "true": Allows .note files to be downloaded from Google Drive automatically.
 
-Note that the ScaleFactor options take exponentially more RAM. If your computer isn't great keep these settings low otherwise issues will occur.
+The following are optional but recommended.
+- ImageScaleFactor = "12": Set to something between 6 and 16, setting to below 4 will cause images to appear blurry.
+- PDFScaleFactor = "3": Same as above, image will be blurry with 1. Diminishing returns after 4. Be careful with PDFs over 10 pages.
 
-To change these options, modify the `config.json` file in that was downloaded with the updater. 
+Note that these options take exponentially more RAM. If your computer isn't great keep these settings low otherwise issues will occur.
+
+To change these options, either modify their values during the installer or modify the `config.json` file in that was downloaded with the updater. 
 It is a standard JSON format, and can be modified by changing the text in between the quotation marks before the commas.
 
 ### Notability
