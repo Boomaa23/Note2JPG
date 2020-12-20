@@ -42,17 +42,21 @@ public class TextBox {
     }
 
     public SubRange rangeOfIndex(int idx) {
-        if (subRanges.size() == 1) {
-            return subRanges.get(subRanges.keySet().iterator().next());
+        switch (subRanges.size()) {
+            case 0:
+                return new SubRange();
+            case 1:
+                return subRanges.get(subRanges.keySet().iterator().next());
+            default:
+                int last = -1;
+                for (int loopIdx : subRanges.keySet()) {
+                    if (idx >= loopIdx) {
+                        return subRanges.get(last);
+                    }
+                    last = loopIdx;
+                }
         }
-        int last = -1;
-        for (int loopIdx : subRanges.keySet()) {
-            if (idx >= loopIdx) {
-                return subRanges.get(last);
-            }
-            last = loopIdx;
-        }
-        return null;
+        throw new ArrayIndexOutOfBoundsException("No subrange for index " + idx + " with text " + text);
     }
 
     public Map<Integer, SubRange> getSubRanges() {
@@ -66,6 +70,10 @@ public class TextBox {
         public SubRange(Color color, double fontSize) {
             this.color = color;
             this.fontSize = fontSize;
+        }
+
+        public SubRange() {
+            this(Color.BLACK, 12);
         }
 
         public Color getColor() {

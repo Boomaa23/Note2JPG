@@ -67,7 +67,7 @@ public class Main extends NFields {
             "github.com/Boomaa23/Note2JPG\n" +
             "Copyright 2020. All Rights Reserved.\n" +
             "---------------------------------------\n" +
-            "NOTE: Note2JPG cannot parse inline text\n");
+            "NOTE: Note2JPG cannot parse text rotations\n");
     }
 
     public static void main(String[] args) throws IOException, PropertyListFormatException, ParseException, SAXException, ParserConfigurationException {
@@ -137,7 +137,7 @@ public class Main extends NFields {
                     try {
                         Point[] points = Decode.getScaledPoints(curvespoints);
                         Curve[] curves = Decode.pointsToCurves(points, colors, curvesnumpoints, curveswidth);
-                        scaledWidth = Math.max(1, Decode.getNumberFromDict(sessionDict, "pageWidthInDocumentCoordsKey") * Parameter.ImageScaleFactor.getValueInt());
+                        scaledWidth = Math.max(defWidth, Decode.getNumberFromDict(sessionDict, "pageWidthInDocumentCoordsKey")) * Parameter.ImageScaleFactor.getValueInt();
                         bounds = Decode.getBounds(points, shapes.toArray(new Shape[0]));
                         if (pdfState != PDFState.NONE) {
                             if (pdfState == PDFState.PLIST) {
@@ -188,6 +188,7 @@ public class Main extends NFields {
                         if (!Parameter.NoTextBoxes.inEither()) {
                             ImageUtil.populateTextBoxes(textBoxes);
                         }
+                        System.out.println((textBoxes.size() == 0 ? "Text: None" : "") + "\n");
                         break;
                     } catch (OutOfMemoryError | NegativeArraySizeException e) {
                         drawRenderer = null;
@@ -273,7 +274,6 @@ public class Main extends NFields {
         BufferedImage img = new BufferedImage(scaledWidth, (int) (scaledWidth * pages * 11 / 8.5), BufferedImage.TYPE_INT_ARGB);
         drawRenderer.print(img.getGraphics());
         upscaledAll = img;
-        System.out.println();
     }
 
     public static void setupFrame(String filename) {

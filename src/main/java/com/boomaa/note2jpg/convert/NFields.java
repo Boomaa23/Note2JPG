@@ -22,8 +22,9 @@ public class NFields {
     public static List<String> textBoxContents = new ArrayList<>();
     protected static List<Point> imageBounds = new ArrayList<>();
     protected static List<BufferedImage> imageList = new ArrayList<>();
-    protected static int iPadWidth = 1536;
-    protected static int leftOffset = 14;
+    protected static final int iPadWidth = 1536;
+    protected static final int defWidth = 565;
+    protected static final int leftOffset = 14;
     protected static int heightFinal;
     protected static int scaledWidth;
     protected static int scaledHeight;

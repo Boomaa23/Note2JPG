@@ -21,8 +21,10 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class Decode extends NFields {
     public static Curve[] pointsToCurves(Point[] points, Color[] colors, float[] numPoints, float[] widths) {
@@ -70,21 +72,17 @@ public class Decode extends NFields {
     }
 
     public static Color[] parseB64Colors(String[] b64s) {
-        List<Color> out = new LinkedList<>();
+        List<Color> colors = new LinkedList<>();
         for (String b64 : b64s) {
             byte[] decoded = Base64.getDecoder().decode(b64.getBytes());
-            String hexFull = String.format("%040x", new BigInteger(1, decoded));
-            Color[] colors = new Color[(hexFull.length() / 8)];
-            int parsed = 0;
-            for (int i = 0; i < colors.length; i++) {
-                int rgb = Integer.parseInt(hexFull.substring(parsed, parsed + 6), 16);
-                int alpha = Integer.parseInt(hexFull.substring(parsed + 6, parsed + 8), 16);
-                colors[i] = new Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, alpha);
-                parsed += 8;
+            String hexFull = String.format("%8x", new BigInteger(1, decoded));
+            for (int i = 0; i < hexFull.length(); i += 8) {
+                int rgb = Integer.parseInt(hexFull.substring(i, i + 6), 16);
+                int alpha = Integer.parseInt(hexFull.substring(i + 6, i + 8), 16);
+                colors.add(new Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, alpha));
             }
-            out.addAll(Arrays.asList(colors));
         }
-        return out.toArray(new Color[0]);
+        return colors.toArray(new Color[0]);
     }
 
     public static Point parseShapePoint(NSObject[] objects) {
@@ -196,19 +194,31 @@ public class Decode extends NFields {
 
     public static List<TextBox> getTextBoxes(NSObject[] sessionObjects) {
         List<TextBox> boxes = new ArrayList<>();
+        Map<NSDictionary, TextBox> boxClaimed = new HashMap<>();
         for (NSObject obj : sessionObjects) {
             if (obj instanceof NSDictionary) {
                 NSDictionary dict = (NSDictionary) obj;
-                String dictKeys = Arrays.toString(dict.allKeys());
-                if (dictKeys.contains("textStore")) {
-                    NSDictionary textMeta = (NSDictionary) sessionObjects[fromSUID(dict.get("textStore"))];
+                NSDictionary textMeta = dict;
+                double scale = Parameter.ImageScaleFactor.getValueInt();
+                Point upperLeft = new Point(leftOffset * scale, 0);
+                Point bottomRight = new Point((defWidth - leftOffset) * scale, Integer.MAX_VALUE);
+
+                if (dict.containsKey(("textStore"))) {
+                    textMeta = (NSDictionary) sessionObjects[fromSUID(dict.get("textStore"))];
+                    upperLeft = boxPointFromDict(sessionObjects, dict, "documentOrigin");
+                    bottomRight = upperLeft.add(boxPointFromDict(sessionObjects, dict, "unscaledContentSize"));
+                } else if (boxClaimed.containsKey(dict)) {
+                    continue;
+                }
+
+                if (textMeta.containsKey("attributedString")) {
                     NSDictionary innerTextMeta = (NSDictionary) sessionObjects[fromSUID(textMeta.get("attributedString"))];
                     NSObject[] innerMetaObjs = ((NSArray) innerTextMeta.get("NS.objects")).getArray();
                     String text = ((NSString) sessionObjects[fromSUID(innerMetaObjs[0])]).getContent();
-
-                    Point dimensions = boxPointFromDict(sessionObjects, dict, "unscaledContentSize");
-                    Point upperLeft = boxPointFromDict(sessionObjects, dict, "documentOrigin");
-                    TextBox next = new TextBox(upperLeft, upperLeft.add(dimensions), text);
+                    if (text.isBlank()) {
+                        continue;
+                    }
+                    TextBox next = new TextBox(upperLeft, bottomRight, text);
 
                     NSObject[] dataSubRanges = ((NSArray) ((NSDictionary) sessionObjects[fromSUID(innerMetaObjs[1])]).get("NS.objects")).getArray();
                     for (NSObject rawRange : dataSubRanges) {
@@ -229,15 +239,9 @@ public class Decode extends NFields {
                         }
                     }
 
+                    boxClaimed.put(textMeta, next);
                     boxes.add(next);
                 }
-            } else if (obj instanceof NSString) {
-                //TODO support inline text
-//                String content = ((NSString) obj).getContent();
-//                if (!textBoxContents.contains(content)) {
-//                    boxes.add(new TextBox(new Point(leftOffset * scale, 0),
-//                            new Point(Integer.MAX_VALUE, Integer.MAX_VALUE), content));
-//                }
             }
         }
         return boxes;

@@ -61,7 +61,8 @@ public class ImageUtil extends NFields {
         cg2.setColor(Color.WHITE);
         cg2.fillRect(0, 0, img.getWidth(), img.getHeight());
         cg2.setColor(Color.BLACK);
-        for (TextBox textBox : textBoxes) {
+        for (int i = 0; i < textBoxes.size(); i++) {
+            TextBox textBox = textBoxes.get(i);
             int x = textBox.getUpperLeft().getXInt();
             int lastOverflow = 0;
             for (int j = 0; j < textBox.getText().length(); j++) {
@@ -72,7 +73,7 @@ public class ImageUtil extends NFields {
                     lastOverflow = j - 2;
                 }
             }
-            int y = textBox.getUpperLeft().getYInt() - cg2.getFontMetrics().getHeight();
+            int y = textBox.getUpperLeft().getYInt();
             String[] splitTextBoxes = textBox.getText().split("\n");
             int ctr = 0;
             for (String box : splitTextBoxes) {
@@ -94,7 +95,9 @@ public class ImageUtil extends NFields {
                     ctr += box.length();
                 }
             }
+            System.out.print("\r" + "Text: " + (i + 1) + " / " + textBoxes.size());
         }
+
         cg2.dispose();
         Graphics2D g2 = (Graphics2D) upscaledAll.getGraphics();
         g2.drawImage(makeColorTransparent(img, Color.WHITE), 0, 0, null);
