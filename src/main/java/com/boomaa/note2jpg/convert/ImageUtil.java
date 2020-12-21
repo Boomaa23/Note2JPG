@@ -14,7 +14,9 @@ import java.awt.*;
 import java.awt.image.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -61,19 +63,36 @@ public class ImageUtil extends NFields {
         cg2.setColor(Color.WHITE);
         cg2.fillRect(0, 0, img.getWidth(), img.getHeight());
         cg2.setColor(Color.BLACK);
+
         for (int i = 0; i < textBoxes.size(); i++) {
             TextBox textBox = textBoxes.get(i);
             int x = textBox.getUpperLeft().getXInt();
+
             int lastOverflow = 0;
             for (int j = 0; j < textBox.getText().length(); j++) {
                 int currChar = Math.min(255, textBox.getText().charAt(j));
+                if (currChar == '\n') {
+                    continue;
+                }
                 cg2.setFont(new Font("Arial", Font.PLAIN, (int) (textBox.rangeOfIndex(j).getFontSize() * Parameter.ImageScaleFactor.getValueInt())));
                 if (((j - lastOverflow + 2) * cg2.getFontMetrics().getWidths()[currChar]) > textBox.getBottomRight().getXInt()) {
                     textBox.setText(textBox.getText().substring(0, j) + "\n" + textBox.getText().substring(j));
                     lastOverflow = j - 2;
                 }
             }
-            int y = textBox.getUpperLeft().getYInt();
+
+            StringReader sr = new StringReader(textBox.getText());
+            int leadingLineBreaks = 1;
+            try {
+                while (sr.read() == '\n') {
+                    leadingLineBreaks++;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            int y = textBox.getUpperLeft().getYInt() + (cg2.getFontMetrics().getHeight() * leadingLineBreaks);
+            //TODO fix leading line spacing for inline text
+
             String[] splitTextBoxes = textBox.getText().split("\n");
             int ctr = 0;
             for (String box : splitTextBoxes) {
@@ -83,12 +102,21 @@ public class ImageUtil extends NFields {
                 if (!cRange.equals(textBox.rangeOfIndex(ctr + box.length() - 1))) {
                     Map<Integer, TextBox.SubRange> subRanges = textBox.getSubRanges();
                     int normX = x;
-                    for (Map.Entry<Integer, TextBox.SubRange> entry : subRanges.entrySet()) {
-                        int endIdx = Math.min(box.length(), ctr + entry.getKey());
-                        String partialStr = box.substring(ctr, endIdx);
-                        int strWidth = (cg2.getFontMetrics().getWidths()[partialStr.charAt(0)]) * partialStr.length();
-                        cg2.drawString(partialStr, x += strWidth, y);
+                    List<Integer> srKeys = new ArrayList<>(subRanges.keySet());
+                    Collections.sort(srKeys);
+                    int lastIdx = 0;
+                    for (int sk : srKeys) {
+                        String partialStr = box.substring(lastIdx, sk);
+                        lastIdx = sk;
+                        int[] widths = cg2.getFontMetrics().getWidths();
+                        int strWidth = 0;
+                        for (char c : partialStr.toCharArray()) {
+                            strWidth += widths[c];
+                        }
+                        cg2.drawString(partialStr, x, y);
+                        x += strWidth;
                     }
+                    ctr += textBox.getText().length();
                     x = normX;
                 } else {
                     cg2.drawString(box, x, y += cg2.getFontMetrics().getHeight());

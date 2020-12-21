@@ -3,7 +3,12 @@ package com.boomaa.note2jpg.create;
 import com.boomaa.note2jpg.convert.NFields;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class TextBox {
@@ -11,9 +16,11 @@ public class TextBox {
     private final Map<Integer, SubRange> subRanges;
     private final Point upperLeft;
     private final Point bottomRight;
+    private final double rotationDegrees;
     private String text;
 
-    public TextBox(Point upperLeft, Point bottomRight, String text) {
+    public TextBox(Point upperLeft, Point bottomRight, String text, double rotationDegrees) {
+        this.rotationDegrees = rotationDegrees;
         this.subRanges = new LinkedHashMap<>();
         this.upperLeft = upperLeft;
         this.bottomRight = bottomRight;
@@ -37,6 +44,10 @@ public class TextBox {
         this.text = text;
     }
 
+    public double getRotationDegrees() {
+        return rotationDegrees;
+    }
+
     public void putSubRange(int endingIdx, SubRange range) {
         subRanges.put(endingIdx, range);
     }
@@ -48,15 +59,17 @@ public class TextBox {
             case 1:
                 return subRanges.get(subRanges.keySet().iterator().next());
             default:
-                int last = -1;
-                for (int loopIdx : subRanges.keySet()) {
-                    if (idx >= loopIdx) {
+                List<Integer> keys = new ArrayList<>(subRanges.keySet());
+                Collections.sort(keys);
+                int last = keys.get(0);
+                for (int loopIdx : keys) {
+                    if (loopIdx >= idx) {
                         return subRanges.get(last);
                     }
                     last = loopIdx;
                 }
         }
-        throw new ArrayIndexOutOfBoundsException("No subrange for index " + idx + " with text " + text);
+        throw new ArrayIndexOutOfBoundsException("No subrange for index " + idx + " with text \"" + text.trim() + "\"");
     }
 
     public Map<Integer, SubRange> getSubRanges() {

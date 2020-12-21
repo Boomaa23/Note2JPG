@@ -212,13 +212,23 @@ public class Decode extends NFields {
                 }
 
                 if (textMeta.containsKey("attributedString")) {
-                    NSDictionary innerTextMeta = (NSDictionary) sessionObjects[fromSUID(textMeta.get("attributedString"))];
+                    int strKey = fromSUID(textMeta.get("attributedString"));
+                    if (strKey < 0) {
+                        strKey = sessionObjects.length + strKey;
+                    }
+                    NSDictionary innerTextMeta = (NSDictionary) sessionObjects[strKey];
                     NSObject[] innerMetaObjs = ((NSArray) innerTextMeta.get("NS.objects")).getArray();
-                    String text = ((NSString) sessionObjects[fromSUID(innerMetaObjs[0])]).getContent();
-                    if (text.isBlank()) {
+                    var textWrapper = sessionObjects[fromSUID(innerMetaObjs[0])];
+                    String text = null;
+                    if (textWrapper instanceof NSString) {
+                        text = ((NSString) textWrapper).getContent();
+                    } else if (textWrapper instanceof NSDictionary && ((NSDictionary) textWrapper).containsKey("NS.bytes")) {
+                        text = new String(((NSData) ((NSDictionary) textWrapper).get("NS.bytes")).bytes());
+                    }
+                    if (text == null || text.isBlank()) {
                         continue;
                     }
-                    TextBox next = new TextBox(upperLeft, bottomRight, text);
+                    TextBox next = new TextBox(upperLeft, bottomRight, text, 0);
 
                     NSObject[] dataSubRanges = ((NSArray) ((NSDictionary) sessionObjects[fromSUID(innerMetaObjs[1])]).get("NS.objects")).getArray();
                     for (NSObject rawRange : dataSubRanges) {
