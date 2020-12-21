@@ -67,7 +67,7 @@ public class Main extends NFields {
             "github.com/Boomaa23/Note2JPG\n" +
             "Copyright 2020. All Rights Reserved.\n" +
             "---------------------------------------\n" +
-            "NOTE: Note2JPG cannot parse text rotations\n");
+            "NOTE: Note2JPG may not accurately parse text positions\n");
     }
 
     public static void main(String[] args) throws IOException, PropertyListFormatException, ParseException, SAXException, ParserConfigurationException {

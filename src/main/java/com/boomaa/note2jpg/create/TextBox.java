@@ -4,10 +4,8 @@ import com.boomaa.note2jpg.convert.NFields;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -16,11 +14,11 @@ public class TextBox {
     private final Map<Integer, SubRange> subRanges;
     private final Point upperLeft;
     private final Point bottomRight;
-    private final double rotationDegrees;
+    private final double rotationRadians;
     private String text;
 
-    public TextBox(Point upperLeft, Point bottomRight, String text, double rotationDegrees) {
-        this.rotationDegrees = rotationDegrees;
+    public TextBox(Point upperLeft, Point bottomRight, String text, double rotationRadians) {
+        this.rotationRadians = rotationRadians;
         this.subRanges = new LinkedHashMap<>();
         this.upperLeft = upperLeft;
         this.bottomRight = bottomRight;
@@ -44,8 +42,8 @@ public class TextBox {
         this.text = text;
     }
 
-    public double getRotationDegrees() {
-        return rotationDegrees;
+    public double getRotationRadians() {
+        return rotationRadians;
     }
 
     public void putSubRange(int endingIdx, SubRange range) {

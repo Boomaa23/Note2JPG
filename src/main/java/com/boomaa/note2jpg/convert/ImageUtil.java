@@ -11,6 +11,7 @@ import org.ghost4j.renderer.SimpleRenderer;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.*;
 import java.io.File;
 import java.io.IOException;
@@ -93,11 +94,13 @@ public class ImageUtil extends NFields {
             int y = textBox.getUpperLeft().getYInt() + (cg2.getFontMetrics().getHeight() * leadingLineBreaks);
             //TODO fix leading line spacing for inline text
 
+            AffineTransform fontTransform = new AffineTransform();
+            fontTransform.rotate(textBox.getRotationRadians(), 0, 0);
             String[] splitTextBoxes = textBox.getText().split("\n");
             int ctr = 0;
             for (String box : splitTextBoxes) {
                 TextBox.SubRange cRange = textBox.rangeOfIndex(ctr);
-                cg2.setFont(new Font("Arial", Font.PLAIN, (int) (cRange.getFontSize() * Parameter.ImageScaleFactor.getValueInt())));
+                cg2.setFont(new Font("Arial", Font.PLAIN, (int) (cRange.getFontSize() * Parameter.ImageScaleFactor.getValueInt())).deriveFont(fontTransform));
                 cg2.setColor(cRange.getColor());
                 if (!cRange.equals(textBox.rangeOfIndex(ctr + box.length() - 1))) {
                     Map<Integer, TextBox.SubRange> subRanges = textBox.getSubRanges();

@@ -19,7 +19,6 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -202,11 +201,13 @@ public class Decode extends NFields {
                 double scale = Parameter.ImageScaleFactor.getValueInt();
                 Point upperLeft = new Point(leftOffset * scale, 0);
                 Point bottomRight = new Point((defWidth - leftOffset) * scale, Integer.MAX_VALUE);
+                double rotRad = 0;
 
                 if (dict.containsKey(("textStore"))) {
                     textMeta = (NSDictionary) sessionObjects[fromSUID(dict.get("textStore"))];
                     upperLeft = boxPointFromDict(sessionObjects, dict, "documentOrigin");
                     bottomRight = upperLeft.add(boxPointFromDict(sessionObjects, dict, "unscaledContentSize"));
+                    rotRad = ((NSNumber) dict.get("rotationDegrees")).doubleValue();
                 } else if (boxClaimed.containsKey(dict)) {
                     continue;
                 }
@@ -228,7 +229,7 @@ public class Decode extends NFields {
                     if (text == null || text.isBlank()) {
                         continue;
                     }
-                    TextBox next = new TextBox(upperLeft, bottomRight, text, 0);
+                    TextBox next = new TextBox(upperLeft, bottomRight, text, rotRad);
 
                     NSObject[] dataSubRanges = ((NSArray) ((NSDictionary) sessionObjects[fromSUID(innerMetaObjs[1])]).get("NS.objects")).getArray();
                     for (NSObject rawRange : dataSubRanges) {
