@@ -40,47 +40,38 @@ public class Decode extends NFields {
         return curves;
     }
 
-    public static float[] parseB64Numbers(NumberType numberType, String[] b64s) {
-        List<Float> outList = new LinkedList<>();
-        for (String b64 : b64s) {
-            byte[] bytes = Base64.getDecoder().decode(b64.getBytes());
-            float[] bufferOut = new float[bytes.length / 4];
-            for (int i = 0; i < bytes.length; i += 4) {
-                byte[] temp = new byte[4];
-                System.arraycopy(bytes, i, temp, 0, temp.length);
-                ByteBuffer buffer = ByteBuffer.wrap(temp).order(ByteOrder.LITTLE_ENDIAN);
-                switch (numberType) {
-                    case FLOAT:
-                        bufferOut[i / 4] = buffer.getFloat();
-                        break;
-                    case INTEGER:
-                        bufferOut[i / 4] = buffer.getInt();
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Invalid datatype");
-                }
-            }
-            for (float val : bufferOut) {
-                outList.add(val);
+    public static float[] parseB64Numbers(NumberType numberType, String b64) {
+        byte[] bytes = Base64.getDecoder().decode(b64.getBytes());
+        float[] out = new float[bytes.length / 4];
+        for (int i = 0; i < bytes.length; i += 4) {
+            byte[] temp = new byte[4];
+            System.arraycopy(bytes, i, temp, 0, temp.length);
+            ByteBuffer buffer = ByteBuffer.wrap(temp).order(ByteOrder.LITTLE_ENDIAN);
+            switch (numberType) {
+                case FLOAT:
+                    out[i / 4] = buffer.getFloat();
+                    break;
+                case INTEGER:
+                    out[i / 4] = buffer.getInt();
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid datatype");
             }
         }
-        float[] outArray = new float[outList.size()];
-        for (int i = 0; i < outArray.length; i++) {
-            outArray[i] = outList.get(i);
-        }
-        return outArray;
+        return out;
     }
 
-    public static Color[] parseB64Colors(String[] b64s) {
+    public static Color[] parseB64Colors(String b64) {
+        if (b64.trim().isBlank()) {
+            return new Color[0];
+        }
         List<Color> colors = new LinkedList<>();
-        for (String b64 : b64s) {
-            byte[] decoded = Base64.getDecoder().decode(b64.getBytes());
-            String hexFull = String.format("%8x", new BigInteger(1, decoded));
-            for (int i = 0; i < hexFull.length(); i += 8) {
-                int rgb = Integer.parseInt(hexFull.substring(i, i + 6), 16);
-                int alpha = Integer.parseInt(hexFull.substring(i + 6, i + 8), 16);
-                colors.add(new Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, alpha));
-            }
+        byte[] decoded = Base64.getDecoder().decode(b64.getBytes());
+        String hexFull = String.format("%8x", new BigInteger(1, decoded));
+        for (int i = 0; i < hexFull.length(); i += 8) {
+            int rgb = Integer.parseInt(hexFull.substring(i, i + 6), 16);
+            int alpha = Integer.parseInt(hexFull.substring(i + 6, i + 8), 16);
+            colors.add(new Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, alpha));
         }
         return colors.toArray(new Color[0]);
     }
@@ -89,7 +80,8 @@ public class Decode extends NFields {
         return new Point(nsObjFloatVal(objects[0]), nsObjFloatVal(objects[1]));
     }
 
-    public static Color getShapeStrokeColor(NSObject[] objects) {
+    public static Color getShapeColor(NSDictionary appearance, String colorTypeSearch) {
+        NSObject[] objects = ((NSArray) ((NSDictionary) appearance.get(colorTypeSearch)).get("rgba")).getArray();
         return new Color(nsObjFloatVal(objects[0]),
                 nsObjFloatVal(objects[1]),
                 nsObjFloatVal(objects[2]),
@@ -120,9 +112,9 @@ public class Decode extends NFields {
         }
         for (Shape shape : shapes) {
             if (shape instanceof Shape.NPolygon) {
-                for (Point point : ((Shape.NPolygon) shape).getPoints()) {
-                    if (point.getYInt() > maxY) {
-                        maxY = point.getYInt();
+                for (int y : ((Shape.NPolygon) shape).getYPoints()) {
+                    if (y > maxY) {
+                        maxY = y;
                     }
                 }
             } else {
@@ -142,21 +134,22 @@ public class Decode extends NFields {
         for (NSObject obj : shapesMain) {
             NSDictionary dict = (NSDictionary) obj;
             NSDictionary appearance = (NSDictionary) dict.get("appearance");
-            NSObject[] shapeColorRGBA = ((NSArray) ((NSDictionary) appearance.get("strokeColor")).get("rgba")).getArray();
-            Color strokeColor = Decode.getShapeStrokeColor(shapeColorRGBA);
+
+            Color strokeColor = Decode.getShapeColor(appearance, "strokeColor");
+            Color fillColor = Decode.getShapeColor(appearance, "fillColor");
             int scale = Parameter.ImageScaleFactor.getValueInt();
             double strokeWidth = ((NSNumber) appearance.get("strokeWidth")).doubleValue() * scale;
 
             if (dict.containsKey("points")) {
                 NSObject[] parsePoints = ((NSArray) dict.get("points")).getArray();
-                Point[] polyPoints = new Point[parsePoints.length];
+                int[] xPts = new int[parsePoints.length];
+                int[] yPts = new int[parsePoints.length];
                 for (int i = 0; i < parsePoints.length; i++) {
                     Point tempPt = Decode.parseShapePoint(((NSArray) parsePoints[i]).getArray());
-                    tempPt.setX((tempPt.getXDbl() + leftOffset) * scale);
-                    tempPt.setY(tempPt.getYDbl() * scale);
-                    polyPoints[i] = tempPt;
+                    xPts[i] = (int) ((tempPt.getXDbl() + leftOffset) * scale);
+                    yPts[i] = (int) (tempPt.getYDbl() * scale);
                 }
-                shapes.add(new Shape.NPolygon(strokeColor, strokeWidth, ((NSNumber) dict.get("isClosed")).boolValue(), polyPoints));
+                shapes.add(new Shape.NPolygon(strokeColor, strokeWidth, fillColor, xPts, yPts));
             } else {
                 Point firstPoint;
                 Point secondPoint;
@@ -186,7 +179,7 @@ public class Decode extends NFields {
                 firstPoint.setY(firstPoint.getYDbl() * scale);
                 secondPoint.setX((secondPoint.getXDbl() + leftOffset) * scale);
                 secondPoint.setY(secondPoint.getYDbl() * scale);
-                shapes.add(new Shape(shapeType, strokeColor, strokeWidth, firstPoint, secondPoint));
+                shapes.add(new Shape(shapeType, strokeColor, strokeWidth, fillColor, firstPoint, secondPoint));
             }
         }
         return shapes;
@@ -216,7 +209,7 @@ public class Decode extends NFields {
                 if (textMeta.containsKey("attributedString")) {
                     int strKey = fromSUID(textMeta.get("attributedString"));
                     if (strKey < 0) {
-                        strKey = sessionObjects.length + strKey;
+                        continue;
                     }
                     NSDictionary innerTextMeta = (NSDictionary) sessionObjects[strKey];
                     NSObject[] innerMetaObjs = ((NSArray) innerTextMeta.get("NS.objects")).getArray();
@@ -275,6 +268,7 @@ public class Decode extends NFields {
                 NSDictionary dict = (NSDictionary) obj;
                 if (dict.containsKey("figure")) {
                     double rotationRadians = ((NSNumber) dict.get("rotationDegrees")).doubleValue();
+                    boolean roundCorners = ((NSNumber) dict.get("cornerMode")).doubleValue() == 2.0;
                     Point scaleDim = boxPointFromDict(sessionObjects, dict, "unscaledContentSize", false);
                     Point posUpperLeft = boxPointFromDict(sessionObjects, dict, "documentOrigin", false);
 
@@ -294,7 +288,7 @@ public class Decode extends NFields {
                     NSObject imageObject = ((NSDictionary) sessionObjects[fromSUID(figureProperties.get("FigureBackgroundObjectKey"))]).get("kImageObjectSnapshotKey");
                     String loc = ((NSString) sessionObjects[fromSUID(((NSDictionary) sessionObjects[fromSUID(imageObject)]).get("relativePath"))]).getContent();
 
-                    images.add(new EmbedImage(loc, posUpperLeft, scaleDim, cropUL, cropBR, rotationRadians));
+                    images.add(new EmbedImage(loc, posUpperLeft, scaleDim, cropUL, cropBR, rotationRadians, roundCorners));
                 }
             }
         }
@@ -312,15 +306,14 @@ public class Decode extends NFields {
         return dict.toArray(out);
     }
 
-    public static String[] getDataFromDict(NSDictionary[] dict, String key) {
-        List<String> out = new LinkedList<>();
+    public static String getDataFromDict(NSDictionary[] dict, String key) {
         for (NSDictionary loopDict : dict) {
             NSData obj = (NSData) loopDict.get(key);
             if (obj != null && !obj.getBase64EncodedData().trim().equals("")) {
-                out.add(obj.getBase64EncodedData());
+                return obj.getBase64EncodedData();
             }
         }
-        return out.toArray(new String[0]);
+        return "";
     }
 
     public static int getNumberFromDict(NSDictionary[] dict, String key) {

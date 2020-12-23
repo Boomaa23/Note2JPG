@@ -125,10 +125,13 @@ public class Main extends NFields {
                 List<Shape> shapes = new ArrayList<>();
                 for (NSObject sessionObj : sessionObjects) {
                     if (sessionObj instanceof NSData) {
-                        NSObject shapesPrimary = ((NSDictionary) PropertyListParser.parse(((NSData) sessionObj).bytes())).get("shapes");
-                        if (shapesPrimary != null) {
-                            shapes = Decode.getShapes(((NSArray) shapesPrimary).getArray());
-                            break;
+                        try {
+                            NSObject shapesPrimary = ((NSDictionary) PropertyListParser.parse(((NSData) sessionObj).bytes())).get("shapes");
+                            if (shapesPrimary != null) {
+                                shapes = Decode.getShapes(((NSArray) shapesPrimary).getArray());
+                                break;
+                            }
+                        } catch (PropertyListFormatException ignored) {
                         }
                     }
                 }

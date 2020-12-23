@@ -12,14 +12,18 @@ public class EmbedImage {
     private final Point cropUpperLeft;
     private final Point cropBottomRight;
     private final double rotationRadians;
+    private final boolean roundCorners;
 
-    public EmbedImage(String loc, Point posUpperLeft, Point scaleDim, Point cropUpperLeft, Point cropBottomRight, double rotationRadians) {
+    public EmbedImage(String loc, Point posUpperLeft, Point scaleDim,
+                      Point cropUpperLeft, Point cropBottomRight,
+                      double rotationRadians, boolean roundCorners) {
         this.loc = loc;
         this.posUpperLeft = posUpperLeft;
         this.scaleDim = scaleDim;
         this.cropUpperLeft = cropUpperLeft;
         this.cropBottomRight = cropBottomRight;
         this.rotationRadians = rotationRadians;
+        this.roundCorners = roundCorners;
     }
 
     public BufferedImage getImage(String noExtFilename) {
@@ -49,5 +53,9 @@ public class EmbedImage {
 
     public double getRotationRadians() {
         return rotationRadians;
+    }
+
+    public boolean hasRoundCorners() {
+        return roundCorners;
     }
 }

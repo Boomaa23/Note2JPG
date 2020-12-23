@@ -12,6 +12,7 @@ import org.ghost4j.renderer.SimpleRenderer;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.*;
 import java.io.File;
 import java.io.IOException;
@@ -79,7 +80,7 @@ public class ImageUtil extends NFields {
             }
 
             StringReader sr = new StringReader(textBox.getText());
-            int leadingLineBreaks = 1;
+            int leadingLineBreaks = 0;
             try {
                 while (sr.read() == '\n') {
                     leadingLineBreaks++;
@@ -88,7 +89,6 @@ public class ImageUtil extends NFields {
                 e.printStackTrace();
             }
             int y = textBox.getUpperLeft().getYInt() + (cg2.getFontMetrics().getHeight() * leadingLineBreaks);
-            //TODO fix leading line spacing for inline text
 
             AffineTransform fontTransform = new AffineTransform();
             fontTransform.rotate(textBox.getRotationRadians(), 0, 0);
@@ -129,6 +129,49 @@ public class ImageUtil extends NFields {
         Graphics2D g2 = (Graphics2D) upscaledAll.getGraphics();
         g2.drawImage(makeColorTransparent(img, Color.WHITE), 0, 0, null);
         System.out.println(textBoxes.size() == 0 ? "Text: None" : "");
+    }
+
+    public static void drawEmbedImages(List<EmbedImage> images, String noExtFilename) {
+        Graphics2D g2 = (Graphics2D) upscaledAll.getGraphics();
+        AffineTransform normal = g2.getTransform();
+        for (int i = 0; i < images.size(); i++) {
+            EmbedImage image = images.get(i);
+            Point pos = image.getPosUpperLeft();
+            Point scaleDim = image.getScaleDim();
+            Point cropUL = image.getCropUpperLeft();
+            Point cropDim = image.getCropBottomRight().add(cropUL.negate());
+            Image drawImg = image.getImage(noExtFilename).getSubimage(cropUL.getXInt(), cropUL.getYInt(), cropDim.getXInt(), cropDim.getYInt())
+                    .getScaledInstance(scaleDim.getXInt(), scaleDim.getYInt(), Image.SCALE_SMOOTH);
+            g2.setTransform(AffineTransform.getRotateInstance(image.getRotationRadians(),
+                    pos.getXInt() + drawImg.getWidth(null) / 2.0,
+                    pos.getYInt() + drawImg.getHeight(null) / 2.0));
+            if (image.hasRoundCorners()) {
+                drawImg = applyRoundedCorner(drawImg);
+            }
+            g2.drawImage(drawImg, pos.getXInt(), pos.getYInt(), null);
+            System.out.print("\r" + "Image: " + (i + 1) + " / " + images.size());
+        }
+        System.out.println((images.size() == 0 ? "Image: None" : "") + "\n");
+        g2.setTransform(normal);
+        g2.dispose();
+    }
+
+    private static BufferedImage applyRoundedCorner(Image image) {
+        int cornerRadius = 10 * Parameter.ImageScaleFactor.getValueInt();
+        int w = image.getWidth(null);
+        int h = image.getHeight(null);
+        BufferedImage output = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = output.createGraphics();
+
+        g2.setComposite(AlphaComposite.Src);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(Color.WHITE);
+        g2.fill(new RoundRectangle2D.Float(0, 0, w, h, cornerRadius, cornerRadius));
+        g2.setComposite(AlphaComposite.SrcAtop);
+        g2.drawImage(image, 0, 0, null);
+
+        g2.dispose();
+        return output;
     }
 
     public static Image makeColorTransparent(Image im, Color color) {
@@ -191,22 +234,5 @@ public class ImageUtil extends NFields {
         }
         System.out.println();
         return canvas;
-    }
-
-    public static void drawEmbedImages(List<EmbedImage> images, String noExtFilename) {
-        Graphics2D g2 = (Graphics2D) upscaledAll.getGraphics();
-        for (int i = 0; i < images.size(); i++) {
-            EmbedImage image = images.get(i);
-            Point pos = image.getPosUpperLeft();
-            Point scaleDim = image.getScaleDim();
-            Point cropUL = image.getCropUpperLeft();
-            Point cropDim = image.getCropBottomRight().add(cropUL.negate());
-            Image drawImg = image.getImage(noExtFilename).getSubimage(cropUL.getXInt(), cropUL.getYInt(), cropDim.getXInt(), cropDim.getYInt())
-                    .getScaledInstance(scaleDim.getXInt(), scaleDim.getYInt(), Image.SCALE_SMOOTH);
-            g2.drawImage(drawImg, pos.getXInt(), pos.getYInt(), null);
-            System.out.print("\r" + "Image: " + (i + 1) + " / " + images.size());
-        }
-        System.out.println((images.size() == 0 ? "Image: None" : "") + "\n");
-        g2.dispose();
     }
 }

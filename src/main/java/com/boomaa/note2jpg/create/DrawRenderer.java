@@ -57,20 +57,16 @@ public class DrawRenderer extends JPanel {
             if (type == Shape.Type.LINE) {
                 g2.drawLine(begin.getXInt(), begin.getYInt(), end.getXInt(), end.getYInt());
             } else if (type == Shape.Type.CIRCLE) {
+                g2.setColor(shapes[i].getFillColor());
+                g2.fillOval(begin.getXInt(), begin.getYInt(), end.getXInt() - begin.getXInt(), end.getYInt() - begin.getYInt());
+                g2.setColor(shapes[i].getColor());
                 g2.drawOval(begin.getXInt(), begin.getYInt(), end.getXInt() - begin.getXInt(), end.getYInt() - begin.getYInt());
             } else if (type == Shape.Type.NPOLYGON && shapes[i] instanceof Shape.NPolygon) {
                 Shape.NPolygon poly = (Shape.NPolygon) shapes[i];
-                Point[] polyPoints = poly.getPoints();
-                Point lastPoint = polyPoints[0];
-                int curveRadius = (int) (poly.getWidth() / 2);
-                for (Point drawPoint : polyPoints) {
-                    g2.drawLine(lastPoint.getXInt(), lastPoint.getYInt(), drawPoint.getXInt(), drawPoint.getYInt());
-                    g2.fillOval(drawPoint.getXInt(), drawPoint.getYInt(), curveRadius, curveRadius);
-                    lastPoint = drawPoint;
-                }
-                if (poly.isClosed()) {
-                    g2.drawLine(polyPoints[0].getXInt(), polyPoints[0].getYInt(), lastPoint.getXInt(), lastPoint.getYInt());
-                }
+                g2.setColor(poly.getFillColor());
+                g2.fillPolygon(poly.getXPoints(), poly.getYPoints(), poly.getXPoints().length);
+                g2.setColor(poly.getColor());
+                g2.drawPolygon(poly.getXPoints(), poly.getYPoints(), poly.getXPoints().length);
             }
             System.out.print("\r" + "Shape: " + (i + 1) + " / " + shapes.length);
         }

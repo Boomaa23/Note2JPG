@@ -8,9 +8,12 @@ public class Shape {
     protected final Point end;
     protected final Color color;
     protected final double width;
+    protected final Color fillColor;
 
-    public Shape(Type type, Color color, double width, Point begin, Point end) {
+    public Shape(Type type, Color color, double width,
+                 Color fillColor, Point begin, Point end) {
         this.type = type;
+        this.fillColor = fillColor;
         this.begin = begin;
         this.end = end;
         this.color = color;
@@ -29,6 +32,10 @@ public class Shape {
         return width;
     }
 
+    public Color getFillColor() {
+        return fillColor;
+    }
+
     public Point getBeginPoint() {
         return begin;
     }
@@ -42,21 +49,22 @@ public class Shape {
     }
 
     public static class NPolygon extends Shape {
-        private final boolean closed;
-        private final Point[] points;
+        protected final int[] xPts;
+        protected final int[] yPts;
 
-        public NPolygon(Color color, double width, boolean closed, Point... points) {
-            super(Type.NPOLYGON, color, width, points[0], points[points.length - 1]);
-            this.closed = closed;
-            this.points = points;
+        public NPolygon(Color color, double width, Color fillColor, int[] xPts, int[] yPts) {
+            super(Type.NPOLYGON, color, width, fillColor, new Point(xPts[0], yPts[0]),
+                    new Point(xPts[xPts.length - 1], yPts[yPts.length - 1]));
+            this.xPts = xPts;
+            this.yPts = yPts;
         }
 
-        public boolean isClosed() {
-            return closed;
+        public int[] getXPoints() {
+            return xPts;
         }
 
-        public Point[] getPoints() {
-            return points;
+        public int[] getYPoints() {
+            return yPts;
         }
     }
 }
