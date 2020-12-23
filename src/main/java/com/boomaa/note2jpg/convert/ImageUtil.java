@@ -1,6 +1,7 @@
 package com.boomaa.note2jpg.convert;
 
 import com.boomaa.note2jpg.config.Parameter;
+import com.boomaa.note2jpg.create.EmbedImage;
 import com.boomaa.note2jpg.create.Point;
 import com.boomaa.note2jpg.create.TextBox;
 import com.boomaa.note2jpg.state.PDFState;
@@ -9,7 +10,6 @@ import org.ghost4j.document.PDFDocument;
 import org.ghost4j.renderer.RendererException;
 import org.ghost4j.renderer.SimpleRenderer;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.*;
@@ -44,10 +44,6 @@ public class ImageUtil extends NFields {
         return image.getScaledInstance((int) (width), (int) (height), Image.SCALE_SMOOTH);
     }
 
-    public static Image scaleImage(Image canvas, double scale) {
-        return canvas.getScaledInstance((int) (scale * canvas.getWidth(null)), (int) (scale * canvas.getHeight(null)), Image.SCALE_SMOOTH);
-    }
-
     public static BufferedImage scaleBufferedImage(BufferedImage canvas, int width, int height) {
         Image scaled = canvas.getScaledInstance(width, height, Image.SCALE_SMOOTH);
         BufferedImage bufferScaled = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_ARGB);
@@ -57,7 +53,7 @@ public class ImageUtil extends NFields {
         return bufferScaled;
     }
 
-    public static void populateTextBoxes(List<TextBox> textBoxes) {
+    public static void drawTextBoxes(List<TextBox> textBoxes) {
         BufferedImage img = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D cg2 = img.createGraphics();
         cg2.setBackground(Color.WHITE);
@@ -132,6 +128,7 @@ public class ImageUtil extends NFields {
         cg2.dispose();
         Graphics2D g2 = (Graphics2D) upscaledAll.getGraphics();
         g2.drawImage(makeColorTransparent(img, Color.WHITE), 0, 0, null);
+        System.out.println(textBoxes.size() == 0 ? "Text: None" : "");
     }
 
     public static Image makeColorTransparent(Image im, Color color) {
@@ -192,27 +189,24 @@ public class ImageUtil extends NFields {
         } else {
             System.out.print("PDF: None");
         }
+        System.out.println();
         return canvas;
     }
 
-    public static void fillEmbedImageList(String foldername) {
-        File files = new File(foldername + "/Images/");
-        for (File f : files.listFiles()) {
-            try {
-                imageList.add(ImageIO.read(f));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public static void populateEmbedImages() {
+    public static void drawEmbedImages(List<EmbedImage> images, String noExtFilename) {
         Graphics2D g2 = (Graphics2D) upscaledAll.getGraphics();
-        for (int i = 0; i < imageList.size(); i++) {
-            Point pt = imageBounds.get(i);
-            BufferedImage img = imageList.get(i);
-            g2.drawImage(scaleImage(makeColorTransparent(img, Color.WHITE), (scaledWidth / displayedWidth) / Parameter.PDFScaleFactor.getValueInt()), pt.getXInt(), pt.getYInt(), null);
+        for (int i = 0; i < images.size(); i++) {
+            EmbedImage image = images.get(i);
+            Point pos = image.getPosUpperLeft();
+            Point scaleDim = image.getScaleDim();
+            Point cropUL = image.getCropUpperLeft();
+            Point cropDim = image.getCropBottomRight().add(cropUL.negate());
+            Image drawImg = image.getImage(noExtFilename).getSubimage(cropUL.getXInt(), cropUL.getYInt(), cropDim.getXInt(), cropDim.getYInt())
+                    .getScaledInstance(scaleDim.getXInt(), scaleDim.getYInt(), Image.SCALE_SMOOTH);
+            g2.drawImage(drawImg, pos.getXInt(), pos.getYInt(), null);
+            System.out.print("\r" + "Image: " + (i + 1) + " / " + images.size());
         }
+        System.out.println((images.size() == 0 ? "Image: None" : "") + "\n");
         g2.dispose();
     }
 }

@@ -19,9 +19,6 @@ public class NFields {
     protected static DrawRenderer drawRenderer;
     protected static Point bounds;
     public static BufferedImage upscaledAll;
-    public static List<String> textBoxContents = new ArrayList<>();
-    protected static List<Point> imageBounds = new ArrayList<>();
-    protected static List<BufferedImage> imageList = new ArrayList<>();
     protected static final int iPadWidth = 1536;
     protected static final int defWidth = 565;
     protected static final int leftOffset = 14;
@@ -34,6 +31,5 @@ public class NFields {
     protected static double pages;
     protected static PDFState pdfState = PDFState.NONE;
     protected static long startTime;
-    protected static boolean hasImages = false;
     protected static boolean outputDone = false;
 }

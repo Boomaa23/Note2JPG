@@ -17,8 +17,6 @@ public enum Parameter {
     FitExactHeight("--hfit", Type.BOOLEAN),
     OutputDirectory("--outdir", Type.STRING, "OUTPUT_DIRECTORY"),
     NoFileOutput("--nofile", Type.BOOLEAN),
-    NoTextBoxes("--notextboxes", Type.BOOLEAN),
-    NoEmbedImages("--noembedimages", Type.BOOLEAN),
     GenerateConfig("--genconfig", Type.BOOLEAN),
     WriteConfig("--writeconfig", Type.BOOLEAN),
     ConsoleOnly("--console", Type.BOOLEAN),

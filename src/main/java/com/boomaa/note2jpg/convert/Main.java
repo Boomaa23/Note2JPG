@@ -67,7 +67,7 @@ public class Main extends NFields {
             "github.com/Boomaa23/Note2JPG\n" +
             "Copyright 2020. All Rights Reserved.\n" +
             "---------------------------------------\n" +
-            "NOTE: Note2JPG may not accurately parse text positions\n");
+            "NOTE: Note2JPG cannot parse z-layers\n");
     }
 
     public static void main(String[] args) throws IOException, PropertyListFormatException, ParseException, SAXException, ParserConfigurationException {
@@ -120,6 +120,7 @@ public class Main extends NFields {
                 float[] curveswidth = Decode.parseB64Numbers(NumberType.FLOAT, Decode.getDataFromDict(sessionDict, "curveswidth"));
                 Color[] colors = Decode.parseB64Colors(Decode.getDataFromDict(sessionDict, "curvescolors"));
 
+                List<EmbedImage> images = Decode.getEmbedImages(sessionObjects);
                 List<TextBox> textBoxes = Decode.getTextBoxes(sessionObjects);
                 List<Shape> shapes = new ArrayList<>();
                 for (NSObject sessionObj : sessionObjects) {
@@ -167,28 +168,14 @@ public class Main extends NFields {
                             }
                         }
                         scaledHeight = (int) (scaledWidth * pages * 11 / 8.5);
-                        setupDrawRenderer(curves, shapes.toArray(new Shape[0]), ImageUtil.getPdfCanvas(pdfs));
-                        if (hasImages && !Parameter.NoEmbedImages.inEither()) {
-                            ImageUtil.fillEmbedImageList(noExtFilename);
-                            if (imageList.size() > 0) {
-                                setupFrame(notename);
-                                displayFrame();
-                                frame.getContentPane().addMouseListener(new PointTrigger());
-                                while (imageBounds.size() != imageList.size()) {
-                                    try {
-                                        Thread.sleep(100);
-                                    } catch (InterruptedException e) {
-                                        break;
-                                    }
-                                }
-                                frame.setVisible(false);
-                            }
-                            ImageUtil.populateEmbedImages();
-                        }
-                        if (!Parameter.NoTextBoxes.inEither()) {
-                            ImageUtil.populateTextBoxes(textBoxes);
-                        }
-                        System.out.println((textBoxes.size() == 0 ? "Text: None" : "") + "\n");
+                        upscaledAll = new BufferedImage(scaledWidth, (int) (scaledWidth * pages * 11 / 8.5), BufferedImage.TYPE_INT_ARGB);
+
+                        drawRenderer = new DrawRenderer(curves, shapes.toArray(new Shape[0]), ImageUtil.getPdfCanvas(pdfs));
+                        drawRenderer.setSize(new Dimension(scaledWidth, scaledHeight));
+                        drawRenderer.print(upscaledAll.getGraphics());
+
+                        ImageUtil.drawTextBoxes(textBoxes);
+                        ImageUtil.drawEmbedImages(images, noExtFilename);
                         break;
                     } catch (OutOfMemoryError | NegativeArraySizeException e) {
                         drawRenderer = null;
@@ -267,15 +254,6 @@ public class Main extends NFields {
         }
     }
 
-    public static void setupDrawRenderer(Curve[] curves, Shape[] shapes, BufferedImage pdfs) {
-        System.out.println();
-        drawRenderer = new DrawRenderer(curves, shapes, pdfs);
-        drawRenderer.setSize(new Dimension(scaledWidth, scaledHeight));
-        BufferedImage img = new BufferedImage(scaledWidth, (int) (scaledWidth * pages * 11 / 8.5), BufferedImage.TYPE_INT_ARGB);
-        drawRenderer.print(img.getGraphics());
-        upscaledAll = img;
-    }
-
     public static void setupFrame(String filename) {
         frame = new JFrame("Note2JPG | " + filename);
         frame.getContentPane().setBackground(Color.WHITE);
@@ -346,9 +324,6 @@ public class Main extends NFields {
                     String actualFileName =  file.getFileName().substring(file.getFileName().lastIndexOf('/') + 1);
                     zipFile.extractFile(innerFolder + "/Images/" + actualFileName, noExtNoteName,
                             "/Images/" + actualFileName);
-                    if (!hasImages) {
-                        hasImages = true;
-                    }
                 }
             }
         } catch (ZipException e) {

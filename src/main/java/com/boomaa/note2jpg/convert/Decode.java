@@ -2,6 +2,7 @@ package com.boomaa.note2jpg.convert;
 
 import com.boomaa.note2jpg.config.Parameter;
 import com.boomaa.note2jpg.create.Curve;
+import com.boomaa.note2jpg.create.EmbedImage;
 import com.boomaa.note2jpg.create.Point;
 import com.boomaa.note2jpg.create.Shape;
 import com.boomaa.note2jpg.create.TextBox;
@@ -205,8 +206,8 @@ public class Decode extends NFields {
 
                 if (dict.containsKey(("textStore"))) {
                     textMeta = (NSDictionary) sessionObjects[fromSUID(dict.get("textStore"))];
-                    upperLeft = boxPointFromDict(sessionObjects, dict, "documentOrigin");
-                    bottomRight = upperLeft.add(boxPointFromDict(sessionObjects, dict, "unscaledContentSize"));
+                    upperLeft = boxPointFromDict(sessionObjects, dict, "documentOrigin", true);
+                    bottomRight = upperLeft.add(boxPointFromDict(sessionObjects, dict, "unscaledContentSize", true));
                     rotRad = ((NSNumber) dict.get("rotationDegrees")).doubleValue();
                 } else if (boxClaimed.containsKey(dict)) {
                     continue;
@@ -258,12 +259,46 @@ public class Decode extends NFields {
         return boxes;
     }
 
-    private static Point boxPointFromDict(NSObject[] sessionObjects, NSDictionary dict, String search) {
+    private static Point boxPointFromDict(NSObject[] sessionObjects, NSDictionary dict, String search, boolean useOffset) {
         String valuePair = ((NSString) sessionObjects[fromSUID(dict.get(search))]).getContent();
         int idxMidComma = valuePair.indexOf(',');
+        double offset = useOffset ? leftOffset : 0;
         int scale = Parameter.ImageScaleFactor.getValueInt();
-        return new Point((Double.parseDouble(valuePair.substring(1, idxMidComma - 1)) + leftOffset) * scale,
-                (Double.parseDouble(valuePair.substring(idxMidComma + 1, valuePair.length() - 1)) + leftOffset) * scale);
+        return new Point((Double.parseDouble(valuePair.substring(1, idxMidComma)) + offset) * scale,
+                (Double.parseDouble(valuePair.substring(idxMidComma + 1, valuePair.length() - 1)) + offset) * scale);
+    }
+
+    public static List<EmbedImage> getEmbedImages(NSObject[] sessionObjects) {
+        List<EmbedImage> images = new ArrayList<>();
+        for (NSObject obj : sessionObjects) {
+            if (obj instanceof NSDictionary) {
+                NSDictionary dict = (NSDictionary) obj;
+                if (dict.containsKey("figure")) {
+                    double rotationRadians = ((NSNumber) dict.get("rotationDegrees")).doubleValue();
+                    Point scaleDim = boxPointFromDict(sessionObjects, dict, "unscaledContentSize", false);
+                    Point posUpperLeft = boxPointFromDict(sessionObjects, dict, "documentOrigin", false);
+
+                    NSDictionary figureProperties = (NSDictionary) sessionObjects[fromSUID(dict.get("figure"))];
+                    String cropRect = ((NSString) sessionObjects[fromSUID(figureProperties.get("FigureCropRectKey"))]).getContent();
+                    int idxHalfComma = cropRect.indexOf(',', cropRect.indexOf(',') + 1);
+                    String cropULRaw = cropRect.substring(2, idxHalfComma - 1);
+                    String cropBRRaw = cropRect.substring(idxHalfComma + 3, cropRect.length() - 2);
+                    int idxQuarterComma = cropULRaw.indexOf(',');
+                    // No scale factor for crop b/c it is applied before scale
+                    Point cropUL = new Point(Double.parseDouble(cropULRaw.substring(0, idxQuarterComma)),
+                            Double.parseDouble(cropULRaw.substring(idxQuarterComma + 2)));
+                    idxQuarterComma = cropBRRaw.indexOf(',');
+                    Point cropBR = new Point(Double.parseDouble(cropBRRaw.substring(0, idxQuarterComma)),
+                            Double.parseDouble(cropBRRaw.substring(idxQuarterComma + 2)));
+
+                    NSObject imageObject = ((NSDictionary) sessionObjects[fromSUID(figureProperties.get("FigureBackgroundObjectKey"))]).get("kImageObjectSnapshotKey");
+                    String loc = ((NSString) sessionObjects[fromSUID(((NSDictionary) sessionObjects[fromSUID(imageObject)]).get("relativePath"))]).getContent();
+
+                    images.add(new EmbedImage(loc, posUpperLeft, scaleDim, cropUL, cropBR, rotationRadians));
+                }
+            }
+        }
+        return images;
     }
 
     public static NSDictionary[] isolateDictionary(NSObject[] objects) {

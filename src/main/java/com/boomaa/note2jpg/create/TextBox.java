@@ -1,7 +1,5 @@
 package com.boomaa.note2jpg.create;
 
-import com.boomaa.note2jpg.convert.NFields;
-
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,7 +21,6 @@ public class TextBox {
         this.upperLeft = upperLeft;
         this.bottomRight = bottomRight;
         this.text = text;
-        NFields.textBoxContents.add(text);
     }
 
     public Point getUpperLeft() {

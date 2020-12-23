@@ -37,9 +37,17 @@ public class Point {
         return y;
     }
 
+    public Point multiply(double scalar) {
+        return new Point(x * scalar, y * scalar);
+    }
+
     public Point add(Point other) {
         return new Point(this.x + other.x,
                 this.y + other.y);
+    }
+
+    public Point negate() {
+        return new Point(-x, -y);
     }
 
     public double distance(Point end) {

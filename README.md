@@ -39,8 +39,6 @@ Download: [Updater JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JP
 | OutputDirectory               | --outdir \<path>      | Note2JPG   | String  | Specify an output directory
 | NoFileOutput                  | --nofile              | Note2JPG   | boolean | Do not write the image to file
 | RandomFile                    | --randomfile          | Note2JPG   | boolean | Select a file randomly if not specified
-| NoTextBoxes                   | --notextboxes         | Note2JPG   | boolean | Do not request positions for text boxes
-| NoEmbedImages                 | --noembedimages       | Note2JPG   | boolean | Do not request positions for images in notes
 | GenerateConfig                | --genconfig           | Note2JPG   | boolean | Generate a config file template
 | WriteConfig                   | --writeconfig         | Note2JPG   | boolean | Write out the current config to json
 | ConsoleOnly                   | --console             | Note2JPG   | boolean | Use the system console instead of the GUI
