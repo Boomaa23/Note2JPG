@@ -14,6 +14,7 @@ import com.boomaa.note2jpg.state.PDFState;
 import com.dd.plist.NSArray;
 import com.dd.plist.NSData;
 import com.dd.plist.NSDictionary;
+import com.dd.plist.NSNumber;
 import com.dd.plist.NSObject;
 import com.dd.plist.PropertyListFormatException;
 import com.dd.plist.PropertyListParser;
@@ -37,11 +38,17 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
+import java.util.TimeZone;
 
 public class Main extends NFields {
     private static final String CURRENT_RELEASE_TAG = "v0.6.0";
@@ -89,6 +96,7 @@ public class Main extends NFields {
                     try {
                         unzipNote(Parameter.OutputDirectory.getValue() + filename, noExtFilename);
                     } catch (ZipException ignored) {
+                        // No source note in output directory, move on without error
                     }
                 }
                 try {
@@ -132,6 +140,7 @@ public class Main extends NFields {
                                 break;
                             }
                         } catch (PropertyListFormatException ignored) {
+                            // Shape plist is invalid if the parser throws an exception, continue without error
                         }
                     }
                 }
@@ -146,21 +155,36 @@ public class Main extends NFields {
                         if (pdfState != PDFState.NONE) {
                             if (pdfState == PDFState.PLIST) {
                                 NSDictionary pdfMain = (NSDictionary) PropertyListParser.parse(new File(noExtFilename + "/NBPDFIndex/NoteDocumentPDFMetadataIndex.plist"));
-                                String[] pdfLocs = ((NSDictionary) (pdfMain.getHashMap().get("pageNumbers"))).allKeys();
-                                for (String pdfLoc : pdfLocs) {
-                                    pdfs.addAll(ImageUtil.getPdfImages(noExtFilename, pdfLoc));
+                                NSDictionary pdfInfo = ((NSDictionary) (pdfMain.getHashMap().get("pageNumbers")));
+                                for (String pdfLoc : pdfInfo.allKeys()) {
+                                    List<Image> cPdfAll = ImageUtil.getPdfImages(noExtFilename, pdfLoc);
+                                    NSObject[] pdfPgMap = ((NSArray) pdfInfo.get(pdfLoc)).getArray();
+                                    int pgCtr = -1;
+                                    for (Image cPdfPage : cPdfAll) {
+                                        pgCtr += 2;
+                                        int pgIdx = ((NSNumber) pdfPgMap[pgCtr]).intValue();
+                                        if (pgIdx > pdfs.size()) {
+                                            for (int i = 0; i <= pgIdx; i++) {
+                                                try {
+                                                    pdfs.get(i);
+                                                } catch (IndexOutOfBoundsException e) {
+                                                    pdfs.add(null);
+                                                }
+                                            }
+                                        }
+                                        pdfs.set(pgIdx - 1, cPdfPage);
+                                    }
                                 }
-                                //TODO implement by-page setting for pdfs in the plist
                             } else if (pdfState == PDFState.FILE_ONLY) {
                                 File pdfDir = new File(noExtFilename + "/PDFs/");
-                                for (File pdf : pdfDir.listFiles()) {
+                                for (File pdf : Objects.requireNonNull(pdfDir.listFiles())) {
                                     pdfs.addAll(ImageUtil.getPdfImages(noExtFilename, pdf.getName()));
                                 }
                             }
                             pages = pdfs.size();
                         }
-                        if (Parameter.PageCount.inEither()) {
-                            pages = Parameter.PageCount.getValueInt();
+                        if (Parameter.PageCountOut.inEither()) {
+                            pages = Parameter.PageCountOut.getValueInt();
                         } else {
                             double tempPages = bounds.getYDbl() / (scaledWidth * 11 / 8.5);
                             int ceilPages = (int) Math.ceil(tempPages);
@@ -189,6 +213,39 @@ public class Main extends NFields {
                     }
                 }
 
+                if (Parameter.PageSelectionIn.inEither()) {
+                    int numSelPages = 0;
+                    List<Integer> allowedPages = new LinkedList<>();
+                    String[] allNotesSel = Parameter.PageSelectionIn.getValue().split("/");
+                    for (String noteSel : allNotesSel) {
+                        String[] allPgsSel = noteSel.trim().split(",");
+                        for (String pgsSel : allPgsSel) {
+                            pgsSel = pgsSel.trim();
+                            int idxDash = pgsSel.indexOf("-");
+                            if (idxDash == -1) {
+                                allowedPages.add(Integer.parseInt(pgsSel));
+                            } else {
+                                int endComma = 1;
+                                while (idxDash != -1) {
+                                    int start = Integer.parseInt(pgsSel.substring(endComma - 1, idxDash));
+                                    endComma = pgsSel.indexOf(",");
+                                    if (endComma == -1) {
+                                        endComma = pgsSel.length();
+                                    }
+                                    int end = Integer.parseInt(pgsSel.substring(idxDash + 1, endComma));
+                                    for (int pg = start; pg <= end; pg++) {
+                                        allowedPages.add(pg);
+                                    }
+                                    idxDash = pgsSel.indexOf("-", idxDash + 1);
+                                }
+                            }
+                        }
+                    }
+                    Collections.sort(allowedPages);
+                    ImageUtil.filterValidPages(allowedPages);
+                    pages = numSelPages;
+                }
+
                 if (Parameter.DisplayConverted.inEither()) {
                     setupFrame(notename);
                     displayFrame();
@@ -198,6 +255,7 @@ public class Main extends NFields {
 
                 if (!Parameter.NoFileOutput.inEither()) {
                     saveToFile(Parameter.OutputDirectory.getValue() + noExtFilename);
+                    savedNotes.add(filename);
                 }
             }
 
@@ -221,7 +279,8 @@ public class Main extends NFields {
 
                 List<String> imageUrls = null;
                 if (Parameter.UseAWS.inEither()) {
-                    imageUrls = Arrays.asList(Connections.getAwsExecutor().uploadFile(noExtFilename + ".jpg", Parameter.OutputDirectory.getValue(), Parameter.NewNEOFilename.inEither()));
+                    imageUrls = Arrays.asList(Connections.getAwsExecutor().uploadFile(noExtFilename + ".jpg",
+                            Parameter.OutputDirectory.getValue(), Parameter.NewNEOFilename.inEither()));
                     System.out.println("\nImage uploaded to: \n" + imageUrls.get(0) + "\n" + imageUrls.get(1) + "\n");
                 }
 
@@ -234,7 +293,7 @@ public class Main extends NFields {
                             System.out.println("Select the associated NEO assignment");
                             assignName = Args.filenameSelector(neoExecutor.getAssignments().getNames());
                         }
-                        //autoselect NEO-format link instead of AWS (b/c of lms_auth server auto-add to img link)
+                        // Autoselect NEO-format link instead of AWS (b/c of lms_auth server auto-add to img link)
                         String assignmentUrl = neoExecutor.push(assignName, imageUrls.get(1));
                         System.out.println("Posted to the NEO assignment at " + assignmentUrl);
                     }
@@ -245,15 +304,40 @@ public class Main extends NFields {
 
             cleanupFiles(new File(noExtFilename + "/"));
             cleanupFiles(new File(noExtFilename));
-            if (!notename.equals(notenames.get(notenames.size() - 1))) {
-                System.out.println();
+        }
+
+        if (savedNotes.size() > 1 && Parameter.Concatenate.inEither()) {
+            int heightCtr = 0;
+            BufferedImage canvas = new BufferedImage(iPadWidth, concatHeight, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = (Graphics2D) canvas.getGraphics();
+            // Re-loading the images is slower but saves memory
+            for (String notename : savedNotes) {
+                File imgFile = new File(notename + ".jpg");
+                Image saved = ImageIO.read(imgFile);
+                g2.drawImage(saved, 0, heightCtr, null);
+                heightCtr += saved.getHeight(null);
+                cleanupFiles(imgFile);
             }
-            if (!Parameter.ConsoleOnly.inEither()) {
-                System.out.println("Press any key to quit...");
-                outputDone = true;
-            } else {
-                System.exit(0);
+            g2.dispose();
+
+            // Concatenated files get a different naming scheme
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm");
+            df.setTimeZone(TimeZone.getTimeZone("UTC"));
+            String concatFilename = "concat_" + df.format(new Date()) + ".jpg";
+            try {
+                ImageIO.write(canvas, "jpg", new File(concatFilename));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+            System.out.println("Concatenated all converted notes into \"" + concatFilename + "\"");
+        }
+
+        System.out.println();
+        if (!Parameter.ConsoleOnly.inEither()) {
+            System.out.println("Press any key to quit...");
+            outputDone = true;
+        } else {
+            System.exit(0);
         }
     }
 
@@ -287,8 +371,10 @@ public class Main extends NFields {
 
     public static void saveToFile(String filename) {
         heightFinal = (int) (((double) iPadWidth / upscaledAll.getWidth()) * upscaledAll.getHeight());
+        concatHeight += heightFinal;
         try {
-            ImageIO.write(ImageUtil.convertColorspace(ImageUtil.scaleBufferedImage(upscaledAll, iPadWidth, heightFinal), BufferedImage.TYPE_INT_RGB), "jpg", new File(filename + ".jpg"));
+            ImageIO.write(ImageUtil.convertColorspace(ImageUtil.scaleBufferedImage(upscaledAll, iPadWidth, heightFinal),
+                    BufferedImage.TYPE_INT_RGB), "jpg", new File(filename + ".jpg"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -349,8 +435,8 @@ public class Main extends NFields {
         StringBuilder sb = new StringBuilder();
         char[] fn = filename.toCharArray();
         for (char c : fn) {
-            // eliminate all non-alphanumeric and non-ascii numbers
-            // not technically required, but known to always be the same as the NEO registration
+            // Eliminate all non-alphanumeric and non-ascii numbers
+            // Not technically required, but known to always be the same as the NEO registration
             if (inRange(c, 48, 57) || inRange(c, 65, 90) || inRange(c, 97, 122) || c == 45) {
                 sb.append(c);
             }

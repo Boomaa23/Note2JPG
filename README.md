@@ -31,9 +31,11 @@ Download: [Updater JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JP
 | Filename                      | -f \<filename>        | Note2JPG   | String  | Specify name of .note file
 | ImageScaleFactor              | -s \<scaleFactor>     | Note2JPG   | int     | Multiplier to superscale the whole image by
 | PDFScaleFactor                | -p \<pdfScale>        | Note2JPG   | int     | Multiplier to superscale the PDFs by
+| Concatenate                   | --concat              | Note2JPG   | boolean | Concatenate note sources into one output
 | ConvertAll                    | --all                 | Note2JPG   | boolean | Convert all available notes
 | DisplayConverted              | --display             | Note2JPG   | boolean | Show the image after processing
-| PageCount                     | --pg                  | Note2JPG   | int     | Force the number of output pages
+| PageCountOut                  | --pgct \<numPages>    | Note2JPG   | int     | Force the number of output pages
+| PageSelectionIn               | --pgsel \<pgSel>      | Note2JPG   | String  | Select note in pages (sep. by "/")
 | NoteFilter                    | --filter \<toMatch>   | Note2JPG   | String  | Specify a filter for note listing
 | FitExactHeight                | --hfit                | Note2JPG   | boolean | Cut the image directly after writing/PDFs
 | OutputDirectory               | --outdir \<path>      | Note2JPG   | String  | Specify an output directory

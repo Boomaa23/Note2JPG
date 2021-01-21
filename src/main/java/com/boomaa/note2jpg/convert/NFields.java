@@ -14,6 +14,7 @@ public class NFields {
     public static NEOExecutor neoExecutor;
     public static List<String> argsList;
     protected static List<String> notenames = new ArrayList<>();
+    protected static List<String> savedNotes = new ArrayList<>();
     protected static JFrame consoleFrame;
     protected static JFrame frame;
     protected static DrawRenderer drawRenderer;
@@ -28,6 +29,7 @@ public class NFields {
     protected static double originalHeight;
     protected static double displayedHeight;
     protected static double displayedWidth;
+    protected static int concatHeight;
     protected static double pages;
     protected static PDFState pdfState = PDFState.NONE;
     protected static long startTime;

@@ -154,6 +154,7 @@ public class ImageUtil extends NFields {
         System.out.println((images.size() == 0 ? "Image: None" : "") + "\n");
         g2.setTransform(normal);
         g2.dispose();
+        //TODO captions on everything (conditional)
     }
 
     private static BufferedImage applyRoundedCorner(Image image) {
@@ -234,5 +235,17 @@ public class ImageUtil extends NFields {
         }
         System.out.println();
         return canvas;
+    }
+
+    public static void filterValidPages(List<Integer> validPages) {
+        int pageHeight = (int) (scaledHeight / pages);
+        BufferedImage cutCanvas = new BufferedImage(scaledWidth, validPages.size() * pageHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2cc = (Graphics2D) cutCanvas.getGraphics();
+        for (int i = 0; i < validPages.size(); i++) {
+            Image img = upscaledAll.getSubimage(0, (validPages.get(i) - 1) * pageHeight, scaledWidth, pageHeight);
+            g2cc.drawImage(img, 0, i * pageHeight, null);
+        }
+        g2cc.dispose();
+        upscaledAll = cutCanvas;
     }
 }

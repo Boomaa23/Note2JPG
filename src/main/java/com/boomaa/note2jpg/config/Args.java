@@ -11,10 +11,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 public class Args extends NFields {
+    //TODO NEO login popup feature
     public static void parse() {
         boolean neoFound = Parameter.NEOUsername.inEither() || Parameter.NEOPassword.inEither();
         int found = 0;
@@ -47,7 +49,7 @@ public class Args extends NFields {
 
             File folder = new File(Parameter.OutputDirectory.getValue());
             if (!folder.isDirectory()) {
-                folder.mkdir();
+                folder.mkdirs();
             }
         }
 
@@ -111,7 +113,7 @@ public class Args extends NFields {
                 notenames = neoExecutor.getAssignments().getNames();
                 break;
             case PARAMETER:
-                notenames.add(Parameter.Filename.getValue());
+                notenames.addAll(Arrays.asList(Parameter.Filename.getValue().split("/")));
                 break;
             case RANDOM:
                 determineRandomFilename();
@@ -140,6 +142,16 @@ public class Args extends NFields {
             throw new IllegalArgumentException("Must be downloading from Google Drive to force download from it");
         }
 
+        if (Parameter.PageSelectionIn.inEither()) {
+            if (Parameter.FitExactHeight.inEither()) {
+                throw new IllegalArgumentException("Cannot select pages with exact height fitting");
+            } else if (Parameter.PageCountOut.inEither()) {
+                throw new IllegalArgumentException("Page count and selection cannot be simultaneously enabled");
+            } else if (notenames.size() > 1) {
+                throw new IllegalArgumentException("Page selection from multiple sources not supported");
+            }
+        }
+
         if (!(Parameter.NEOUsername.inEither() || Parameter.NEOPassword.inEither()) && Parameter.UseAWS.inEither()) {
             System.err.println("Not uploading to AWS as no NEO credentials were specified");
         }
@@ -148,7 +160,7 @@ public class Args extends NFields {
             System.err.println("No .note files selected to convert");
         }
 
-        if (Parameter.ImageScaleFactor.getValueInt() <= 0) {
+        if (Parameter.ImageScaleFactor.getValueInt() <= 0 || Parameter.PDFScaleFactor.getValueInt() <= 0) {
             throw new ArithmeticException("Cannot have a scale factor of zero");
         }
     }

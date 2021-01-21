@@ -7,16 +7,18 @@ import java.lang.reflect.Field;
 
 public enum Parameter {
     Filename("-f", Type.FILENAME, "FILENAME_SOURCE"),
-    RandomFile("--randomfile", Type.FILENAME, "FILENAME_SOURCE"),
-    ConvertAll("--all", Type.FILENAME, "FILENAME_SOURCE"),
     ImageScaleFactor("-s", Type.INTEGER, "IMAGE_SCALE_FACTOR"),
     PDFScaleFactor("-p", Type.INTEGER, "PDF_SCALE_FACTOR"),
+    Concatenate("--concat", Type.BOOLEAN),
+    ConvertAll("--all", Type.FILENAME, "FILENAME_SOURCE"),
     DisplayConverted("--display", Type.BOOLEAN),
-    PageCount("--pg", Type.INTEGER, "PAGE_COUNT"),
+    PageCountOut("--pgct", Type.INTEGER, "PAGE_COUNT"),
+    PageSelectionIn("--pgsel", Type.STRING, "PAGE_SELECTION"),
     NoteFilter("--filter", Type.STRING, "NOTE_FILTER"),
     FitExactHeight("--hfit", Type.BOOLEAN),
     OutputDirectory("--outdir", Type.STRING, "OUTPUT_DIRECTORY"),
     NoFileOutput("--nofile", Type.BOOLEAN),
+    RandomFile("--randomfile", Type.FILENAME, "FILENAME_SOURCE"),
     GenerateConfig("--genconfig", Type.BOOLEAN),
     WriteConfig("--writeconfig", Type.BOOLEAN),
     ConsoleOnly("--console", Type.BOOLEAN),
@@ -173,6 +175,7 @@ public enum Parameter {
         public static int GDRIVE_LIMIT_NOTES = 100;
         public static String NOTE_FILTER = "";
         public static String ASSIGNMENT_NAME = "";
+        public static String PAGE_SELECTION = "";
         public static String NEO_CLASS_ID = "";
         public static String NEO_USR = "";
         public static String NEO_PW = "";
