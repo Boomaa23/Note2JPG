@@ -207,11 +207,7 @@ public class Decode extends NFields {
                 }
 
                 if (textMeta.containsKey("attributedString")) {
-                    int strKey = fromSUID(textMeta.get("attributedString"));
-                    if (strKey < 0) {
-                        continue;
-                    }
-                    NSDictionary innerTextMeta = (NSDictionary) sessionObjects[strKey];
+                    NSDictionary innerTextMeta = (NSDictionary) sessionObjects[fromSUID(textMeta.get("attributedString"))];
                     NSObject[] innerMetaObjs = ((NSArray) innerTextMeta.get("NS.objects")).getArray();
                     var textWrapper = sessionObjects[fromSUID(innerMetaObjs[0])];
                     String text = null;
@@ -326,7 +322,8 @@ public class Decode extends NFields {
         return -1;
     }
 
-    public static byte fromSUID(NSObject obj) {
-        return ((UID) obj).getBytes()[0];
+    public static int fromSUID(NSObject obj) {
+        byte[] b = ((UID) obj).getBytes();
+        return b.length == 2 ? Byte.toUnsignedInt(b[0]) * 256 + Byte.toUnsignedInt(b[1]) : Byte.toUnsignedInt(b[0]);
     }
 }

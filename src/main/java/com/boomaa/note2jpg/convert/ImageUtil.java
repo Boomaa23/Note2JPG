@@ -67,14 +67,19 @@ public class ImageUtil extends NFields {
             int x = textBox.getUpperLeft().getXInt();
 
             int lastOverflow = 0;
+            int lastSpc = 0;
             for (int j = 0; j < textBox.getText().length(); j++) {
                 int currChar = Math.min(255, textBox.getText().charAt(j));
                 if (currChar == '\n') {
                     continue;
                 }
+                if (currChar == ' ') {
+                    lastSpc = j;
+                }
                 cg2.setFont(new Font("Arial", Font.PLAIN, (int) (textBox.rangeOfIndex(j).getFontSize() * Parameter.ImageScaleFactor.getValueInt())));
                 if (((j - lastOverflow + 2) * cg2.getFontMetrics().getWidths()[currChar]) > textBox.getBottomRight().getXInt()) {
-                    textBox.setText(textBox.getText().substring(0, j) + "\n" + textBox.getText().substring(j));
+                    textBox.setText(textBox.getText().substring(0, lastSpc) + "\n" + textBox.getText().substring(lastSpc + 1));
+                    j = lastSpc;
                     lastOverflow = j - 2;
                 }
             }
