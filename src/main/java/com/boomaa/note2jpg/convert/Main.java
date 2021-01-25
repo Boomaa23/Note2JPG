@@ -33,8 +33,10 @@ import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -213,10 +215,10 @@ public class Main extends NFields {
                     }
                 }
 
-                if (Parameter.PageSelectionIn.inEither()) {
+                if (!Parameter.NoPagePrompt.inEither() && Math.ceil(pages) != 1) {
                     int numSelPages = 0;
                     List<Integer> allowedPages = new LinkedList<>();
-                    String[] allNotesSel = Parameter.PageSelectionIn.getValue().split("/");
+                    String[] allNotesSel = Args.getPageSelection().split("/");
                     for (String noteSel : allNotesSel) {
                         String[] allPgsSel = noteSel.trim().split(",");
                         for (String pgsSel : allPgsSel) {

@@ -13,20 +13,22 @@
 
 Converts Notability .note files into .jpg images
 
-github.com/Boomaa23/Note2JPG | Copyright © 2020. All Rights Reserved
+github.com/Boomaa23/Note2JPG | Copyright © 2020-2021. All Rights Reserved
 
 ## Quickstart
 A comprehensive quickstart guide can be found [here](https://github.com/Boomaa23/Note2JPG/blob/master/quickstart.md) for a standard and easier setup.
 
 ## Installation
-Download the updater JAR file listed below. Run the updater JAR once to get the application JAR and dependencies, then run the application JAR as listed in "Usage" each time you'd like to use the program.
+Download the [updater JAR file](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JPGUpdater.jar?raw=true). Run the updater JAR once to get the application JAR and dependencies.
 
-Download: [Updater JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JPGUpdater.jar?raw=true)
+A copy of Java JDK 11 or newer must be present on the system at the time of installation.
 
 ## Usage
-`java -jar Note2JPG.jar`
+Double-click the application JAR to use the program once downloaded with dependencies. From the command line, this is `java -jar Note2JPG.jar`.
 
-| JSON Key | Flag \<Value> | Source | JSON Value | Action
+The list of parameters to pass to the command is listed below. To store configs without passing them through each time, modify `config.json`.
+
+| Key | Flag \<Value> | Source | JSON Type | Action
 |-------------------------------|-----------------------|------------|---------|------------------------------------|
 | Filename                      | -f \<filename>        | Note2JPG   | String  | Specify name of .note file
 | ImageScaleFactor              | -s \<scaleFactor>     | Note2JPG   | int     | Multiplier to superscale the whole image by
@@ -36,6 +38,7 @@ Download: [Updater JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JP
 | DisplayConverted              | --display             | Note2JPG   | boolean | Show the image after processing
 | PageCountOut                  | --pgct \<numPages>    | Note2JPG   | int     | Force the number of output pages
 | PageSelectionIn               | --pgsel \<pgSel>      | Note2JPG   | String  | Select note in pages (sep. by "/")
+| NoPagePrompt                  | --npp                 | Note2JPG   | boolean | Disable the page prompt (all pages always)
 | NoteFilter                    | --filter \<toMatch>   | Note2JPG   | String  | Specify a filter for note listing
 | FitExactHeight                | --hfit                | Note2JPG   | boolean | Cut the image directly after writing/PDFs
 | OutputDirectory               | --outdir \<path>      | Note2JPG   | String  | Specify an output directory
@@ -60,15 +63,12 @@ Download: [Updater JAR](https://github.com/Boomaa23/Note2JPG/blob/master/Note2JP
 | GoogleSvcAcct                 | --gsvc                | Google     | boolean | Use a Google Service Account over OAuth
 | LimitDriveNotes               | --gdrivelim \<limit>  | Google     | int     | Define a limit for Drive-retrieved notes
 
-More information on all parameters can be found [here](https://github.com/Boomaa23/Note2JPG/blob/master/src/main/java/com/boomaa/note2jpg/config/Parameter.java)
-
-## Config JSON
-If you want to store configs without passing them through each time, modify the `config.json` file in your root directory. Use keys as listed in the table above. 
+Source code for all parameters can be found [here](https://github.com/Boomaa23/Note2JPG/blob/master/src/main/java/com/boomaa/note2jpg/config/Parameter.java)
 
 ## Integration
 ### Google
-Most users can use the per-login Google OAuth. However, if don't want to login every time you will need to provide your own `.json` private key and service account ID.
-The private key should be renamed to `GoogleSvcAcctPrivateKey.json`.
+Used to store note files automatically. Most users can use OAuth and login with a Google account each time if enabled through the config JSON or parameters.
+[Service accounts](https://github.com/Boomaa23/Note2JPG/blob/master/quickstart.md#Google%20Service%20Account%20%28Optional%29) are also supported for a faster experience.
 
 ### NEO
-NEO integration requires that you set a NEO username and password each time through `--neo` or through the NEO keys in the config JSON.
+NEO integration requires that a NEO username and password is set each time through `--neo` or through the NEO keys in the config JSON.

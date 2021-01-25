@@ -165,6 +165,19 @@ public class Args extends NFields {
         }
     }
 
+    public static String getPageSelection() throws IOException {
+        if (!Parameter.PageSelectionIn.inEither()) {
+            System.out.println("Please select the page range(s): default=all range=1-" + (int) Math.ceil(pages));
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            String inRange = br.readLine();
+            if (inRange.isBlank() || inRange.equals("all")) {
+                inRange = "1-" + (int) Math.ceil(pages);
+            }
+            return inRange;
+        }
+        return Parameter.PageSelectionIn.getValue();
+    }
+
     public static List<String> getAllLocalNotes() {
         File[] dir = Objects.requireNonNull(new File(".").listFiles());
         List<String> notes = new ArrayList<>();

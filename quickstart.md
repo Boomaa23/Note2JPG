@@ -35,8 +35,24 @@ These changes are applied to the Notability app so that it exports files in the 
 5. Sign in to your school Google account. The school gives you unlimited storage whereas a personal account is 15GB limited.
 6. (optional) Change the destination to wherever you want. It doesn't matter.
 
-<!--
-### Google
+## Usage
+If everything is set up correctly, the application should work after just double-clicking `Note2JPG.jar`.
+
+Do not type into the GUI that appears unless you are prompted. Answer with the numbers only, not names associated with them. Prompts should be:
+- Which class are you uploading to?
+- What Google Drive file do you want to parse?
+- What assignment in the class should this be uploaded to?
+
+If everything goes correctly, it should display the location of the uploaded image and then the submitted NEO assignment.
+
+To resubmit something again, change `AllowSubmitted` to `"true"` in the config.
+
+If there are any issues to report, please write a GitHub issue about it [here](https://github.com/Boomaa23/Note2JPG/issues). This is still a work in progress, and may have some bugs.
+
+### Google Service Account (Optional)
+If you used Google to automatically backup your notes, you will be prompted to accept a Google OAuth request every time you open the program.
+However, if you set up a Google Service Account it will automatically log you in. This is optional but suggested if you plan to use the program often.
+
 This allows notes to automatically be read by Note2JPG and should be done on the same computer you're installing the software onto. 
 If you used a school account, this must be done on another account because of district restrictions. 
 1. Go to https://console.developers.google.com/ in a web browser
@@ -53,20 +69,7 @@ If you used a school account, this must be done on another account because of di
 12. Click "Add Key" then "Create New Key". Stay with JSON then click "Create".
 13. Rename the downloaded file to `GoogleSvcAcctPrivateKey.json` and put it in the same folder as the application.
 
+Do not share the `GoogleSvcAcctPrivateKey.json` key file with anyone or put it in a publicly accessible place. It provides access to your Google account.
+
 If you used a school account for the backup, share the Notability backup folder in Google Drive with the other personal account that has the service account tied to it.
 Ensure the account has editing access. If you used a personal account for both, disregard this.
--->
-
-## Usage
-If everything is set up correctly, the application should work after just double-clicking `Note2JPG.jar`.
-
-Do not type into the GUI that appears unless you are prompted. Answer with the numbers only, not names associated with them. Prompts should be:
-- Which class are you uploading to?
-- What Google Drive file do you want to parse?
-- What assignment in the class should this be uploaded to?
-
-If everything goes correctly, it should display the location of the submitted NEO assignment.
-
-If you want to resubmit something again, change `AllowSubmitted` to `"true"` in the config.
-
-If there are any issues to report, please write a GitHub issues about it [here](https://github.com/Boomaa23/Note2JPG/issues). This is still a work in progress, and may have some bugs.
