@@ -196,15 +196,17 @@ public class Main extends NFields {
                                 pages = tempPages;
                             }
                         }
-                        scaledHeight = (int) (scaledWidth * pages * 11 / 8.5);
-                        upscaledAll = new BufferedImage(scaledWidth, (int) (scaledWidth * pages * 11 / 8.5), BufferedImage.TYPE_INT_ARGB);
+                        boolean landscapePdfs = pdfs.size() > 0 && pdfs.get(0).getWidth(null) > pdfs.get(0).getHeight(null);
+                        scaledHeight = (int) (scaledWidth * pages * (landscapePdfs ? 8.5 / 11 : 11 / 8.5));
+                        upscaledAll = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_ARGB);
 
-                        drawRenderer = new DrawRenderer(curves, shapes.toArray(new Shape[0]), ImageUtil.getPdfCanvas(pdfs));
-                        drawRenderer.setSize(new Dimension(scaledWidth, scaledHeight));
-                        drawRenderer.print(upscaledAll.getGraphics());
-
-                        ImageUtil.drawTextBoxes(textBoxes);
+                        ImageUtil.drawPdfImages(ImageUtil.getPdfCanvas(pdfs));
                         ImageUtil.drawEmbedImages(images, noExtFilename);
+                        ImageUtil.drawTextBoxes(textBoxes);
+
+                        drawRenderer = new DrawRenderer(curves, shapes.toArray(new Shape[0]));
+                        drawRenderer.setSize(new Dimension(scaledWidth, scaledHeight));
+                        drawRenderer.print(upscaledAll.createGraphics());
                         break;
                     } catch (OutOfMemoryError | NegativeArraySizeException e) {
                         drawRenderer = null;
@@ -215,7 +217,7 @@ public class Main extends NFields {
                     }
                 }
 
-                if (!Parameter.NoPagePrompt.inEither() && Math.ceil(pages) != 1) {
+                if ((!Parameter.NoPagePrompt.inEither() || Parameter.PageSelectionIn.inEither()) && Math.ceil(pages) != 1) {
                     int numSelPages = 0;
                     List<Integer> allowedPages = new LinkedList<>();
                     String[] allNotesSel = Args.getPageSelection().split("/");

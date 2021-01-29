@@ -55,11 +55,7 @@ public class ImageUtil extends NFields {
     }
 
     public static void drawTextBoxes(List<TextBox> textBoxes) {
-        BufferedImage img = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D cg2 = img.createGraphics();
-        cg2.setBackground(Color.WHITE);
-        cg2.setColor(Color.WHITE);
-        cg2.fillRect(0, 0, img.getWidth(), img.getHeight());
+        Graphics2D cg2 = upscaledAll.createGraphics();
         cg2.setColor(Color.BLACK);
 
         for (int i = 0; i < textBoxes.size(); i++) {
@@ -131,29 +127,28 @@ public class ImageUtil extends NFields {
         }
 
         cg2.dispose();
-        Graphics2D g2 = (Graphics2D) upscaledAll.getGraphics();
-        g2.drawImage(makeColorTransparent(img, Color.WHITE), 0, 0, null);
         System.out.println(textBoxes.size() == 0 ? "Text: None" : "");
     }
 
     public static void drawEmbedImages(List<EmbedImage> images, String noExtFilename) {
-        Graphics2D g2 = (Graphics2D) upscaledAll.getGraphics();
+        Graphics2D g2 = upscaledAll.createGraphics();
         AffineTransform normal = g2.getTransform();
+        int offset = leftOffset * Parameter.ImageScaleFactor.getValueInt();
         for (int i = 0; i < images.size(); i++) {
             EmbedImage image = images.get(i);
             Point pos = image.getPosUpperLeft();
-            Point scaleDim = image.getScaleDim();
+            Point scaledDim = image.getScaledDim();
             Point cropUL = image.getCropUpperLeft();
             Point cropDim = image.getCropBottomRight().add(cropUL.negate());
             Image drawImg = image.getImage(noExtFilename).getSubimage(cropUL.getXInt(), cropUL.getYInt(), cropDim.getXInt(), cropDim.getYInt())
-                    .getScaledInstance(scaleDim.getXInt(), scaleDim.getYInt(), Image.SCALE_SMOOTH);
+                    .getScaledInstance(scaledDim.getXInt(), scaledDim.getYInt(), Image.SCALE_SMOOTH);
             g2.setTransform(AffineTransform.getRotateInstance(image.getRotationRadians(),
-                    pos.getXInt() + drawImg.getWidth(null) / 2.0,
+                    offset + pos.getXInt() + drawImg.getWidth(null) / 2.0,
                     pos.getYInt() + drawImg.getHeight(null) / 2.0));
             if (image.hasRoundCorners()) {
                 drawImg = applyRoundedCorner(drawImg);
             }
-            g2.drawImage(drawImg, pos.getXInt(), pos.getYInt(), null);
+            g2.drawImage(drawImg, offset + pos.getXInt(), pos.getYInt(), null);
             System.out.print("\r" + "Image: " + (i + 1) + " / " + images.size());
         }
         System.out.println((images.size() == 0 ? "Image: None" : "") + "\n");
@@ -203,6 +198,14 @@ public class ImageUtil extends NFields {
         ColorConvertOp convForm = new ColorConvertOp(null);
         convForm.filter(rawImage, image);
         return image;
+    }
+
+    public static void drawPdfImages(BufferedImage pdfs) {
+        Graphics2D cg2 = upscaledAll.createGraphics();
+        cg2.setBackground(Color.WHITE);
+        cg2.setColor(Color.WHITE);
+        cg2.fillRect(0, 0, scaledWidth, scaledHeight);
+        cg2.drawImage(pdfs, 0, 0, null);
     }
 
     public static List<Image> getPdfImages(String filename, String pdf) throws OutOfMemoryError {

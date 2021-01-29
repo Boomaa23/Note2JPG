@@ -8,18 +8,18 @@ import java.io.IOException;
 public class EmbedImage {
     private final String loc;
     private final Point posUpperLeft;
-    private final Point scaleDim;
+    private final Point scaledDim;
     private final Point cropUpperLeft;
     private final Point cropBottomRight;
     private final double rotationRadians;
     private final boolean roundCorners;
 
-    public EmbedImage(String loc, Point posUpperLeft, Point scaleDim,
+    public EmbedImage(String loc, Point posUpperLeft, Point scaledDim,
                       Point cropUpperLeft, Point cropBottomRight,
                       double rotationRadians, boolean roundCorners) {
         this.loc = loc;
         this.posUpperLeft = posUpperLeft;
-        this.scaleDim = scaleDim;
+        this.scaledDim = scaledDim;
         this.cropUpperLeft = cropUpperLeft;
         this.cropBottomRight = cropBottomRight;
         this.rotationRadians = rotationRadians;
@@ -39,8 +39,8 @@ public class EmbedImage {
         return posUpperLeft;
     }
 
-    public Point getScaleDim() {
-        return scaleDim;
+    public Point getScaledDim() {
+        return scaledDim;
     }
 
     public Point getCropUpperLeft() {

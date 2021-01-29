@@ -7,13 +7,11 @@ import java.awt.image.BufferedImage;
 public class DrawRenderer extends JPanel {
     private final Curve[] curves;
     private final Shape[] shapes;
-    private final BufferedImage pdfs;
 
-    public DrawRenderer(Curve[] curves, Shape[] shapes, BufferedImage pdfs) {
+    public DrawRenderer(Curve[] curves, Shape[] shapes) {
         this.curves = curves;
         this.shapes = shapes;
-        this.pdfs = pdfs;
-        this.setBackground(Color.WHITE);
+        setBackground(new Color(0, 0, 0, 0));
     }
 
     @Override
@@ -25,8 +23,6 @@ public class DrawRenderer extends JPanel {
             RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
             RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-
-        g2.drawImage(pdfs, 0, 0, null);
 
         for (int i = 0; i < curves.length; i++) {
             g2.setColor(curves[i].getColor());

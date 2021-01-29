@@ -5,6 +5,8 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.stream.MalformedJsonException;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -30,6 +32,8 @@ public class JSONHelper extends NFields {
             Gson gson = new Gson();
             Type type = new TypeToken<HashMap<String, String>>(){}.getType();
             json = gson.fromJson(new FileReader(CONFIG_FILE_NAME), type);
+        } catch (ExceptionInInitializerError | JsonSyntaxException ignored) {
+            System.err.println("Invalid JSON detected. Will not read preferences.");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
