@@ -66,7 +66,7 @@ public class DrawRenderer extends JPanel {
             }
             System.out.print("\r" + "Shape: " + (i + 1) + " / " + shapes.length);
         }
-        System.out.println(shapes.length == 0 ? "Shape: None" : "");
+        System.out.println((shapes.length == 0 ? "Shape: None" : "") + "\n");
         g2.dispose();
     }
 }

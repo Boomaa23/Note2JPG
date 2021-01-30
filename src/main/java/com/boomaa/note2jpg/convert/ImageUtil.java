@@ -62,22 +62,24 @@ public class ImageUtil extends NFields {
             TextBox textBox = textBoxes.get(i);
             int x = textBox.getUpperLeft().getXInt();
 
-            int lastOverflow = 0;
             int lastSpc = 0;
+            int widthAccum = 0;
             for (int j = 0; j < textBox.getText().length(); j++) {
+                cg2.setFont(new Font("Arial", Font.PLAIN, (int) (textBox.rangeOfIndex(j).getFontSize() * Parameter.ImageScaleFactor.getValueInt())));
                 int currChar = Math.min(255, textBox.getText().charAt(j));
+                int widthChar = cg2.getFontMetrics().getWidths()[currChar];
                 if (currChar == '\n') {
                     continue;
                 }
                 if (currChar == ' ') {
                     lastSpc = j;
                 }
-                cg2.setFont(new Font("Arial", Font.PLAIN, (int) (textBox.rangeOfIndex(j).getFontSize() * Parameter.ImageScaleFactor.getValueInt())));
-                if (((j - lastOverflow + 2) * cg2.getFontMetrics().getWidths()[currChar]) > textBox.getBottomRight().getXInt()) {
+                if (widthAccum + widthChar > textBox.getBottomRight().getXInt()) {
                     textBox.setText(textBox.getText().substring(0, lastSpc) + "\n" + textBox.getText().substring(lastSpc + 1));
                     j = lastSpc;
-                    lastOverflow = j - 2;
+                    widthAccum = 0;
                 }
+                widthAccum += widthChar;
             }
 
             StringReader sr = new StringReader(textBox.getText());
@@ -89,7 +91,7 @@ public class ImageUtil extends NFields {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            int y = textBox.getUpperLeft().getYInt() + (cg2.getFontMetrics().getHeight() * leadingLineBreaks);
+            int y = textBox.getUpperLeft().getYInt() + (cg2.getFontMetrics().getHeight() * (leadingLineBreaks - 1));
 
             AffineTransform fontTransform = new AffineTransform();
             fontTransform.rotate(textBox.getRotationRadians(), 0, 0);
@@ -99,13 +101,19 @@ public class ImageUtil extends NFields {
                 TextBox.SubRange cRange = textBox.rangeOfIndex(ctr);
                 cg2.setFont(new Font("Arial", Font.PLAIN, (int) (cRange.getFontSize() * Parameter.ImageScaleFactor.getValueInt())).deriveFont(fontTransform));
                 cg2.setColor(cRange.getColor());
-                if (!cRange.equals(textBox.rangeOfIndex(ctr + box.length() - 1))) {
+                boolean writeDirect = cRange.equals(textBox.rangeOfIndex(ctr + box.length() - 1));
+
+                if (!writeDirect) {
                     Map<Integer, TextBox.SubRange> subRanges = textBox.getSubRanges();
                     int normX = x;
                     List<Integer> srKeys = new ArrayList<>(subRanges.keySet());
                     Collections.sort(srKeys);
                     int lastIdx = 0;
                     for (int sk : srKeys) {
+                        if (sk > box.length()) {
+                            writeDirect = true;
+                            break;
+                        }
                         String partialStr = box.substring(lastIdx, sk);
                         lastIdx = sk;
                         int[] widths = cg2.getFontMetrics().getWidths();
@@ -116,9 +124,13 @@ public class ImageUtil extends NFields {
                         cg2.drawString(partialStr, x, y);
                         x += strWidth;
                     }
-                    ctr += textBox.getText().length();
-                    x = normX;
-                } else {
+                    if (!writeDirect) {
+                        ctr += textBox.getText().length();
+                        x = normX;
+                    }
+                }
+
+                if (writeDirect) {
                     cg2.drawString(box, x, y += cg2.getFontMetrics().getHeight());
                     ctr += box.length();
                 }
@@ -151,7 +163,7 @@ public class ImageUtil extends NFields {
             g2.drawImage(drawImg, offset + pos.getXInt(), pos.getYInt(), null);
             System.out.print("\r" + "Image: " + (i + 1) + " / " + images.size());
         }
-        System.out.println((images.size() == 0 ? "Image: None" : "") + "\n");
+        System.out.println(images.size() == 0 ? "Image: None" : "");
         g2.setTransform(normal);
         g2.dispose();
         //TODO captions on everything (conditional)

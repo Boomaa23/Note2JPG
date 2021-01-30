@@ -222,6 +222,7 @@ public class Decode extends NFields {
                     TextBox next = new TextBox(upperLeft, bottomRight, text, rotRad);
 
                     NSObject[] dataSubRanges = ((NSArray) ((NSDictionary) sessionObjects[fromSUID(innerMetaObjs[1])]).get("NS.objects")).getArray();
+                    int endIdxCtr = 0;
                     for (NSObject rawRange : dataSubRanges) {
                         if (rawRange instanceof UID) {
                             NSObject[] srData = ((NSArray) ((NSDictionary) sessionObjects[fromSUID(rawRange)]).get("NS.objects")).getArray();
@@ -234,9 +235,9 @@ public class Decode extends NFields {
                                     Float.parseFloat(rawColor.substring(ioSecondComma + 1, ioThirdComma)),
                                     Float.parseFloat(rawColor.substring(ioThirdComma + 1)));
                             String fullRange = ((NSString) sessionObjects[fromSUID(srData[1])]).getContent();
-                            int endingIdx = Integer.parseInt(fullRange.substring(fullRange.indexOf(',') + 2, fullRange.indexOf('}')));
+                            endIdxCtr += Integer.parseInt(fullRange.substring(fullRange.indexOf(',') + 2, fullRange.indexOf('}')));
                             double rangeFontSize = ((NSNumber) sessionObjects[fromSUID(((NSArray) ((NSDictionary) sessionObjects[fromSUID(srData[2])]).get("NS.objects")).getArray()[0])]).doubleValue();
-                            next.putSubRange(endingIdx, new TextBox.SubRange(rangeColor, rangeFontSize));
+                            next.putSubRange(endIdxCtr, new TextBox.SubRange(rangeColor, rangeFontSize));
                         }
                     }
 
