@@ -19,6 +19,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.Permission;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -28,6 +29,7 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,10 +52,10 @@ public class GoogleUtils {
             httpTransport = GoogleNetHttpTransport.newTrustedTransport();
             jsonFactory = JacksonFactory.getDefaultInstance();
             driveService = this.getDriveService();
-            noteList = new HashMap<>();
-            imageList = new HashMap<>();
-            retrieveData(Extension.note);
-            retrieveData(Extension.jpg);
+            noteList = new LinkedHashMap<>();
+            imageList = new LinkedHashMap<>();
+            retrieveData(Extension.note, Parameter.LimitDriveNotes.getValueInt());
+            retrieveData(Extension.jpg, Parameter.LimitDriveNotes.getValueInt());
         } catch (GeneralSecurityException | IOException e) {
             e.printStackTrace();
         }
@@ -101,17 +103,17 @@ public class GoogleUtils {
                 .setApplicationName(APPLICATION_NAME).build();
     }
 
-    public void retrieveData(Extension extension) {
-        List<File> notes = null;
-        try {
-            notes = driveService.files().list()
-                .setQ(extension.mimeType)
-                .setFields("files")
-                .setPageSize(1000)
-                .setOrderBy("modifiedTime desc")
-                .execute().getFiles();
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void retrieveData(Extension extension, int maxRetrNum) {
+        List<File> notes = new ArrayList<>();
+
+        int noteCtr = 0;
+        String nextPageToken = "";
+        int reqNum = Math.min(maxRetrNum, 100);
+        while (noteCtr < maxRetrNum && nextPageToken != null) {
+            FileList dlFiles = doDataRequest(extension, nextPageToken, reqNum);
+            noteCtr += reqNum;
+            nextPageToken = dlFiles.getNextPageToken();
+            notes.addAll(dlFiles.getFiles());
         }
 
         for (File note : notes) {
@@ -125,6 +127,22 @@ public class GoogleUtils {
                 }
             }
         }
+    }
+
+    public FileList doDataRequest(Extension extension, String pageToken, int reqNum) {
+        try {
+            return driveService.files().list()
+                    .setQ(extension.mimeType)
+                    .setFields("files")
+                    .setPageSize(reqNum)
+                    .setPageToken(pageToken)
+                    .setOrderBy("modifiedTime desc")
+                    .setFields("files,nextPageToken")
+                    .execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public void deleteAllMatchingImages(String filename) {

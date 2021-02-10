@@ -173,7 +173,7 @@ public enum Parameter {
         public static int PAGE_COUNT = 1;
         public static int IMAGE_SCALE_FACTOR = 8;
         public static int PDF_SCALE_FACTOR = 2;
-        public static int GDRIVE_LIMIT_NOTES = 100;
+        public static int GDRIVE_LIMIT_NOTES = 20;
         public static String NOTE_FILTER = "";
         public static String ASSIGNMENT_NAME = "";
         public static String PAGE_SELECTION = "";
