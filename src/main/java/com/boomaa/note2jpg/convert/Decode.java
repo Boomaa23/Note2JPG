@@ -136,7 +136,8 @@ public class Decode extends NFields {
             NSDictionary appearance = (NSDictionary) dict.get("appearance");
 
             Color strokeColor = Decode.getShapeColor(appearance, "strokeColor");
-            Color fillColor = Decode.getShapeColor(appearance, "fillColor");
+            Color fillColor = appearance.containsKey("fillColor") ?
+                    Decode.getShapeColor(appearance, "fillColor") : null;
             int scale = Parameter.ImageScaleFactor.getValueInt();
             double strokeWidth = ((NSNumber) appearance.get("strokeWidth")).doubleValue() * scale;
 
@@ -149,6 +150,7 @@ public class Decode extends NFields {
                     xPts[i] = (int) ((tempPt.getXDbl() + leftOffset) * scale);
                     yPts[i] = (int) (tempPt.getYDbl() * scale);
                 }
+
                 shapes.add(new Shape.NPolygon(strokeColor, strokeWidth, fillColor, xPts, yPts));
             } else {
                 Point firstPoint;

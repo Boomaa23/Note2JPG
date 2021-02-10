@@ -6,17 +6,17 @@ public class Shape {
     protected final Type type;
     protected final Point begin;
     protected final Point end;
-    protected final Color color;
+    protected final Color strokeColor;
     protected final double width;
     protected final Color fillColor;
 
-    public Shape(Type type, Color color, double width,
+    public Shape(Type type, Color strokeColor, double width,
                  Color fillColor, Point begin, Point end) {
         this.type = type;
         this.fillColor = fillColor;
         this.begin = begin;
         this.end = end;
-        this.color = color;
+        this.strokeColor = strokeColor;
         this.width = width;
     }
 
@@ -24,8 +24,8 @@ public class Shape {
         return type;
     }
 
-    public Color getColor() {
-        return color;
+    public Color getStrokeColor() {
+        return strokeColor;
     }
 
     public double getWidth() {
@@ -52,8 +52,8 @@ public class Shape {
         protected final int[] xPts;
         protected final int[] yPts;
 
-        public NPolygon(Color color, double width, Color fillColor, int[] xPts, int[] yPts) {
-            super(Type.NPOLYGON, color, width, fillColor, new Point(xPts[0], yPts[0]),
+        public NPolygon(Color strokeColor, double width, Color fillColor, int[] xPts, int[] yPts) {
+            super(Type.NPOLYGON, strokeColor, width, fillColor, new Point(xPts[0], yPts[0]),
                     new Point(xPts[xPts.length - 1], yPts[yPts.length - 1]));
             this.xPts = xPts;
             this.yPts = yPts;

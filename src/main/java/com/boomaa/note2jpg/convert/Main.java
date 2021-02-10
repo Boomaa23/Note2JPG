@@ -176,6 +176,13 @@ public class Main extends NFields {
                                         }
                                         pdfs.set(pgIdx - 1, cPdfPage);
                                     }
+                                    for (int i = pdfs.size() - 1; i >= 0; i--) {
+                                        if (pdfs.get(i) == null) {
+                                            pdfs.remove(i);
+                                        } else {
+                                            break;
+                                        }
+                                    }
                                 }
                             } else if (pdfState == PDFState.FILE_ONLY) {
                                 File pdfDir = new File(noExtFilename + "/PDFs/");

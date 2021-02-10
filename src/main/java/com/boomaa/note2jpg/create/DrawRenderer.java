@@ -2,7 +2,6 @@ package com.boomaa.note2jpg.create;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 
 public class DrawRenderer extends JPanel {
     private final Curve[] curves;
@@ -45,7 +44,7 @@ public class DrawRenderer extends JPanel {
         System.out.println(curves.length == 0 ? "Curve: None" : "");
 
         for (int i = 0; i < shapes.length; i++) {
-            g2.setColor(shapes[i].getColor());
+            g2.setColor(shapes[i].getStrokeColor());
             g2.setStroke(new BasicStroke((float) shapes[i].getWidth()));
             Point begin = shapes[i].getBeginPoint();
             Point end = shapes[i].getEndPoint();
@@ -53,15 +52,19 @@ public class DrawRenderer extends JPanel {
             if (type == Shape.Type.LINE) {
                 g2.drawLine(begin.getXInt(), begin.getYInt(), end.getXInt(), end.getYInt());
             } else if (type == Shape.Type.CIRCLE) {
-                g2.setColor(shapes[i].getFillColor());
-                g2.fillOval(begin.getXInt(), begin.getYInt(), end.getXInt() - begin.getXInt(), end.getYInt() - begin.getYInt());
-                g2.setColor(shapes[i].getColor());
+                if (shapes[i].getFillColor() != null) {
+                    g2.setColor(shapes[i].getFillColor());
+                    g2.fillOval(begin.getXInt(), begin.getYInt(), end.getXInt() - begin.getXInt(), end.getYInt() - begin.getYInt());
+                }
+                g2.setColor(shapes[i].getStrokeColor());
                 g2.drawOval(begin.getXInt(), begin.getYInt(), end.getXInt() - begin.getXInt(), end.getYInt() - begin.getYInt());
             } else if (type == Shape.Type.NPOLYGON && shapes[i] instanceof Shape.NPolygon) {
                 Shape.NPolygon poly = (Shape.NPolygon) shapes[i];
-                g2.setColor(poly.getFillColor());
-                g2.fillPolygon(poly.getXPoints(), poly.getYPoints(), poly.getXPoints().length);
-                g2.setColor(poly.getColor());
+                if (poly.getFillColor() != null) {
+                    g2.setColor(poly.getFillColor());
+                    g2.fillPolygon(poly.getXPoints(), poly.getYPoints(), poly.getXPoints().length);
+                }
+                g2.setColor(poly.getStrokeColor());
                 g2.drawPolygon(poly.getXPoints(), poly.getYPoints(), poly.getXPoints().length);
             }
             System.out.print("\r" + "Shape: " + (i + 1) + " / " + shapes.length);
