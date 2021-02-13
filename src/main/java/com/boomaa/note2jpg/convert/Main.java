@@ -33,10 +33,8 @@ import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -74,7 +72,7 @@ public class Main extends NFields {
             "Note2JPG: A .note to .jpg converter\n" +
             "Developed by Nikhil for AP Physics\n" +
             "github.com/Boomaa23/Note2JPG\n" +
-            "Copyright 2020. All Rights Reserved.\n" +
+            "Copyright 2020-2021. All Rights Reserved.\n" +
             "---------------------------------------\n" +
             "NOTE: Note2JPG cannot parse z-layers\n");
     }
@@ -302,7 +300,7 @@ public class Main extends NFields {
                             assignName = Parameter.NEOAssignment.getValue();
                         } else {
                             System.out.println("Select the associated NEO assignment");
-                            assignName = Args.filenameSelector(neoExecutor.getAssignments().getNames());
+                            assignName = Args.filenameSelector(neoExecutor.getAssignments().getNames(), "");
                         }
                         // Autoselect NEO-format link instead of AWS (b/c of lms_auth server auto-add to img link)
                         String assignmentUrl = neoExecutor.push(assignName, imageUrls.get(1));

@@ -69,7 +69,7 @@ public class Args extends NFields {
                 if (Parameter.NEOClassID.getValue().isBlank()) {
                     System.out.println("Select the NEO class to be used for assignment upload");
                     NameIDMap classList = neoExecutor.getClassList();
-                    String selected = filenameSelector(classList.getNames());
+                    String selected = filenameSelector(classList.getNames(), "");
                     Parameter.NEOClassID.setLinkedField(classList.get(selected));
                 }
                 neoExecutor.pull();
@@ -121,11 +121,13 @@ public class Args extends NFields {
             case DRIVE:
                 List<String> tempNoteNames = Connections.getGoogleUtils().getNoteNameList();
                 notenames.add(filenameSelector(tempNoteNames.subList(0,
-                        Math.min(Parameter.LimitDriveNotes.getValueInt(), tempNoteNames.size()))));
+                        Math.min(Parameter.LimitDriveNotes.getValueInt(), tempNoteNames.size())),
+                        Parameter.NoteFilter.getValue()));
                 break;
             case USER_SELECT:
             default:
-                notenames.add(filenameSelector(getAllLocalNotes()));
+                notenames.add(filenameSelector(getAllLocalNotes(),
+                        Parameter.NoteFilter.getValue()));
                 break;
         }
 
@@ -197,10 +199,6 @@ public class Args extends NFields {
         return notes;
     }
 
-    public static String filenameSelector(List<String> list) {
-        return filenameSelector(list, Parameter.NoteFilter.getValue());
-    }
-
     public static String filenameSelector(List<String> list, String filter) {
         if (!displayListOptions(list, filter)) {
             System.err.println("No note files matching filter " + filter);
@@ -223,6 +221,10 @@ public class Args extends NFields {
 
     private static String ensureSelection(BufferedReader br, int max) throws IOException {
         String raw = br.readLine();
+        if (raw == null) {
+            System.err.println("FATAL: Cannot parse given value.");
+            System.exit(1);
+        }
         String out = raw.replaceAll("[^0-9]", "");
         int io = Integer.parseInt(out);
         if (out.isBlank()) {

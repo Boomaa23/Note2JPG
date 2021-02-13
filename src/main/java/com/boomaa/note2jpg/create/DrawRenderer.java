@@ -26,8 +26,15 @@ public class DrawRenderer extends JPanel {
         for (int i = 0; i < curves.length; i++) {
             g2.setColor(curves[i].getColor());
             Point[] points = curves[i].getPoints();
-            g2.setStroke(new BasicStroke((float) curves[i].getWidth(), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            int curveRadius = (int) (curves[i].getWidth() / 2);
+            int lineThick = (int) curves[i].getWidth();
+            int curveRadius = lineThick / 2;
+
+            g2.setStroke(new BasicStroke((float) lineThick, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+
+            if (points.length == 1) {
+                g2.fillOval(points[0].getXInt(), points[0].getYInt(), lineThick, lineThick);
+                continue;
+            }
 
             System.out.print("\r" + "Curve: " + (i + 1) + " / " + curves.length);
             int[] xPts = new int[points.length];
