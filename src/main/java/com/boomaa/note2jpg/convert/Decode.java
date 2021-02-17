@@ -167,11 +167,17 @@ public class Decode extends NFields {
                     secondPoint = new Point(Integer.MIN_VALUE, Integer.MIN_VALUE);
                     for (NSObject loopPoint : dictPoints) {
                         Point currPoint = Decode.parseShapePoint(((NSArray) loopPoint).getArray());
-                        if (currPoint.getXInt() >= secondPoint.getXInt() && currPoint.getYInt() >= secondPoint.getYInt()) {
-                            secondPoint = currPoint;
+                        if (currPoint.getXInt() > secondPoint.getXInt()) {
+                            secondPoint.setX(currPoint.getXInt());
                         }
-                        if (currPoint.getXInt() <= firstPoint.getXInt() && currPoint.getYInt() <= firstPoint.getYInt()) {
-                            firstPoint = currPoint;
+                        if (currPoint.getYInt() > secondPoint.getYInt()) {
+                            secondPoint.setY(currPoint.getYInt());
+                        }
+                        if (currPoint.getXInt() < firstPoint.getXInt()) {
+                            firstPoint.setX(currPoint.getXInt());
+                        }
+                        if (currPoint.getYInt() < firstPoint.getYInt()) {
+                            firstPoint.setY(currPoint.getYInt());
                         }
                     }
                 } else {
