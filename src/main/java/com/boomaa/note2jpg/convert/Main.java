@@ -395,6 +395,9 @@ public class Main extends NFields {
         String innerFolder = "";
         try {
             innerFolder = zipFile.getFileHeaders().get(0).getFileName();
+            if (innerFolder.charAt(innerFolder.length() - 1) == '/') {
+                innerFolder = innerFolder.substring(0, innerFolder.length() - 1);
+            }
         } catch (IndexOutOfBoundsException ignored) {
             throw new ZipException("Throwing exception to illicit no-zip response");
         }
