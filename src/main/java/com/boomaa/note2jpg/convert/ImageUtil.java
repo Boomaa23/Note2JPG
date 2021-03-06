@@ -74,7 +74,7 @@ public class ImageUtil extends NFields {
                 if (currChar == ' ') {
                     lastSpc = j;
                 }
-                if (widthAccum + widthChar > textBox.getBottomRight().getXInt()) {
+                if (widthAccum + widthChar > textBox.getBottomRight().getXInt() - textBox.getUpperLeft().getXInt()) {
                     textBox.setText(textBox.getText().substring(0, lastSpc) + "\n" + textBox.getText().substring(lastSpc + 1));
                     j = lastSpc;
                     widthAccum = 0;

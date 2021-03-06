@@ -20,7 +20,6 @@ public class Updater {
     private static JFrame MAIN_FRAME;
     private static JFrame CONFIG_FRAME;
     private static DefaultTableModel TABLE_MODEL;
-    private static boolean OUTPUT_DONE = false;
     private static String DEPENDENCIES_URL = "https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/src/main/resources/dependencies.conf";
     private static String LIBRARY_FOLDER = "lib/";
     private static List<MavenDependency> dependencyList = new ArrayList<>();
@@ -54,6 +53,13 @@ public class Updater {
         CONFIG_FRAME = new JFrame("Note2JPG Config Options");
         TABLE_MODEL = new DefaultTableModel(new String[0][], new String[] { "Option", "Info", "Value" });
         String url = "https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/README.md";
+        String existingJson = null;
+        try {
+            existingJson = Files.readString(Paths.get(".", "config.json"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        assert existingJson != null;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new URL(url)
                 .openConnection().getInputStream(), StandardCharsets.UTF_8))) {
             int skipCtr = 0;
@@ -68,11 +74,13 @@ public class Updater {
                         String name = line.substring(2, ioMidBar).trim();
                         String msg = line.substring(ioLastBar + 1).trim();
                         if (name.contains("NEOUsername")) {
-                            TABLE_MODEL.addRow(new Object[]{"NEOUsername", msg.substring(0, 19) + " (username)", ""});
-                            TABLE_MODEL.addRow(new Object[]{"NEOPassword", msg.substring(0, 19) + " (password)", ""});
+                            TABLE_MODEL.addRow(new Object[]{"NEOUsername", msg.substring(0, 19) + " (username)",
+                                    searchJsonManual(existingJson, "NEOUsername")});
+                            TABLE_MODEL.addRow(new Object[]{"NEOPassword", msg.substring(0, 19) + " (password)",
+                                    searchJsonManual(existingJson, "NEOPassword")});
                         } else {
-                            //TODO load in previous config values
-                            TABLE_MODEL.addRow(new Object[]{name, msg, ""});
+                            String prevValue = searchJsonManual(existingJson, name);
+                            TABLE_MODEL.addRow(new Object[]{name, msg, prevValue});
                         }
                     }
                 }
@@ -122,15 +130,21 @@ public class Updater {
             Path configPath = Paths.get(".", "config.json");
             StringBuilder sb = new StringBuilder(Files.readString(configPath));
             for (int r = 0; r < TABLE_MODEL.getRowCount(); r++) {
-                //TODO add previous value checking (or a better overwriting system)
                 String name = String.valueOf(TABLE_MODEL.getValueAt(r, 0));
                 String value = String.valueOf(TABLE_MODEL.getValueAt(r, 2));
-                sb.insert(sb.indexOf(": \"", sb.indexOf(name) + 1) + 3, value);
+                int ioStart = sb.indexOf(name) + name.length() + 4;
+                sb.replace(ioStart, sb.indexOf("\"", ioStart), value);
             }
             Files.writeString(configPath, sb.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static String searchJsonManual(String json, String search) {
+        int ioStart = json.indexOf(search) + search.length() + 4;
+        int ioEnd = json.indexOf('"', ioStart);
+        return json.substring(ioStart, ioEnd);
     }
 
     public static void main(String[] args) throws IOException {

@@ -51,7 +51,7 @@ import java.util.Objects;
 import java.util.TimeZone;
 
 public class Main extends NFields {
-    private static final String CURRENT_RELEASE_TAG = "v0.6.0";
+    private static final String CURRENT_RELEASE_TAG = "v0.7.0";
 
     static {
         @SuppressWarnings("unchecked") List<Logger> loggers =
@@ -251,7 +251,9 @@ public class Main extends NFields {
                         }
                     }
                     Collections.sort(allowedPages);
-                    ImageUtil.filterValidPages(allowedPages);
+                    if (!Parameter.FitExactHeight.inEither()) {
+                        ImageUtil.filterValidPages(allowedPages);
+                    }
                     pages = numSelPages;
                 }
 
