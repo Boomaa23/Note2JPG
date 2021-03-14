@@ -258,12 +258,12 @@ public class ImageUtil extends NFields {
     }
 
     public static void filterValidPages(List<Integer> validPages) {
-        int pageHeight = (int) (scaledHeight / pages);
-        BufferedImage cutCanvas = new BufferedImage(scaledWidth, validPages.size() * pageHeight, BufferedImage.TYPE_INT_ARGB);
+        int fullPageHeight = (int) (scaledHeight / pages);
+        BufferedImage cutCanvas = new BufferedImage(scaledWidth, validPages.size() * fullPageHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2cc = (Graphics2D) cutCanvas.getGraphics();
         for (int i = 0; i < validPages.size(); i++) {
-            Image img = upscaledAll.getSubimage(0, (validPages.get(i) - 1) * pageHeight, scaledWidth, pageHeight);
-            g2cc.drawImage(img, 0, i * pageHeight, null);
+            Image img = upscaledAll.getSubimage(0, (validPages.get(i) - 1) * fullPageHeight, scaledWidth, fullPageHeight);
+            g2cc.drawImage(img, 0, i * fullPageHeight, null);
         }
         g2cc.dispose();
         upscaledAll = cutCanvas;

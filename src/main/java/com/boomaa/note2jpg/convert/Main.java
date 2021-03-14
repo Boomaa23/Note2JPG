@@ -222,8 +222,7 @@ public class Main extends NFields {
                     }
                 }
 
-                if ((!Parameter.NoPagePrompt.inEither() || Parameter.PageSelectionIn.inEither()) && Math.ceil(pages) != 1) {
-                    int numSelPages = 0;
+                if ((!Parameter.NoPagePrompt.inEither() || Parameter.PageSelectionIn.inEither()) && !Parameter.FitExactHeight.inEither() && Math.ceil(pages) != 1) {
                     List<Integer> allowedPages = new LinkedList<>();
                     String[] allNotesSel = Args.getPageSelection().split("/");
                     for (String noteSel : allNotesSel) {
@@ -251,10 +250,9 @@ public class Main extends NFields {
                         }
                     }
                     Collections.sort(allowedPages);
-                    if (!Parameter.FitExactHeight.inEither()) {
+                    if (allowedPages.size() != pages) {
                         ImageUtil.filterValidPages(allowedPages);
                     }
-                    pages = numSelPages;
                 }
 
                 if (Parameter.DisplayConverted.inEither()) {

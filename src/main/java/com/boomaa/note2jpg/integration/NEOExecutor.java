@@ -44,7 +44,7 @@ public class NEOExecutor extends NFields {
     }
 
     public final NEOExecutor pull() {
-        getUnfinished(parseAssignments(retrieveAssignDoc(false)));
+        filterApplicable(parseAssignments(retrieveAssignDoc(false)));
         if (Parameter.IncludeUnits.inEither()) {
             getUnitClasses(getUnitNums(retrieveAssignDoc(true)));
         }
@@ -100,9 +100,9 @@ public class NEOExecutor extends NFields {
         }
     }
 
-    private void getUnfinished(Elements table) {
-        for (Element e : table) {
-            boolean notSubmitted = true;
+    private void filterApplicable(Elements notesTable) {
+        for (Element e : notesTable) {
+            boolean allowSubmit = true;
             boolean isAssignment = false;
             String assignment = null;
             String assignmentId = null;
@@ -114,11 +114,16 @@ public class NEOExecutor extends NFields {
                 assignmentId = assignmentId.substring(assignmentId.lastIndexOf('/'));
                 Element innerTd = e.getElementsByTag("td").get(5);
                 Elements flagAlt = innerTd.getElementsByClass("textOffScreen");
-                notSubmitted = innerTd.text().contains("-") || innerTd.text().isBlank() || (flagAlt.size() != 0 && flagAlt.first().text().contains("Almost due")) || Parameter.AllowSubmitted.inEither();
+                boolean closeToSubmit = false;
+                if (flagAlt.size() != 0) {
+                    String flagAltText = flagAlt.first().text();
+                    closeToSubmit = flagAltText.contains("Almost due") || flagAltText.contains("Past due");
+                }
+                allowSubmit = innerTd.text().contains("-") || innerTd.text().isBlank() || closeToSubmit || Parameter.AllowSubmitted.inEither();
                 isAssignment = !assignName.getElementsByAttributeValueStarting("title", "Online/essay").isEmpty();
             } catch (IndexOutOfBoundsException ignored) {
             }
-            if (assignment != null && isAssignment && notSubmitted) {
+            if (assignment != null && isAssignment && allowSubmit) {
                 ufAssignments.put(assignment, assignmentId);
             }
         }
