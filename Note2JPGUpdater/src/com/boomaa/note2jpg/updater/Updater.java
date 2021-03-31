@@ -49,7 +49,9 @@ public class Updater {
         MAIN_FRAME.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         MAIN_FRAME.getContentPane().add(scr);
         MAIN_FRAME.setVisible(true);
+    }
 
+    private static void setupConfigFrame() {
         CONFIG_FRAME = new JFrame("Note2JPG Config Options");
         TABLE_MODEL = new DefaultTableModel(new String[0][], new String[] { "Option", "Info", "Value" });
         String url = "https://raw.githubusercontent.com/Boomaa23/Note2JPG/master/README.md";
@@ -223,6 +225,7 @@ public class Updater {
         System.out.println("Downloaded " + downloadCounter + " dependencies to " +
             "/" + LIBRARY_FOLDER + " (" + folderSize + ")");
         MAIN_FRAME.setVisible(false);
+        setupConfigFrame();
         CONFIG_FRAME.setIconImage(ImageIO.read(new File("lib/note2jpg-icon.png")));
         CONFIG_FRAME.setVisible(true);
         JOptionPane.showMessageDialog(null,
