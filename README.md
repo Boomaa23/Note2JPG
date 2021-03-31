@@ -24,8 +24,19 @@ Download the [updater JAR file](https://github.com/Boomaa23/Note2JPG/blob/master
 A copy of Java JDK 11 or newer must be present on the system at the time of installation.
 
 ## Usage
-Double-click the application JAR to use the program once downloaded with dependencies. From the command line, this is `java -jar Note2JPG.jar`.
+Double-click the application JAR to use the program once downloaded with dependencies. 
 
+From the command line, this is `java -jar Note2JPG.jar`.
+
+## Integration
+### Google
+Used to store note files automatically. Most users can use OAuth and login with a Google account if enabled through the config JSON or parameters. 
+Use `--grelog` to change accounts. Service accounts are also supported. 
+
+### NEO
+NEO integration requires that a NEO username and password is set each time through `--neo` or through the NEO keys in the config JSON.
+
+## Parameters
 The list of parameters to pass to the command is listed below. To store configs without passing them through each time, modify `config.json`.
 
 | Key | Flag \<Value> | Source | JSON Type | Action
@@ -61,14 +72,7 @@ The list of parameters to pass to the command is listed below. To store configs 
 | UseDriveUpload                | --gdriveup            | Google     | boolean | Upload images to Google Drive
 | ForceDriveDownload            | --fgdl                | Google     | boolean | Force the .note to download from Google
 | GoogleSvcAcct                 | --gsvc                | Google     | boolean | Use a Google Service Account over OAuth
+| GoogleRelog                   | --grelog              | Google     | boolean | Log in to a different Google account
 | LimitDriveNotes               | --gdrivelim \<limit>  | Google     | int     | Define a limit for Drive-retrieved notes
 
 Source code for all parameters can be found [here](https://github.com/Boomaa23/Note2JPG/blob/master/src/main/java/com/boomaa/note2jpg/config/Parameter.java)
-
-## Integration
-### Google
-Used to store note files automatically. Most users can use OAuth and login with a Google account each time if enabled through the config JSON or parameters.
-[Service accounts](https://github.com/Boomaa23/Note2JPG/blob/master/quickstart.md#Google%20Service%20Account%20%28Optional%29) are also supported for a faster experience.
-
-### NEO
-NEO integration requires that a NEO username and password is set each time through `--neo` or through the NEO keys in the config JSON.

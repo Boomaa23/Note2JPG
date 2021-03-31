@@ -49,6 +49,7 @@ To resubmit something again, change `AllowSubmitted` to `"true"` in the config.
 
 If there are any issues to report, please write a GitHub issue about it [here](https://github.com/Boomaa23/Note2JPG/issues). This is still a work in progress, and may have some bugs.
 
+<!--
 ### Google Service Account (Optional)
 If you used Google to automatically backup your notes, you will be prompted to accept a Google OAuth request every time you open the program.
 However, if you set up a Google Service Account it will automatically log you in. This is optional but suggested if you plan to use the program often.
@@ -73,3 +74,4 @@ Do not share the `GoogleSvcAcctPrivateKey.json` key file with anyone or put it i
 
 If you used a school account for the backup, share the Notability backup folder in Google Drive with the other personal account that has the service account tied to it.
 Ensure the account has editing access. If you used a personal account for both, disregard this.
+-->

@@ -38,6 +38,7 @@ public enum Parameter {
     UseDriveUpload("--gdriveup", Type.BOOLEAN),
     ForceDriveDownload("--fgdl", Type.BOOLEAN),
     GoogleSvcAcct("--gsvc", Type.BOOLEAN),
+    GoogleRelog("--grelog", Type.BOOLEAN),
     LimitDriveNotes("--gdrivelim", Type.INTEGER, "GDRIVE_LIMIT_NOTES");
 
     private final String flag;

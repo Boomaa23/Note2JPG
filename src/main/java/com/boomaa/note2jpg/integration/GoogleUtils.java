@@ -5,9 +5,12 @@ import com.boomaa.note2jpg.integration.s3upload.Extension;
 import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleOAuthConstants;
+import com.google.api.client.googleapis.auth.oauth2.GoogleRefreshTokenRequest;
+import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.FileContent;
@@ -22,12 +25,17 @@ import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.Permission;
 import com.google.auth.http.HttpCredentialsAdapter;
+import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +45,10 @@ public class GoogleUtils {
     private static final String APPLICATION_NAME = "Note2JPG";
     private static final String PRIVATE_KEY_NAME = "GoogleSvcAcctPrivateKey.json";
     private static final String CONFIG_FILE_NAME = "googleclient.conf";
+    private static final String REFRESH_TOKEN_FN = "oauthrefresh.token";
     private String clientId;
     private String clientSecret;
+    private String refreshToken;
     private HttpTransport httpTransport;
     private JsonFactory jsonFactory;
     private Drive driveService;
@@ -48,6 +58,7 @@ public class GoogleUtils {
     private GoogleUtils() {
         try {
             readClientConfig();
+            readRefreshToken();
             httpTransport = GoogleNetHttpTransport.newTrustedTransport();
             jsonFactory = JacksonFactory.getDefaultInstance();
             driveService = this.getDriveService();
@@ -60,14 +71,17 @@ public class GoogleUtils {
         }
     }
 
-    private void readClientConfig() {
+    private void readClientConfig() throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/" + CONFIG_FILE_NAME)));
+        clientId = reader.readLine();
+        clientSecret = reader.readLine();
+        reader.close();
+    }
+
+    private void readRefreshToken() {
         try {
-            clientId = reader.readLine();
-            clientSecret = reader.readLine();
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            refreshToken = Files.readString(Paths.get(REFRESH_TOKEN_FN));
+        } catch (IOException ignored) {
         }
     }
 
@@ -77,15 +91,23 @@ public class GoogleUtils {
                 return new HttpCredentialsAdapter(
                         GoogleCredentials.fromStream(new FileInputStream(PRIVATE_KEY_NAME))
                                 .createScoped(DriveScopes.DRIVE));
+            } else if (Parameter.GoogleRelog.inEither() || refreshToken == null) {
+                    AuthorizationCodeFlow flow = new AuthorizationCodeFlow.Builder(
+                            BearerToken.authorizationHeaderAccessMethod(), httpTransport, jsonFactory,
+                            new GenericUrl(GoogleOAuthConstants.TOKEN_SERVER_URL),
+                            new ClientParametersAuthentication(clientId, clientSecret),
+                            clientId, GoogleOAuthConstants.AUTHORIZATION_SERVER_URL)
+                            .setScopes(Collections.singleton(DriveScopes.DRIVE_READONLY)).build();
+                    LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(5818).build();
+                    Credential cred = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+                    Files.writeString(Paths.get(REFRESH_TOKEN_FN), cred.getRefreshToken());
+                    return cred;
             } else {
-                AuthorizationCodeFlow flow = new AuthorizationCodeFlow.Builder(
-                        BearerToken.authorizationHeaderAccessMethod(), httpTransport, jsonFactory,
-                        new GenericUrl(GoogleOAuthConstants.TOKEN_SERVER_URL),
-                        new ClientParametersAuthentication(clientId, clientSecret),
-                        clientId, GoogleOAuthConstants.AUTHORIZATION_SERVER_URL)
-                    .setScopes(Collections.singleton(DriveScopes.DRIVE_READONLY)).build();
-                LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(5818).build();
-                return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+                GoogleTokenResponse tokenResp = new GoogleRefreshTokenRequest(httpTransport, jsonFactory, refreshToken, clientId, clientSecret)
+                        .setScopes(Collections.singleton(DriveScopes.DRIVE_READONLY)).setGrantType("refresh_token").execute();
+                Date expireDate = Date.from(Instant.now().plusSeconds(tokenResp.getExpiresInSeconds()));
+                return new HttpCredentialsAdapter(GoogleCredentials.create(new AccessToken(tokenResp.getAccessToken(), expireDate))
+                        .createScoped(Collections.singleton(DriveScopes.DRIVE_READONLY)).toBuilder().build());
             }
         } catch (FileNotFoundException e) {
             System.err.println("Cannot find Google private key. Add a key or do not specify Google integration parameters.");
