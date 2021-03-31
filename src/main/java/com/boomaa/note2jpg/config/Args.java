@@ -5,6 +5,7 @@ import com.boomaa.note2jpg.integration.NEOExecutor;
 import com.boomaa.note2jpg.integration.NameIDMap;
 import com.boomaa.note2jpg.integration.s3upload.Connections;
 import com.boomaa.note2jpg.state.FilenameSource;
+import com.boomaa.note2jpg.uxutil.NEOLoginUI;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,9 +17,23 @@ import java.util.List;
 import java.util.Objects;
 
 public class Args extends NFields {
-    //TODO NEO login popup feature
     public static void parse() {
         boolean neoFound = Parameter.NEOUsername.inEither() || Parameter.NEOPassword.inEither();
+        if (!neoFound && (Parameter.NEOClassID.inEither() || Parameter.NEOAssignment.inEither()
+                || Parameter.NEONoLink.inEither() || Parameter.AllowSubmitted.inEither()
+                || Parameter.IncludeUnits.inEither() || Parameter.NewNEOFilename.inEither()
+                || Parameter.UseAWS.inEither())) {
+            if (Parameter.ConsoleOnly.inEither()) {
+                throw new IllegalArgumentException("Cannot retrieve missing NEO login credentials from user in console-only mode");
+            }
+            NEOLoginUI login = new NEOLoginUI();
+            login.show();
+            login.waitForInput();
+            Parameter.NEOUsername.setLinkedField(login.getUsername());
+            Parameter.NEOPassword.setLinkedField(login.getPassword());
+            login.destroy();
+            neoFound = true;
+        }
         int found = 0;
         for (Parameter p : Parameter.values()) {
             if (p.inEither()) {

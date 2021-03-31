@@ -10,7 +10,7 @@ This is the basic setup and is required to get the application working in any fa
 3. Run the updater by double-clicking it. Close the window by clicking "Finish" after configuring the options.
 
 ### Config
-This allows you to set custom configuration options per the parameters [here](https://github.com/Boomaa23/Note2JPG#usage). 
+This allows you to set custom configuration options per the parameters [here](https://github.com/Boomaa23/Note2JPG#Parameters). 
 The below listed options are important and should be set for a working quickstart application.
 - NEOUsername: Set to your NEO username so assignments can be auto-uploaded.
 - NEOPassword: Same as above. Set to your NEO password. Obviously don't share your configuration file.

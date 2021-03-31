@@ -30,11 +30,12 @@ From the command line, this is `java -jar Note2JPG.jar`.
 
 ## Integration
 ### Google
-Used to store note files automatically. Most users can use OAuth and login with a Google account if enabled through the config JSON or parameters. 
+Used to store note files automatically. Most users can use OAuth and login with a Google account if an applicable feature is enabled through the config JSON or parameters. 
 Use `--grelog` to change accounts. Service accounts are also supported. 
 
 ### NEO
-NEO integration requires that a NEO username and password is set each time through `--neo` or through the NEO keys in the config JSON.
+NEO integration requires that a NEO username and password is provided to the GUI each time (the user will be automatically prompted for this), 
+passed through the parameter `--neo`, or included in the NEO keys in the config JSON.
 
 ## Parameters
 The list of parameters to pass to the command is listed below. To store configs without passing them through each time, modify `config.json`.

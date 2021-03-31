@@ -1,5 +1,6 @@
 package com.boomaa.note2jpg.integration.s3upload;
 
+import org.apache.http.auth.AuthenticationException;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -13,10 +14,14 @@ public final class NEOSession {
     private String authCookieName = "secure_lmssessionkey2";
     private String authCookieValue = null;
 
-    private NEOSession(String username, String password) {
+    private NEOSession(String username, String password) throws AuthenticationException {
         try {
-            authCookieValue = Jsoup.connect(getLoginUrl(username, password))
-                .ignoreContentType(true).execute().cookie(authCookieName);
+            Connection.Response resp = Jsoup.connect(getLoginUrl(username, password))
+                .ignoreContentType(true).execute();
+            if (resp.body().contains("Incorrect user id or password")) {
+                throw new AuthenticationException("Invalid NEO login credentials");
+            }
+            authCookieValue = resp.cookie(authCookieName);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -79,7 +84,12 @@ public final class NEOSession {
 
     public static NEOSession getInstance(String username, String password) {
         if (INSTANCE == null && username != null && password != null) {
-            INSTANCE = new NEOSession(username, password);
+            try {
+                INSTANCE = new NEOSession(username, password);
+            } catch (AuthenticationException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
         return INSTANCE;
     }
