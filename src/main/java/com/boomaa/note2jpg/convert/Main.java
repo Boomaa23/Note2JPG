@@ -286,14 +286,9 @@ public class Main extends NFields {
                     }
                 }
 
-                List<String> imageUrls = null;
                 if (Parameter.UseAWS.inEither()) {
-                    imageUrls = Arrays.asList(Connections.getAwsExecutor().uploadFile(noExtFilename + ".jpg",
-                            Parameter.OutputDirectory.getValue(), Parameter.NewNEOFilename.inEither()));
-                    System.out.println("\nImage uploaded to: \n" + imageUrls.get(0) + "\n" + imageUrls.get(1) + "\n");
-                }
-
-                if (imageUrls != null) {
+                    String imageUrl = Connections.getAwsExecutor().uploadFile(noExtFilename + ".jpg",
+                            Parameter.OutputDirectory.getValue(), Parameter.NewNEOFilename.inEither());
                     if (!Parameter.NEONoLink.inEither()) {
                         String assignName;
                         if (Parameter.NEOAssignment.inEither()) {
@@ -303,11 +298,12 @@ public class Main extends NFields {
                             assignName = Args.filenameSelector(neoExecutor.getAssignments().getNames(), "");
                         }
                         // Autoselect NEO-format link instead of AWS (b/c of lms_auth server auto-add to img link)
-                        String assignmentUrl = neoExecutor.push(assignName, imageUrls.get(1));
+                        String assignmentUrl = neoExecutor.push(assignName, imageUrl);
                         System.out.println("Posted to the NEO assignment at " + assignmentUrl);
                     }
+                    System.out.println("\nImage uploaded to: \n" + imageUrl + "\n");
                 } else {
-                    System.err.println("No AWS/NEO upload target specified");
+                    System.err.println("No AWS/NEO upload target specified\n");
                 }
             }
 
@@ -315,7 +311,7 @@ public class Main extends NFields {
             cleanupFiles(new File(noExtFilename));
         }
 
-        if (savedNotes.size() > 1 && Parameter.Concatenate.inEither()) {
+        if (Parameter.Concatenate.inEither() && savedNotes.size() > 1) {
             int heightCtr = 0;
             BufferedImage canvas = new BufferedImage(iPadWidth, concatHeight, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = (Graphics2D) canvas.getGraphics();
@@ -489,6 +485,7 @@ public class Main extends NFields {
                 consoleFrame.setIconImage(ImageIO.read(new File("lib/note2jpg-icon.png")));
             } catch (IOException ignored) {
                 // This is a non-critical error, ignore
+                System.err.println("Could not set frame icon");
             }
             consoleFrame.setSize(640, 480);
             consoleFrame.setResizable(false);

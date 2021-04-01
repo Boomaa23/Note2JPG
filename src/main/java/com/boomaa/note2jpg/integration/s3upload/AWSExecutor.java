@@ -24,15 +24,15 @@ public class AWSExecutor {
         this.session = session;
     }
 
-    public String[] remove(String filename) {
+    public String remove(String filename) {
         Extension ext = Extension.getFromFilename(filename);
         Map<String, String> credVars = getAWSCredentials();
         MultipartFormData fileData = new MultipartFormData(filename, ext, new ByteArrayInputStream(new byte[0]));
         uploadImage(getAWSFormData(credVars, filename, ext.mimeType), fileData);
-        return getMultiUrl(credVars, filename);
+        return session.getBaseUrl() + "/" + credVars.get("aws_location") + "/" + filename;
     }
 
-    public String[] uploadFile(String uploadFilename, String localPath, boolean registerFilename) {
+    public String uploadFile(String uploadFilename, String localPath, boolean registerFilename) {
         return upload(uploadFilename, registerFilename, () -> {
             try {
                 return new FileInputStream(localPath + uploadFilename);
@@ -44,7 +44,7 @@ public class AWSExecutor {
         });
     }
 
-    public String[] upload(String filename, boolean registerFilename, Supplier<InputStream> input) {
+    public String upload(String filename, boolean registerFilename, Supplier<InputStream> input) {
         Extension ext = Extension.getFromFilename(filename);
         if (registerFilename || !isRegistered(filename)) {
             filename = registerNeoFilename(filename);
@@ -52,12 +52,7 @@ public class AWSExecutor {
         Map<String, String> credVars = getAWSCredentials();
         MultipartFormData fileData = new MultipartFormData(filename, ext, input.get());
         uploadImage(getAWSFormData(credVars, filename, ext.mimeType), fileData);
-        return getMultiUrl(credVars, filename);
-    }
-
-    public String[] getMultiUrl(Map<String, String> credVars, String filename) {
-        String addUrl = credVars.get("aws_location") + "/" + filename;
-        return new String[] { AWS_BUCKET_URL + addUrl, session.getBaseUrl() + "/" + addUrl };
+        return session.getBaseUrl() + "/" + credVars.get("aws_location") + "/" + filename;
     }
 
     private String registerNeoFilename(String filename) {
